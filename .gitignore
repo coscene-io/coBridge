@@ -1,0 +1,115 @@
+# 忽略所有编译生成的二进制文件和目录
+*.o
+*.obj
+*.so
+*.exe
+*.out
+*.a
+*.lib
+*.dll
+*.dylib
+
+# 忽略编译和构建目录
+/build/
+bin/
+obj/
+
+# 忽略CMake生成的文件
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# 忽略 IDE 和编辑器生成的文件
+*.log
+*.tmp
+*.swp
+*.swo
+*.user
+*.userprefs
+*.sublime-project
+*.sublime-workspace
+.idea/
+.vscode/
+*.code-workspace
+
+# 忽略 Qt Creator 生成的文件
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.qmake.stash
+*.qmake.cache
+
+# 忽略 Visual Studio 生成的文件
+*.vcxproj*
+*.vcproj*
+*.vcxproj.filters
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj.user
+*.vcxproj.vspscc
+*.suo
+*.user
+*.ipch
+*.pdb
+*.obj
+*.idb
+*.ilk
+*.log
+*.tlog
+*.lastbuildstate
+*.vspscc
+*.vssscc
+*.tmp
+*.csproj.user
+.vscode/
+.vs/
+
+# 忽略 CLion 生成的文件
+cmake-build-*/
+
+# 忽略 Code::Blocks 生成的文件
+*.depend
+*.layout
+*.layout1
+*.depend
+
+# 忽略 Eclipse 生成的文件
+.cproject
+.project
+.settings/
+
+# 忽略 Xcode 生成的文件
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+*.xcscmblueprint
+
+# 忽略 JetBrains Rider 生成的文件
+.idea/
+
+# 忽略 macOS 特定文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 忽略 Windows 特定文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# 忽略 Linux 特定文件
+*~
+.cache
+# 忽略 ccache 文件
+*.ccache
+# 忽略任何其他特定于环境的文件或目录
+*.env
