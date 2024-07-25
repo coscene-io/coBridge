@@ -9,12 +9,11 @@ if (POLICY CMP0024)
     set(CMAKE_POLICY_DEFAULT_CMP0024 NEW)
 endif ()
 
-project(cos-bridge LANGUAGES CXX VERSION 0.7.3)
+project(cos-bridge LANGUAGES CXX VERSION 0.0.1)
 
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
 
 #add_compile_definitions(ROS2_VERSION_HUMBLE)
 add_compile_definitions(ROS2_VERSION_FOXY)
@@ -34,6 +33,10 @@ find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 find_package(websocketpp REQUIRED)
 find_package(ZLIB REQUIRED)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
 
 option(USE_ASIO_STANDALONE "Build with standalone ASIO" ON)
 if (USE_ASIO_STANDALONE)
@@ -90,46 +93,91 @@ else ()
 endif ()
 enable_strict_compiler_warnings(cos_bridge_base)
 
-if (DEFINED ENV{AMENT_PREFIX_PATH})
-    message(STATUS "Building with ament_cmake")
-    set(ROS_BUILD_TYPE "ament_cmake")
+message(STATUS "ROS_VERSION: " $ENV{ROS_VERSION})
+message(STATUS "ROS_DISTRO: " $ENV{ROS_DISTRO})
+message(STATUS "ROS_ROOT: " $ENV{ROS_ROOT})
+if("$ENV{ROS_VERSION}" STREQUAL "1")
+    if(CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
+        message(STATUS "Building with catkin")
+        set(ROS_BUILD_TYPE "catkin")
 
-    find_package(ament_cmake REQUIRED)
-    find_package(rosgraph_msgs REQUIRED)
-    find_package(rclcpp REQUIRED)
-    find_package(rclcpp_components REQUIRED)
-    find_package(resource_retriever REQUIRED)
-    find_package(cv_bridge REQUIRED)
-    find_package(OpenCV REQUIRED)
+        find_package(catkin REQUIRED COMPONENTS nodelet resource_retriever ros_babel_fish rosgraph_msgs roslib roscpp)
+        find_package(Boost REQUIRED)
 
-    add_library(cos_bridge_component SHARED
-            ros2_bridge/src/message_definition_cache.cpp
-            ros2_bridge/src/param_utils.cpp
-            ros2_bridge/src/ros2_bridge.cpp
-            ros2_bridge/src/parameter_interface.cpp
-            ros2_bridge/src/generic_client.cpp
-            ros2_bridge/src/generic_subscription.cpp
-            ros2_bridge/src/generic_publisher.cpp
-            ros2_bridge/src/typesupport_helpers.cpp
-    )
-    target_include_directories(cos_bridge_component
-            PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ros2_bridge/include>
-            $<INSTALL_INTERFACE:include>
-    )
+        catkin_package(
+                INCLUDE_DIRS cos_bridge_base/include
+                LIBRARIES cos_bridge_base cos_bridge_nodelet
+                CATKIN_DEPENDS nodelet resource_retriever ros_babel_fish rosgraph_msgs roslib roscpp
+                DEPENDS Boost
+        )
 
-    #ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
-    ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
-    target_link_libraries(cos_bridge_component cos_bridge_base)
-    rclcpp_components_register_nodes(cos_bridge_component "cos_bridge::CosBridge")
-    enable_strict_compiler_warnings(cos_bridge_component)
-    add_executable(cos_bridge
-            ros2_bridge/src/ros2_bridge_node.cpp
-    )
-    target_include_directories(cos_bridge SYSTEM PRIVATE ${rclcpp_INCLUDE_DIRS})
-    ament_target_dependencies(cos_bridge rclcpp rclcpp_components)
-    enable_strict_compiler_warnings(cos_bridge)
-else ()
-    message(FATAL_ERROR "Could not find ament_cmake")
-endif ()
+        add_library(cos_bridge_nodelet
+                ros1_bridge/src/ros1_bridge_nodelet.cpp
+                ros1_bridge/src/param_utils.cpp
+                ros1_bridge/src/service_utils.cpp
+        )
+
+        target_include_directories(cos_bridge_nodelet
+                SYSTEM PRIVATE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ros1_bridge/include>
+                $<INSTALL_INTERFACE:include>
+                ${catkin_INCLUDE_DIRS}
+        )
+        target_link_libraries(cos_bridge_nodelet cos_bridge_base ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(cos_bridge_nodelet)
+
+        add_executable(cos_bridge ros1_bridge/src/ros1_bridge_node.cpp)
+        target_include_directories(cos_bridge SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
+        target_link_libraries(cos_bridge ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(cos_bridge)
+    else()
+        message(FATAL_ERROR "Could not find catkin")
+    endif()
+elseif("$ENV{ROS_VERSION}" STREQUAL "2")
+    if (DEFINED ENV{AMENT_PREFIX_PATH})
+        message(STATUS "Building with ament_cmake")
+        set(ROS_BUILD_TYPE "ament_cmake")
+
+        find_package(ament_cmake REQUIRED)
+        find_package(rosgraph_msgs REQUIRED)
+        find_package(rclcpp REQUIRED)
+        find_package(rclcpp_components REQUIRED)
+        find_package(resource_retriever REQUIRED)
+        find_package(cv_bridge REQUIRED)
+        find_package(OpenCV REQUIRED)
+
+        add_library(cos_bridge_component SHARED
+                ros2_bridge/src/message_definition_cache.cpp
+                ros2_bridge/src/param_utils.cpp
+                ros2_bridge/src/ros2_bridge.cpp
+                ros2_bridge/src/parameter_interface.cpp
+                ros2_bridge/src/generic_client.cpp
+                ros2_bridge/src/generic_subscription.cpp
+                ros2_bridge/src/generic_publisher.cpp
+                ros2_bridge/src/typesupport_helpers.cpp
+        )
+        target_include_directories(cos_bridge_component
+                PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ros2_bridge/include>
+                $<INSTALL_INTERFACE:include>
+        )
+
+        #ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
+        ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
+        target_link_libraries(cos_bridge_component cos_bridge_base)
+        rclcpp_components_register_nodes(cos_bridge_component "cos_bridge::CosBridge")
+        enable_strict_compiler_warnings(cos_bridge_component)
+        add_executable(cos_bridge
+                ros2_bridge/src/ros2_bridge_node.cpp
+        )
+        target_include_directories(cos_bridge SYSTEM PRIVATE ${rclcpp_INCLUDE_DIRS})
+        ament_target_dependencies(cos_bridge rclcpp rclcpp_components)
+        enable_strict_compiler_warnings(cos_bridge)
+    else ()
+        message(FATAL_ERROR "Could not find ament_cmake")
+    endif ()
+else()
+    message(FATAL_ERROR "ROS_VERSION environment variable must be 1 or 2")
+endif()
