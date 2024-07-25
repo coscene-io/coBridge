@@ -16,23 +16,33 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
   apt install -y ros-${ROS_DISTRO}-resource-retriever
     ```
 
-* ROS1
-    *  copy this project into {your_ros_ws}/src/
-    *  ` source /opt/ros/{ros_distro}/setup.bash `
-    *  ``` bash 
-       cd {your_ros_ws} 
-       catkin_make
-       ```
+  * ROS1
+  ``` bash
+    # copy this project into {your_ros_ws}/src/
+    cp {this_repo} {your_ros_ws}/src/
+  
+    # Init Env variables
+    source /opt/ros/{ros_distro}/setup.bash
+ 
+    # Enter into your ros workspace 
+    cd {your_ros_ws}
+    catkin_make
+  ```
 
 
 * ROS2
-  *  copy this project into {your_ros2_ws}/src/
   *  Modify the CMakeLists.txt file, line 19 - 20, according to the ROS2 version, and select the add_compile_definitions parameter according to the ROS2 distro.
-  *  ` source /opt/ros/{ros_distro}/install/setup.bash `
-  *  ``` bash 
-       cd {your_ros2_ws} 
-       colcon build --packages-select cos-bridge
-     ```
+
+  ``` bash 
+     # Init Env variables
+     source /opt/ros/{ros_distro}/install/setup.bash
+     
+     # Copy this repo into your workspace
+     cp {this_repo} {your_ros_ws}/src/ 
+  
+     # Build
+     colcon build --packages-select cos-bridge
+  ```
 
 ## Run
   ``` bash

@@ -17,22 +17,30 @@ cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket �
     ```
 
 * ROS1
-    *  将工程复制到 {your_ros2_ws}/src/ 文件夹内
-    *  ` source /opt/ros/{ros_distro}/setup.bash `
-    *  ``` bash 
-       cd {your_ros2_ws} 
-       catkin_make
-       ```
+  ``` bash 
+  将工程复制到 {your_ros_ws}/src/ 文件夹内
+  cp {this_repo} {your_ros_ws}/src/
+  
+  cd {your_ros2_ws} 
+  
+  source /opt/ros/{ros_distro}/setup.bash 
+  
+  catkin_make
+  ```
 
 
 * ROS2
-  *  将工程复制到 {your_ros2_ws}/src/ 文件夹内
   *  根据ROS2 版本，修改CMakeLists.txt文件，line 19 - 20，依据ROS2 distro选择 add_compile_definitions 参数
-  *  ` source /opt/ros/{ros_distro}/install/setup.bash `
-  *  ``` bash 
-       cd {your_ros2_ws} 
-       colcon build --packages-select cos-bridge
-     ```
+  ``` bash 
+   # 将工程复制到 {your_ros2_ws}/src/ 文件夹内
+   cp {this_repo} {your_ros_ws}/src/ 
+  
+   source /opt/ros/{ros_distro}/install/setup.bash
+  
+   cd {your_ros2_ws} 
+  
+   colcon build --packages-select cos-bridge
+  ```
 
 ## 运行
   ``` bash
