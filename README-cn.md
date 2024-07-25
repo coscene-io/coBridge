@@ -1,6 +1,6 @@
-# cos-bridge
+# cobridge
 
-cos-bridge 会以 ros node 的方式运行在机器人端，并通过websocket方式与云端进行交互。cos-bridge与云端建立链接后，根据云端指令可以实现订阅ros topic，调用ros service，实现实时监控机器人状态、远程下发指令等功能。
+cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket 方式与云端进行交互。cobridge 与云端建立链接后，根据云端指令可以实现订阅 ros topic，调用 ros service，实现实时监控机器人状态、远程下发指令等功能。
 
 
 ## 编译
