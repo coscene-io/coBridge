@@ -1,4 +1,4 @@
-# coBridge
+# cobridge
 
 cobridge runs as a ros node on the robot side, and interacts with the cloud via websocket. cos-bridge establishes a link with the cloud to subscribe to a ros topic and invoke a ros service according to cloud instructions.
 After cobridge establishes a link with the cloud, it can subscribe to ros topic and call ros service according to the instructions from the cloud, so as to real-time monitor the status of the robot and remotely issue commands.
