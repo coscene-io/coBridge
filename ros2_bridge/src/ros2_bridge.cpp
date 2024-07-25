@@ -720,10 +720,10 @@ namespace cos_bridge {
         }
 
         // Copy the message payload into a SerializedMessage object
-        rclcpp::SerializedMessage serialized_message{message.get_length()};
+        rclcpp::SerializedMessage serialized_message{message.getLength()};
         auto &rcl_serialized_msg = serialized_message.get_rcl_serialized_message();
-        std::memcpy(rcl_serialized_msg.buffer, message.get_data(), message.get_length());
-        rcl_serialized_msg.buffer_length = message.get_length();
+        std::memcpy(rcl_serialized_msg.buffer, message.getData(), message.getLength());
+        rcl_serialized_msg.buffer_length = message.getLength();
 
         // Publish the message
         publisher->publish(std::make_shared<rcl_serialized_message_t>(serialized_message.get_rcl_serialized_message()));

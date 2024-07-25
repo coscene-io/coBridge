@@ -120,11 +120,11 @@ namespace cos_bridge_base {
 
         static const size_t MSG_PAYLOAD_OFFSET = 5;
 
-        const uint8_t *get_data() const {
+        const uint8_t *getData() const {
             return data.data() + MSG_PAYLOAD_OFFSET;
         }
 
-        std::size_t get_length() const {
+        std::size_t getLength() const {
             return data.size() - MSG_PAYLOAD_OFFSET;
         }
     };
