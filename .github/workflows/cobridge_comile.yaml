@@ -1,0 +1,42 @@
+name: cobridge compile
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - "release-[0-9].[0-9]*"
+    paths:
+      - "!**.html"
+      - "!**.md"
+      - "!CNAME"
+      - "!LICENSE"
+  #change trigger policy
+  pull_request:
+    types:
+      - labeled # <--
+    branches:
+      - master
+      - "release-[0-9].[0-9]*"
+    paths:
+      - "!**.html"
+      - "!**.md"
+      - "!CNAME"
+      - "!LICENSE"
+
+jobs:
+  compile:
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    name: Compile for ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+      - uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          package-name: cobridge
+          target-ros2-distro: humble
