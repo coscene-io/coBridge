@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_WEBSOCKET_LOGGING_HPP
-#define cobridge_WEBSOCKET_LOGGING_HPP
+#ifndef COBRIDGE_WEBSOCKET_LOGGING_HPP
+#define COBRIDGE_WEBSOCKET_LOGGING_HPP
 
 #include <functional>
 #include <websocketpp/common/asio.hpp>
@@ -111,4 +111,4 @@ namespace cobridge_base {
     };
 }
 
-#endif //cobridge_WEBSOCKET_LOGGING_HPP
+#endif //COBRIDGE_WEBSOCKET_LOGGING_HPP

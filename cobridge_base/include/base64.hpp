@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_BASE64_HPP
-#define cobridge_BASE64_HPP
+#ifndef COBRIDGE_BASE64_HPP
+#define COBRIDGE_BASE64_HPP
 
 #include <cstdint>
 #include <string>
@@ -28,4 +28,4 @@ namespace cobridge_base {
     std::vector<unsigned char> base64_decode(const std::string &input);
 }
 
-#endif //cobridge_BASE64_HPP
+#endif //COBRIDGE_BASE64_HPP

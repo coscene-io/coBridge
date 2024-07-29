@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_REGEX_UTILS_HPP
-#define cobridge_REGEX_UTILS_HPP
+#ifndef COBRIDGE_REGEX_UTILS_HPP
+#define COBRIDGE_REGEX_UTILS_HPP
 
 #include <algorithm>
 #include <regex>
@@ -31,4 +31,4 @@ namespace cobridge_base {
     }
 }
 
-#endif //cobridge_REGEX_UTILS_HPP
+#endif //COBRIDGE_REGEX_UTILS_HPP

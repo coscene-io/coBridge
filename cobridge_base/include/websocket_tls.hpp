@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_WEBSOCKET_TLS_HPP
-#define cobridge_WEBSOCKET_TLS_HPP
+#ifndef COBRIDGE_WEBSOCKET_TLS_HPP
+#define COBRIDGE_WEBSOCKET_TLS_HPP
 
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/extensions/permessage_deflate/enabled.hpp>
@@ -61,4 +61,4 @@ namespace cobridge_base {
     };
 }
 
-#endif //cobridge_WEBSOCKET_TLS_HPP
+#endif //COBRIDGE_WEBSOCKET_TLS_HPP

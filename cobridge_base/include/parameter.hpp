@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_PARAMETER_HPP
-#define cobridge_PARAMETER_HPP
+#ifndef COBRIDGE_PARAMETER_HPP
+#define COBRIDGE_PARAMETER_HPP
 
 #include <any>
 #include <stdint.h>
@@ -102,4 +102,4 @@ namespace cobridge_base {
     };
 }
 
-#endif //cobridge_PARAMETER_HPP
+#endif //COBRIDGE_PARAMETER_HPP

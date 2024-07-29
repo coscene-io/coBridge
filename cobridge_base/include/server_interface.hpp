@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_SERVER_INTERFACE_HPP
-#define cobridge_SERVER_INTERFACE_HPP
+#ifndef COBRIDGE_SERVER_INTERFACE_HPP
+#define COBRIDGE_SERVER_INTERFACE_HPP
 
 #include <functional>
 #include <optional>
@@ -136,4 +136,4 @@ namespace cobridge_base {
         virtual std::string remote_endpoint_string(ConnectionHandle client_handle) = 0;
     };
 }
-#endif //cobridge_SERVER_INTERFACE_HPP
+#endif //COBRIDGE_SERVER_INTERFACE_HPP

@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_WEBSOCKET_SERVER_HPP
-#define cobridge_WEBSOCKET_SERVER_HPP
+#ifndef COBRIDGE_WEBSOCKET_SERVER_HPP
+#define COBRIDGE_WEBSOCKET_SERVER_HPP
 
 #include <algorithm>
 #include <chrono>
@@ -1610,4 +1610,4 @@ namespace cobridge_base {
 
 }
 
-#endif //cobridge_WEBSOCKET_SERVER_HPP
+#endif //COBRIDGE_WEBSOCKET_SERVER_HPP

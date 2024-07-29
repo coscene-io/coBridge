@@ -14,14 +14,14 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_cobridge_HPP
-#define cobridge_cobridge_HPP
+#ifndef COBRIDGE_COBRIDGE_HPP
+#define COBRIDGE_COBRIDGE_HPP
 
 namespace cobridge_base {
     const char *websocket_user_agent();
 
-    extern const char cobridge_VERSION[];
-    extern const char cobridge_GIT_HASH[];
+    extern const char COBRIDGE_VERSION[];
+    extern const char COBRIDGE_GIT_HASH[];
 }
 
-#endif //cobridge_cobridge_HPP
+#endif //COBRIDGE_COBRIDGE_HPP

@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_COMMON_HPP
-#define cobridge_COMMON_HPP
+#ifndef COBRIDGE_COMMON_HPP
+#define COBRIDGE_COMMON_HPP
 
 #include <array>
 #include <cstring>
@@ -180,4 +180,4 @@ namespace cobridge_base {
     };
 }
 
-#endif //cobridge_COMMON_HPP
+#endif //COBRIDGE_COMMON_HPP

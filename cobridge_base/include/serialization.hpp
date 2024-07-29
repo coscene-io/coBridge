@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_SERIALIZATION_HPP
-#define cobridge_SERIALIZATION_HPP
+#ifndef COBRIDGE_SERIALIZATION_HPP
+#define COBRIDGE_SERIALIZATION_HPP
 
 #include <stdint.h>
 #include <nlohmann/json.hpp>
@@ -77,4 +77,4 @@ namespace cobridge_base {
     void from_json(const nlohmann::json &json_obj, Service &service);
 }
 
-#endif //cobridge_SERIALIZATION_HPP
+#endif //COBRIDGE_SERIALIZATION_HPP

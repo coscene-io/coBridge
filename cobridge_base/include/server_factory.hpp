@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_SERVER_FACTORY_HPP
-#define cobridge_SERVER_FACTORY_HPP
+#ifndef COBRIDGE_SERVER_FACTORY_HPP
+#define COBRIDGE_SERVER_FACTORY_HPP
 
 #include <memory>
 #include <string>
@@ -35,4 +35,4 @@ namespace cobridge_base {
     };
 }
 
-#endif //cobridge_SERVER_FACTORY_HPP
+#endif //COBRIDGE_SERVER_FACTORY_HPP

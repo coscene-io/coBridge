@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_CALLBACK_QUEUE_HPP
-#define cobridge_CALLBACK_QUEUE_HPP
+#ifndef COBRIDGE_CALLBACK_QUEUE_HPP
+#define COBRIDGE_CALLBACK_QUEUE_HPP
 
 #include <atomic>
 #include <condition_variable>
@@ -97,4 +97,4 @@ namespace cobridge_base {
         std::vector <std::thread> _worker_threads;
     };
 }
-#endif //cobridge_CALLBACK_QUEUE_HPP
+#endif //COBRIDGE_CALLBACK_QUEUE_HPP

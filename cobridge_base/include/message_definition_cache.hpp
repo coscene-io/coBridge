@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_MESSAGE_DEFINITION_CACHE_HPP
-#define cobridge_MESSAGE_DEFINITION_CACHE_HPP
+#ifndef COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP
+#define COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP
 
 #include <set>
 #include <string>
@@ -102,4 +102,4 @@ namespace cobridge_base {
 
 }
 
-#endif //cobridge_MESSAGE_DEFINITION_CACHE_HPP
+#endif //COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP

@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_WEBSOCKET_NOTLS_HPP
-#define cobridge_WEBSOCKET_NOTLS_HPP
+#ifndef COBRIDGE_WEBSOCKET_NOTLS_HPP
+#define COBRIDGE_WEBSOCKET_NOTLS_HPP
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/extensions/permessage_deflate/enabled.hpp>
 #include <websocketpp/server.hpp>
@@ -62,4 +62,4 @@ namespace cobridge_base {
 
 }
 
-#endif //cobridge_WEBSOCKET_NOTLS_HPP
+#endif //COBRIDGE_WEBSOCKET_NOTLS_HPP
