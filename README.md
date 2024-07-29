@@ -1,11 +1,11 @@
-# coBridge
+# cobridge
 
-coBridge 会以 ros node 的方式运行在机器人端，并通过websocket方式与云端进行交互。coBridge与云端建立链接后，根据云端指令可以实现订阅ros topic，调用ros service，实现实时监控机器人状态、远程下发指令等功能。
+cobridge runs as a ros node on the robot side, and interacts with the cloud via websocket. cos-bridge establishes a link with the cloud to subscribe to a ros topic and invoke a ros service according to cloud instructions.
+After cobridge establishes a link with the cloud, it can subscribe to ros topic and call ros service according to the instructions from the cloud, so as to real-time monitor the status of the robot and remotely issue commands.
 
+## Compile
 
-## 编译
-
-* 安装依赖库
+* Install deps 
     ``` bash
   apt install -y nlohmann-json3-dev
   apt install -y libasio-dev 
@@ -16,25 +16,35 @@ coBridge 会以 ros node 的方式运行在机器人端，并通过websocket方�
   apt install -y ros-${ROS_DISTRO}-resource-retriever
     ```
 
-* ROS1
-    *  将工程复制到 {your_ros2_ws}/src/ 文件夹内
-    *  ` source /opt/ros/{ros_distro}/setup.bash `
-    *  ``` bash 
-       cd {your_ros2_ws} 
-       catkin_make
-       ```
+  * ROS1
+  ``` bash
+    # copy this project into {your_ros_ws}/src/
+    cp {this_repo} {your_ros_ws}/src/
+  
+    # Init Env variables
+    source /opt/ros/{ros_distro}/setup.bash
+ 
+    # Enter into your ros workspace 
+    cd {your_ros_ws}
+    catkin_make
+  ```
 
 
 * ROS2
-  *  将工程复制到 {your_ros2_ws}/src/ 文件夹内
-  *  根据ROS2 版本，修改CMakeLists.txt文件，line 19 - 20，依据ROS2 distro选择 add_compile_definitions 参数
-  *  ` source /opt/ros/{ros_distro}/install/setup.bash `
-  *  ``` bash 
-       cd {your_ros2_ws} 
-       colcon build --packages-select cos-bridge
-     ```
+  *  Modify the CMakeLists.txt file, line 19 - 20, according to the ROS2 version, and select the add_compile_definitions parameter according to the ROS2 distro.
 
-## 运行
+  ``` bash 
+     # Init Env variables
+     source /opt/ros/{ros_distro}/install/setup.bash
+     
+     # Copy this repo into your workspace
+     cp {this_repo} {your_ros_ws}/src/ 
+  
+     # Build
+     colcon build --packages-select cos-bridge
+  ```
+
+## Run
   ``` bash
   # ros 1
   roslaunch cos-bridge cos_bridge.launch
@@ -43,5 +53,8 @@ coBridge 会以 ros node 的方式运行在机器人端，并通过websocket方�
   ros2 launch cos-bridge cos-bridge_launch.xml 
   ```
 
-## 云端可视化
-云端可视化需配合刻行 `virmesh` 组件，通过网页端实时可视化机器人端状态。
+## Cloud Visualization 
+The cloud visualisation needs to be coupled with the carve line `virmesh` component to visualise the state of the robot side in real time via the web side.
+
+## Credits
+originally from foxglove, thanks for their wonderful work. 
