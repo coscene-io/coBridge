@@ -31,7 +31,7 @@ namespace cobridge_base {
     using SubscriptionId = uint32_t;
     using ServiceId = uint32_t;
 
-    constexpr char SUPPORTED_SUB_PROTOCOL[] = "cosBridge.websocket.v1";
+    constexpr char SUPPORTED_SUB_PROTOCOL[] = "foxglove.websocket.v1";
     constexpr char CAPABILITY_CLIENT_PUBLISH[] = "clientPublish";
     constexpr char CAPABILITY_TIME[] = "time";
     constexpr char CAPABILITY_PARAMETERS[] = "parameters";
