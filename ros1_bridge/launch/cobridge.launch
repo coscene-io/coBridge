@@ -1,6 +1,6 @@
 <launch>
   <arg name="port"                              default="21274" />
-  <arg name="address"                           default="127.0.0.1" />
+  <arg name="address"                           default="0.0.0.0" />
   <arg name="tls"                               default="false" />
   <arg name="certfile"                          default="" />
   <arg name="keyfile"                           default="" />

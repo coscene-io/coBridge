@@ -77,9 +77,9 @@ namespace {
     constexpr auto SET_PARAMETERS = string_hash("setParameters");
     constexpr auto SUBSCRIBE_PARAMETER_UPDATES = string_hash("subscribeParameterUpdates");
     constexpr auto UNSUBSCRIBE_PARAMETER_UPDATES = string_hash("unsubscribeParameterUpdates");
-    constexpr auto SUBSCRIBE_CONNECTION_GRAPH = string_hash("subscribe_connection_graph");
+    constexpr auto SUBSCRIBE_CONNECTION_GRAPH = string_hash("subscribeConnectionGraph");
     constexpr auto UNSUBSCRIBE_CONNECTION_GRAPH = string_hash("unsubscribeConnectionGraph");
-    constexpr auto FETCH_ASSET = string_hash("fetch_asset");
+    constexpr auto FETCH_ASSET = string_hash("fetchAsset");
 }  // namespace
 
 namespace cobridge_base {
