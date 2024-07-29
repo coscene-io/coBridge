@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef cobridge_PARAM_UTILS_HPP
-#define cobridge_PARAM_UTILS_HPP
+#ifndef COBRIDGE_PARAM_UTILS_HPP
+#define COBRIDGE_PARAM_UTILS_HPP
 
 #include <regex>
 #include <string>
@@ -54,4 +54,4 @@ namespace cobridge {
                                                 const std::vector<std::string> &strings);
 }
 
-#endif //cobridge_PARAM_UTILS_HPP
+#endif //COBRIDGE_PARAM_UTILS_HPP
