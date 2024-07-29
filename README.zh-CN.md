@@ -35,7 +35,7 @@ cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket �
    # 将工程复制到 {your_ros2_ws}/src/ 文件夹内
    cp {this_repo} {your_ros_ws}/src/ 
   
-   source /opt/ros/{ros_distro}/install/setup.bash
+   source /opt/ros/{ros_distro}/setup.bash
   
    cd {your_ros2_ws} 
   

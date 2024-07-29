@@ -35,7 +35,7 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
 
   ``` bash 
      # Init Env variables
-     source /opt/ros/{ros_distro}/install/setup.bash
+     source /opt/ros/{ros_distro}/setup.bash
      
      # Copy this repo into your workspace
      cp {this_repo} {your_ros_ws}/src/ 
