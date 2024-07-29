@@ -181,3 +181,40 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
 else()
     message(FATAL_ERROR "ROS_VERSION environment variable must be 1 or 2")
 endif()
+
+if(ROS_BUILD_TYPE STREQUAL "catkin")
+    install(TARGETS cobridge
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    )
+    install(TARGETS cobridge_base cobridge_nodelet
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+    )
+    install(FILES nodelets.xml
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+    )
+    install(DIRECTORY ros1_bridge/launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+    )
+elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
+    install(FILES ros2_bridge/include/ros2_bridge.hpp
+            DESTINATION include/${PROJECT_NAME}/
+    )
+    install(TARGETS cobridge
+            DESTINATION lib/${PROJECT_NAME}
+    )
+    install(TARGETS cobridge_base cobridge_component
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION bin
+    )
+    install(DIRECTORY ros2_bridge/launch
+            DESTINATION share/${PROJECT_NAME}/
+    )
+    install(FILES ros2_bridge/include/utils.hpp
+            DESTINATION include/${PROJECT_NAME}/
+    )
+    ament_export_libraries(cobridge_base cobridge_component)
+    ament_package()
+endif()
