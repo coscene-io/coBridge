@@ -28,13 +28,13 @@
 #include "generic_publisher.hpp"
 #include "typesupport_helpers.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
     std::shared_ptr<GenericPublisher> create_generic_publisher(
             rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
             const std::string &topic, const std::string &type, const rclcpp::QoS &qos) {
-        auto library_generic_publisher = cos_bridge::get_typesupport_library(
+        auto library_generic_publisher = cobridge::get_typesupport_library(
                 type, "rosidl_typesupport_cpp");
-        auto type_support = cos_bridge::get_typesupport_handle(
+        auto type_support = cobridge::get_typesupport_handle(
                 type, "rosidl_typesupport_cpp", library_generic_publisher);
         return std::make_shared<GenericPublisher>(
                 topics_interface->get_node_base_interface(), *type_support, topic, qos);

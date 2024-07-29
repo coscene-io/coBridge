@@ -10,4 +10,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends nlohmann-json3-
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /ros2_ws/src
-COPY ../../cos-bridge /ros2_ws/src
+COPY ../../cobridge /ros2_ws/src

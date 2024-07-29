@@ -6,7 +6,7 @@
 #include <ros/serialization.h>
 #include <ros/service_traits.h>
 
-namespace cos_bridge {
+namespace cobridge {
 
 struct GenericService {
   std::string type;
@@ -29,8 +29,8 @@ struct GenericService {
 
 namespace ros::service_traits {
 template <>
-struct MD5Sum<cos_bridge::GenericService> {
-  static const char* value(const cos_bridge::GenericService& m) {
+struct MD5Sum<cobridge::GenericService> {
+  static const char* value(const cobridge::GenericService& m) {
     return m.md5sum.c_str();
   }
 
@@ -40,8 +40,8 @@ struct MD5Sum<cos_bridge::GenericService> {
 };
 
 template <>
-struct DataType<cos_bridge::GenericService> {
-  static const char* value(const cos_bridge::GenericService& m) {
+struct DataType<cobridge::GenericService> {
+  static const char* value(const cobridge::GenericService& m) {
     return m.type.c_str();
   }
 
@@ -54,18 +54,18 @@ struct DataType<cos_bridge::GenericService> {
 namespace ros::serialization {
 
 template <>
-struct Serializer<cos_bridge::GenericService> {
+struct Serializer<cobridge::GenericService> {
   template <typename Stream>
-  inline static void write(Stream& stream, const cos_bridge::GenericService& m) {
+  inline static void write(Stream& stream, const cobridge::GenericService& m) {
     m.write(stream);
   }
 
   template <typename Stream>
-  inline static void read(Stream& stream, cos_bridge::GenericService& m) {
+  inline static void read(Stream& stream, cobridge::GenericService& m) {
     m.read(stream);
   }
 
-  inline static uint32_t serializedLength(const cos_bridge::GenericService& m) {
+  inline static uint32_t serializedLength(const cobridge::GenericService& m) {
     return m.data.size();
   }
 };

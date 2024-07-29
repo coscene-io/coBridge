@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_WEBSOCKET_LOGGING_HPP
-#define COS_BRIDGE_WEBSOCKET_LOGGING_HPP
+#ifndef COBRIDGE_WEBSOCKET_LOGGING_HPP
+#define COBRIDGE_WEBSOCKET_LOGGING_HPP
 
 #include <functional>
 #include <websocketpp/common/asio.hpp>
@@ -23,7 +23,7 @@
 
 #include "common.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     using LogCallback = std::function<void(WebSocketLogLevel, char const *)>;
 
@@ -111,4 +111,4 @@ namespace cos_bridge_base {
     };
 }
 
-#endif //COS_BRIDGE_WEBSOCKET_LOGGING_HPP
+#endif //COBRIDGE_WEBSOCKET_LOGGING_HPP

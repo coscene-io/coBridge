@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_SERVER_INTERFACE_HPP
-#define COS_BRIDGE_SERVER_INTERFACE_HPP
+#ifndef COBRIDGE_SERVER_INTERFACE_HPP
+#define COBRIDGE_SERVER_INTERFACE_HPP
 
 #include <functional>
 #include <optional>
@@ -28,7 +28,7 @@
 #include "common.hpp"
 #include "parameter.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     constexpr size_t DEFAULT_SEND_BUFFER_LIMIT_BYTES = 10000000UL;  // 10 MB
 
@@ -136,4 +136,4 @@ namespace cos_bridge_base {
         virtual std::string remote_endpoint_string(ConnectionHandle client_handle) = 0;
     };
 }
-#endif //COS_BRIDGE_SERVER_INTERFACE_HPP
+#endif //COBRIDGE_SERVER_INTERFACE_HPP

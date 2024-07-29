@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
             rclcpp::executors::MultiThreadedExecutor::make_shared(rclcpp::ExecutorOptions{}, num_threads);
 
     rclcpp_components::ComponentManager component_manager(executor,
-                                                          "cos_bridge_component_manager");
-    const auto component_resources = component_manager.get_component_resources("cos_bridge");
+                                                          "cobridge_component_manager");
+    const auto component_resources = component_manager.get_component_resources("cobridge");
 
     if (component_resources.empty()) {
         RCLCPP_INFO(component_manager.get_logger(), "No loadable resources found");

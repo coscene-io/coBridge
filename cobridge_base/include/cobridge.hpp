@@ -14,12 +14,14 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#include <cos_bridge.hpp>
+#ifndef COBRIDGE_COBRIDGE_HPP
+#define COBRIDGE_COBRIDGE_HPP
 
-namespace cos_bridge_base{
+namespace cobridge_base {
+    const char *websocket_user_agent();
 
-        const char COS_BRIDGE_VERSION[] = "@COS_BRIDGE_VERSION@";
-
-        const char COS_BRIDGE_GIT_HASH[] = "@COS_BRIDGE_GIT_HASH@";
-
+    extern const char COBRIDGE_VERSION[];
+    extern const char COBRIDGE_GIT_HASH[];
 }
+
+#endif //COBRIDGE_COBRIDGE_HPP

@@ -9,7 +9,7 @@ if (POLICY CMP0024)
     set(CMAKE_POLICY_DEFAULT_CMP0024 NEW)
 endif ()
 
-project(cos-bridge LANGUAGES CXX VERSION 0.0.1)
+project(cobridge LANGUAGES CXX VERSION 0.0.1)
 
 
 set(CMAKE_CXX_STANDARD 17)
@@ -58,40 +58,40 @@ if (GIT_SCM)
     execute_process(
             COMMAND ${GIT_SCM} describe --always --dirty --exclude="*"
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE COS_BRIDGE_GIT_HASH
+            OUTPUT_VARIABLE COBRIDGE_GIT_HASH
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 endif ()
-set(COS_BRIDGE_VERSION "${CMAKE_PROJECT_VERSION}")
-configure_file(cos_bridge_base/src/version.cpp.in
-        cos_bridge_base/src/version.cpp @ONLY)
+set(COBRIDGE_VERSION "${CMAKE_PROJECT_VERSION}")
+configure_file(cobridge_base/src/version.cpp.in
+        cobridge_base/src/version.cpp @ONLY)
 
-add_library(cos_bridge_base SHARED
-        cos_bridge_base/src/base64.cpp
-        cos_bridge_base/src/cos_bridge.cpp
-        cos_bridge_base/src/parameter.cpp
-        cos_bridge_base/src/serialization.cpp
-        cos_bridge_base/src/server_factory.cpp
-#        cos_bridge_base/src/test/test_client.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/cos_bridge_base/src/version.cpp
+add_library(cobridge_base SHARED
+        cobridge_base/src/base64.cpp
+        cobridge_base/src/cobridge.cpp
+        cobridge_base/src/parameter.cpp
+        cobridge_base/src/serialization.cpp
+        cobridge_base/src/server_factory.cpp
+#        cobridge_base/src/test/test_client.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/cobridge_base/src/version.cpp
 )
-target_include_directories(cos_bridge_base
+target_include_directories(cobridge_base
         PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
         $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(cos_bridge_base
+target_link_libraries(cobridge_base
         OpenSSL::Crypto
         OpenSSL::SSL
         ZLIB::ZLIB
         ${CMAKE_THREAD_LIBS_INIT}
 )
 if (nlohmann_json_FOUND)
-    target_link_libraries(cos_bridge_base nlohmann_json::nlohmann_json)
+    target_link_libraries(cobridge_base nlohmann_json::nlohmann_json)
 else ()
     message(STATUS "nlohmann_json not found, will search at compile time")
 endif ()
-enable_strict_compiler_warnings(cos_bridge_base)
+enable_strict_compiler_warnings(cobridge_base)
 
 message(STATUS "ROS_VERSION: " $ENV{ROS_VERSION})
 message(STATUS "ROS_DISTRO: " $ENV{ROS_DISTRO})
@@ -105,32 +105,32 @@ if("$ENV{ROS_VERSION}" STREQUAL "1")
         find_package(Boost REQUIRED)
 
         catkin_package(
-                INCLUDE_DIRS cos_bridge_base/include
-                LIBRARIES cos_bridge_base cos_bridge_nodelet
+                INCLUDE_DIRS cobridge_base/include
+                LIBRARIES cobridge_base cobridge_nodelet
                 CATKIN_DEPENDS nodelet resource_retriever ros_babel_fish rosgraph_msgs roslib roscpp
                 DEPENDS Boost
         )
 
-        add_library(cos_bridge_nodelet
+        add_library(cobridge_nodelet
                 ros1_bridge/src/ros1_bridge_nodelet.cpp
                 ros1_bridge/src/param_utils.cpp
                 ros1_bridge/src/service_utils.cpp
         )
 
-        target_include_directories(cos_bridge_nodelet
+        target_include_directories(cobridge_nodelet
                 SYSTEM PRIVATE
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ros1_bridge/include>
                 $<INSTALL_INTERFACE:include>
                 ${catkin_INCLUDE_DIRS}
         )
-        target_link_libraries(cos_bridge_nodelet cos_bridge_base ${catkin_LIBRARIES})
-        enable_strict_compiler_warnings(cos_bridge_nodelet)
+        target_link_libraries(cobridge_nodelet cobridge_base ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(cobridge_nodelet)
 
-        add_executable(cos_bridge ros1_bridge/src/ros1_bridge_node.cpp)
-        target_include_directories(cos_bridge SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
-        target_link_libraries(cos_bridge ${catkin_LIBRARIES})
-        enable_strict_compiler_warnings(cos_bridge)
+        add_executable(cobridge ros1_bridge/src/ros1_bridge_node.cpp)
+        target_include_directories(cobridge SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
+        target_link_libraries(cobridge ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(cobridge)
     else()
         message(FATAL_ERROR "Could not find catkin")
     endif()
@@ -147,7 +147,7 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
         find_package(cv_bridge REQUIRED)
         find_package(OpenCV REQUIRED)
 
-        add_library(cos_bridge_component SHARED
+        add_library(cobridge_component SHARED
                 ros2_bridge/src/message_definition_cache.cpp
                 ros2_bridge/src/param_utils.cpp
                 ros2_bridge/src/ros2_bridge.cpp
@@ -157,24 +157,24 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
                 ros2_bridge/src/generic_publisher.cpp
                 ros2_bridge/src/typesupport_helpers.cpp
         )
-        target_include_directories(cos_bridge_component
+        target_include_directories(cobridge_component
                 PUBLIC
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cos_bridge_base/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ros2_bridge/include>
                 $<INSTALL_INTERFACE:include>
         )
 
-        #ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
-        ament_target_dependencies(cos_bridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
-        target_link_libraries(cos_bridge_component cos_bridge_base)
-        rclcpp_components_register_nodes(cos_bridge_component "cos_bridge::CosBridge")
-        enable_strict_compiler_warnings(cos_bridge_component)
-        add_executable(cos_bridge
+        #ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
+        ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
+        target_link_libraries(cobridge_component cobridge_base)
+        rclcpp_components_register_nodes(cobridge_component "cobridge::CosBridge")
+        enable_strict_compiler_warnings(cobridge_component)
+        add_executable(cobridge
                 ros2_bridge/src/ros2_bridge_node.cpp
         )
-        target_include_directories(cos_bridge SYSTEM PRIVATE ${rclcpp_INCLUDE_DIRS})
-        ament_target_dependencies(cos_bridge rclcpp rclcpp_components)
-        enable_strict_compiler_warnings(cos_bridge)
+        target_include_directories(cobridge SYSTEM PRIVATE ${rclcpp_INCLUDE_DIRS})
+        ament_target_dependencies(cobridge rclcpp rclcpp_components)
+        enable_strict_compiler_warnings(cobridge)
     else ()
         message(FATAL_ERROR "Could not find ament_cmake")
     endif ()

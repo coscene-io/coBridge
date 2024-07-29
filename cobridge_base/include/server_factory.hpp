@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_SERVER_FACTORY_HPP
-#define COS_BRIDGE_SERVER_FACTORY_HPP
+#ifndef COBRIDGE_SERVER_FACTORY_HPP
+#define COBRIDGE_SERVER_FACTORY_HPP
 
 #include <memory>
 #include <string>
@@ -24,7 +24,7 @@
 #include "common.hpp"
 #include "server_interface.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     class ServerFactory {
     public:
@@ -35,4 +35,4 @@ namespace cos_bridge_base {
     };
 }
 
-#endif //COS_BRIDGE_SERVER_FACTORY_HPP
+#endif //COBRIDGE_SERVER_FACTORY_HPP

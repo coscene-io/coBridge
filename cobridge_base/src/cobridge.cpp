@@ -14,10 +14,10 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#include "cos_bridge.hpp"
+#include "cobridge.hpp"
 #include "websocketpp/version.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
     const char *websocket_user_agent() {
         return websocketpp::user_agent;
     }

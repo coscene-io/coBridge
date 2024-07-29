@@ -39,7 +39,7 @@ namespace {
     }
 }  // unnamed namespace
 
-namespace cos_bridge {
+namespace cobridge {
     GenericSubscription::GenericSubscription(
             rclcpp::node_interfaces::NodeBaseInterface *node_base,
             const rosidl_message_type_support_t &ts,
@@ -142,7 +142,7 @@ namespace cos_bridge {
     void GenericSubscription::handle_serialized_message(
             const std::shared_ptr<rclcpp::SerializedMessage> & serialized_message,
             const rclcpp::MessageInfo & message_info) {
-        callback_(serialized_message, static_cast<uint64_t>(message_info.get_rmw_message_info().source_timestamp));
+        _callback(serialized_message, static_cast<uint64_t>(message_info.get_rmw_message_info().source_timestamp));
     }
 #endif
 

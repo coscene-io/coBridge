@@ -1,6 +1,6 @@
-<library path="lib/libcos_bridge_nodelet">
-    <class name="cos_bridge/cos_bridge_nodelet"
-           type="cos_bridge::CosBridge"
+<library path="lib/libcobridge_nodelet">
+    <class name="cobridge/cobridge_nodelet"
+           type="cobridge::CosBridge"
            base_class_type="nodelet::Nodelet">
         <description>
             Cos bridge nodelet.

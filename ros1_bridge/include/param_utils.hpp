@@ -8,10 +8,10 @@
 
 #include <parameter.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
-    cos_bridge_base::Parameter fromRosParam(const std::string& name, const XmlRpc::XmlRpcValue& value);
-    XmlRpc::XmlRpcValue toRosParam(const cos_bridge_base::ParameterValue& param);
+    cobridge_base::Parameter fromRosParam(const std::string& name, const XmlRpc::XmlRpcValue& value);
+    XmlRpc::XmlRpcValue toRosParam(const cobridge_base::ParameterValue& param);
     std::vector<std::regex> parseRegexPatterns(const std::vector<std::string>& strings);
 
 }

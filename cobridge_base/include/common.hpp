@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_COMMON_HPP
-#define COS_BRIDGE_COMMON_HPP
+#ifndef COBRIDGE_COMMON_HPP
+#define COBRIDGE_COMMON_HPP
 
 #include <array>
 #include <cstring>
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     using ChannelId = uint32_t;
     using ClientChannelId = uint32_t;
@@ -180,4 +180,4 @@ namespace cos_bridge_base {
     };
 }
 
-#endif //COS_BRIDGE_COMMON_HPP
+#endif //COBRIDGE_COMMON_HPP

@@ -30,7 +30,7 @@
 #include <ament_index_cpp/get_resources.hpp>
 #include <rcutils/logging_macros.h>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
 // Match datatype names (foo_msgs/Bar or foo_msgs/msg/Bar or foo_msgs/srv/Bar)
     static const std::regex PACKAGE_TYPENAME_REGEX{
@@ -261,7 +261,7 @@ namespace cos_bridge_base {
                 }
                 return iter->second;
             } else {
-                RCUTILS_LOG_ERROR_NAMED("cos_bridge",
+                RCUTILS_LOG_ERROR_NAMED("cobridge",
                                         "Action IDL definitions are currently not supported");
                 throw DefinitionNotFoundError(definition_identifier.package_resource_name);
             }
@@ -305,7 +305,7 @@ namespace cos_bridge_base {
             result = append_recursive(DefinitionIdentifier{format, root_package_resource_name});
         } catch (const DefinitionNotFoundError &err) {
             // log that we've fallen back
-            RCUTILS_LOG_WARN_NAMED("cos_bridge", "no .msg definition for %s, falling back to IDL",
+            RCUTILS_LOG_WARN_NAMED("cobridge", "no .msg definition for %s, falling back to IDL",
                                    err.what());
             format = MessageDefinitionFormat::IDL;
             DefinitionIdentifier root_definition_identifier{format, root_package_resource_name};

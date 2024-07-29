@@ -18,7 +18,7 @@
 #include <rosgraph_msgs/Clock.h>
 #include <websocketpp/common/connection_hdl.hpp>
 
-#include <cos_bridge.hpp>
+#include <cobridge.hpp>
 #include <generic_service.hpp>
 #include <param_utils.hpp>
 #include <regex_utils.hpp>
@@ -38,7 +38,7 @@ inline std::unordered_set<std::string> rpcValueToStringSet(const XmlRpc::XmlRpcV
 
 }  // namespace
 
-namespace cos_bridge {
+namespace cobridge {
 
 constexpr int DEFAULT_PORT = 8765;
 constexpr char DEFAULT_ADDRESS[] = "0.0.0.0";
@@ -52,9 +52,9 @@ constexpr int DEFAULT_SERVICE_TYPE_RETRIEVAL_TIMEOUT_MS = 250;
 using ConnectionHandle = websocketpp::connection_hdl;
 using TopicAndDatatype = std::pair<std::string, std::string>;
 using SubscriptionsByClient = std::map<ConnectionHandle, ros::Subscriber, std::owner_less<>>;
-using ClientPublications = std::unordered_map<cos_bridge_base::ClientChannelId, ros::Publisher>;
+using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, ros::Publisher>;
 using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
-using cos_bridge_base::is_whitelisted;
+using cobridge_base::is_whitelisted;
 
 class CosBridge : public nodelet::Nodelet {
 public:
@@ -64,7 +64,7 @@ public:
     const auto address = nhp.param<std::string>("address", DEFAULT_ADDRESS);
     const int port = nhp.param<int>("port", DEFAULT_PORT);
     const auto send_buffer_limit = static_cast<size_t>(
-      nhp.param<int>("send_buffer_limit", cos_bridge_base::DEFAULT_SEND_BUFFER_LIMIT_BYTES));
+      nhp.param<int>("send_buffer_limit", cobridge_base::DEFAULT_SEND_BUFFER_LIMIT_BYTES));
     const auto useTLS = nhp.param<bool>("tls", false);
     const auto certfile = nhp.param<std::string>("certfile", "");
     const auto keyfile = nhp.param<std::string>("keyfile", "");
@@ -73,8 +73,8 @@ public:
     _useSimTime = nhp.param<bool>("/use_sim_time", false);
     const auto sessionId = nhp.param<std::string>("/run_id", std::to_string(std::time(nullptr)));
     _capabilities = nhp.param<std::vector<std::string>>(
-      "capabilities", std::vector<std::string>(cos_bridge_base::DEFAULT_CAPABILITIES.begin(),
-                                               cos_bridge_base::DEFAULT_CAPABILITIES.end()));
+      "capabilities", std::vector<std::string>(cobridge_base::DEFAULT_CAPABILITIES.begin(),
+                                               cobridge_base::DEFAULT_CAPABILITIES.end()));
     _serviceRetrievalTimeoutMs = nhp.param<int>("service_type_retrieval_timeout_ms",
                                                 DEFAULT_SERVICE_TYPE_RETRIEVAL_TIMEOUT_MS);
 
@@ -113,15 +113,15 @@ public:
     }
 
     const char* rosDistro = std::getenv("ROS_DISTRO");
-    ROS_INFO("Starting cos_bridge (%s, %s@%s) with %s", rosDistro,
-             cos_bridge_base::COS_BRIDGE_VERSION, cos_bridge_base::COS_BRIDGE_GIT_HASH,
-             cos_bridge_base::websocket_user_agent());
+    ROS_INFO("Starting cobridge (%s, %s@%s) with %s", rosDistro,
+             cobridge_base::COBRIDGE_VERSION, cobridge_base::COBRIDGE_GIT_HASH,
+             cobridge_base::websocket_user_agent());
 
     try {
-        cos_bridge_base::ServerOptions serverOptions;
+        cobridge_base::ServerOptions serverOptions;
       serverOptions.capabilities = _capabilities;
       if (_useSimTime) {
-        serverOptions.capabilities.push_back(cos_bridge_base::CAPABILITY_TIME);
+        serverOptions.capabilities.push_back(cobridge_base::CAPABILITY_TIME);
       }
       serverOptions.supported_encodings = {ROS1_CHANNEL_ENCODING};
       serverOptions.metadata = {{"ROS_DISTRO", rosDistro}};
@@ -137,11 +137,11 @@ public:
         std::bind(&CosBridge::logHandler, this, std::placeholders::_1, std::placeholders::_2);
 
       // Fetching of assets may be blocking, hence we fetch them in a separate thread.
-      _fetchAssetQueue = std::make_unique<cos_bridge_base::CallbackQueue>(logHandler, 1 /* num_threads */);
+      _fetchAssetQueue = std::make_unique<cobridge_base::CallbackQueue>(logHandler, 1 /* num_threads */);
 
-      _server = cos_bridge_base::ServerFactory::create_server<ConnectionHandle>("cos_bridge",
+      _server = cobridge_base::ServerFactory::create_server<ConnectionHandle>("cobridge",
                                                                         logHandler, serverOptions);
-        cos_bridge_base::ServerHandlers<ConnectionHandle> hdlrs;
+        cobridge_base::ServerHandlers<ConnectionHandle> hdlrs;
       hdlrs.subscribe_handler =
         std::bind(&CosBridge::subscribe, this, std::placeholders::_1, std::placeholders::_2);
       hdlrs.unsubscribe_handler =
@@ -167,9 +167,9 @@ public:
         _subscribeGraphUpdates = subscribe;
       };
 
-      if (hasCapability(cos_bridge_base::CAPABILITY_ASSETS)) {
+      if (hasCapability(cobridge_base::CAPABILITY_ASSETS)) {
         hdlrs.fetch_asset_handler = [this](const std::string& uri, uint32_t requestId,
-                                           cos_bridge_base::ConnHandle hdl) {
+                                           cobridge_base::ConnHandle hdl) {
           _fetchAssetQueue->add_callback(
             std::bind(&CosBridge::fetchAsset, this, uri, requestId, hdl));
         };
@@ -212,7 +212,7 @@ private:
     }
   };
 
-  void subscribe(cos_bridge_base::ChannelId channelId, ConnectionHandle clientHandle) {
+  void subscribe(cobridge_base::ChannelId channelId, ConnectionHandle clientHandle) {
     std::lock_guard<std::mutex> lock(_subscriptionsMutex);
 
     auto it = _advertisedTopics.find(channelId);
@@ -220,7 +220,7 @@ private:
       const std::string errMsg =
         "Received subscribe request for unknown channel " + std::to_string(channelId);
       ROS_WARN_STREAM(errMsg);
-      throw cos_bridge_base::ChannelError(channelId, errMsg);
+      throw cobridge_base::ChannelError(channelId, errMsg);
     }
 
     const auto& channel = it->second;
@@ -237,7 +237,7 @@ private:
       const std::string errMsg =
         "Client is already subscribed to channel " + std::to_string(channelId);
       ROS_WARN_STREAM(errMsg);
-      throw cos_bridge_base::ChannelError(channelId, errMsg);
+      throw cobridge_base::ChannelError(channelId, errMsg);
     }
 
     try {
@@ -258,11 +258,11 @@ private:
       const std::string errMsg =
         "Failed to subscribe to topic '" + topic + "' (" + datatype + "): " + ex.what();
       ROS_ERROR_STREAM(errMsg);
-      throw cos_bridge_base::ChannelError(channelId, errMsg);
+      throw cobridge_base::ChannelError(channelId, errMsg);
     }
   }
 
-  void unsubscribe(cos_bridge_base::ChannelId channelId, ConnectionHandle clientHandle) {
+  void unsubscribe(cobridge_base::ChannelId channelId, ConnectionHandle clientHandle) {
     std::lock_guard<std::mutex> lock(_subscriptionsMutex);
 
     const auto channelIt = _advertisedTopics.find(channelId);
@@ -270,13 +270,13 @@ private:
       const std::string errMsg =
         "Received unsubscribe request for unknown channel " + std::to_string(channelId);
       ROS_WARN_STREAM(errMsg);
-      throw cos_bridge_base::ChannelError(channelId, errMsg);
+      throw cobridge_base::ChannelError(channelId, errMsg);
     }
     const auto& channel = channelIt->second;
 
     auto subscriptionsIt = _subscriptions.find(channelId);
     if (subscriptionsIt == _subscriptions.end()) {
-      throw cos_bridge_base::ChannelError(channelId, "Received unsubscribe request for channel " +
+      throw cobridge_base::ChannelError(channelId, "Received unsubscribe request for channel " +
                                                 std::to_string(channelId) +
                                                 " that was not subscribed to ");
     }
@@ -284,7 +284,7 @@ private:
     auto& subscriptionsByClient = subscriptionsIt->second;
     const auto clientSubscription = subscriptionsByClient.find(clientHandle);
     if (clientSubscription == subscriptionsByClient.end()) {
-      throw cos_bridge_base::ChannelError(
+      throw cobridge_base::ChannelError(
         channelId, "Received unsubscribe request for channel " + std::to_string(channelId) +
                      "from a client that was not subscribed to this channel");
     }
@@ -300,10 +300,10 @@ private:
     }
   }
 
-  void clientAdvertise(const cos_bridge_base::ClientAdvertisement& channel,
+  void clientAdvertise(const cobridge_base::ClientAdvertisement& channel,
                        ConnectionHandle clientHandle) {
     if (channel.encoding != ROS1_CHANNEL_ENCODING) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channel.channel_id, "Unsupported encoding. Only '" + std::string(ROS1_CHANNEL_ENCODING) +
                              "' encoding is supported at the moment.");
     }
@@ -317,7 +317,7 @@ private:
     auto& clientPublications = clientPublicationsIt->second;
     if (!isFirstPublication &&
         clientPublications.find(channel.channel_id) != clientPublications.end()) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channel.channel_id, "Received client advertisement from " +
                              _server->remote_endpoint_string(clientHandle) + " for channel " +
                              std::to_string(channel.channel_id) + " it had already advertised");
@@ -325,7 +325,7 @@ private:
 
     const auto msgDescription = _rosTypeInfoProvider.getMessageDescription(channel.schema_name);
     if (!msgDescription) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channel.channel_id, "Failed to retrieve type information of data type '" +
                              channel.schema_name + "'. Unable to advertise topic " + channel.topic);
     }
@@ -349,16 +349,16 @@ private:
       const auto errMsg =
         "Failed to create publisher for topic " + channel.topic + "(" + channel.schema_name + ")";
       ROS_ERROR_STREAM(errMsg);
-      throw cos_bridge_base::ClientChannelError(channel.channel_id, errMsg);
+      throw cobridge_base::ClientChannelError(channel.channel_id, errMsg);
     }
   }
 
-  void clientUnadvertise(cos_bridge_base::ClientChannelId channelId, ConnectionHandle clientHandle) {
+  void clientUnadvertise(cobridge_base::ClientChannelId channelId, ConnectionHandle clientHandle) {
     std::unique_lock<std::shared_mutex> lock(_publicationsMutex);
 
     auto clientPublicationsIt = _clientAdvertisedTopics.find(clientHandle);
     if (clientPublicationsIt == _clientAdvertisedTopics.end()) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channelId, "Ignoring client unadvertisement from " +
                      _server->remote_endpoint_string(clientHandle) + " for unknown channel " +
                      std::to_string(channelId) + ", client has no advertised topics");
@@ -368,7 +368,7 @@ private:
 
     auto channelPublicationIt = clientPublications.find(channelId);
     if (channelPublicationIt == clientPublications.end()) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channelId, "Ignoring client unadvertisement from " +
                      _server->remote_endpoint_string(clientHandle) + " for unknown channel " +
                      std::to_string(channelId) + ", client has " +
@@ -386,7 +386,7 @@ private:
     }
   }
 
-  void clientMessage(const cos_bridge_base::ClientMessage& clientMsg, ConnectionHandle clientHandle) {
+  void clientMessage(const cobridge_base::ClientMessage& clientMsg, ConnectionHandle clientHandle) {
     ros_babel_fish::BabelFishMessage::Ptr msg(new ros_babel_fish::BabelFishMessage);
     msg->read(clientMsg);
 
@@ -395,7 +395,7 @@ private:
 
     auto clientPublicationsIt = _clientAdvertisedTopics.find(clientHandle);
     if (clientPublicationsIt == _clientAdvertisedTopics.end()) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channelId, "Dropping client message from " + _server->remote_endpoint_string(clientHandle) +
                      " for unknown channel " + std::to_string(channelId) +
                      ", client has no advertised topics");
@@ -405,7 +405,7 @@ private:
 
     auto channelPublicationIt = clientPublications.find(clientMsg.advertisement.channel_id);
     if (channelPublicationIt == clientPublications.end()) {
-      throw cos_bridge_base::ClientChannelError(
+      throw cobridge_base::ClientChannelError(
         channelId, "Dropping client message from " + _server->remote_endpoint_string(clientHandle) +
                      " for unknown channel " + std::to_string(channelId) + ", client has " +
                      std::to_string(clientPublications.size()) + " advertised topic(s)");
@@ -414,7 +414,7 @@ private:
     try {
       channelPublicationIt->second.publish(msg);
     } catch (const std::exception& ex) {
-      throw cos_bridge_base::ClientChannelError(channelId, "Failed to publish message on topic '" +
+      throw cobridge_base::ClientChannelError(channelId, "Failed to publish message on topic '" +
                                                       channelPublicationIt->second.getTopic() +
                                                       "': " + ex.what());
     }
@@ -426,11 +426,11 @@ private:
       return;
     }
 
-    const bool servicesEnabled = hasCapability(cos_bridge_base::CAPABILITY_SERVICES);
+    const bool servicesEnabled = hasCapability(cobridge_base::CAPABILITY_SERVICES);
     const bool querySystemState = servicesEnabled || _subscribeGraphUpdates;
 
     std::vector<std::string> serviceNames;
-      cos_bridge_base::MapOfSets publishers, subscribers, services;
+      cobridge_base::MapOfSets publishers, subscribers, services;
 
     // Retrieve system state from ROS master.
     if (querySystemState) {
@@ -513,7 +513,7 @@ private:
     std::lock_guard<std::mutex> lock(_subscriptionsMutex);
 
     // Remove channels for which the topic does not exist anymore
-    std::vector<cos_bridge_base::ChannelId> channelIdsToRemove;
+    std::vector<cobridge_base::ChannelId> channelIdsToRemove;
     for (auto channelIt = _advertisedTopics.begin(); channelIt != _advertisedTopics.end();) {
       const TopicAndDatatype topicAndDatatype = {channelIt->second.topic,
                                                  channelIt->second.schema_name};
@@ -531,7 +531,7 @@ private:
     _server->remove_channels(channelIdsToRemove);
 
     // Add new channels for new topics
-    std::vector<cos_bridge_base::ChannelWithoutId> channelsToAdd;
+    std::vector<cobridge_base::ChannelWithoutId> channelsToAdd;
     for (const auto& topicAndDatatype : latestTopics) {
       if (std::find_if(_advertisedTopics.begin(), _advertisedTopics.end(),
                        [topicAndDatatype](const auto& channelIdAndChannel) {
@@ -542,7 +542,7 @@ private:
         continue;  // Topic already advertised
       }
 
-      cos_bridge_base::ChannelWithoutId newChannel{};
+      cobridge_base::ChannelWithoutId newChannel{};
       newChannel.topic = topicAndDatatype.first;
       newChannel.schema_name = topicAndDatatype.second;
       newChannel.encoding = ROS1_CHANNEL_ENCODING;
@@ -581,7 +581,7 @@ private:
     std::unique_lock<std::shared_mutex> lock(_servicesMutex);
 
     // Remove advertisements for services that have been removed
-    std::vector<cos_bridge_base::ServiceId> servicesToRemove;
+    std::vector<cobridge_base::ServiceId> servicesToRemove;
     for (const auto& service : _advertisedServices) {
       const auto it =
         std::find_if(serviceNames.begin(), serviceNames.end(), [service](const auto& serviceName) {
@@ -597,7 +597,7 @@ private:
     _server->remove_services(servicesToRemove);
 
     // Advertise new services
-    std::vector<cos_bridge_base::ServiceWithoutId> newServices;
+    std::vector<cobridge_base::ServiceWithoutId> newServices;
     for (const auto& serviceName : serviceNames) {
       if (std::find_if(_advertisedServices.begin(), _advertisedServices.end(),
                        [&serviceName](const auto& idWithService) {
@@ -611,7 +611,7 @@ private:
           retrieveServiceType(serviceName, std::chrono::milliseconds(_serviceRetrievalTimeoutMs));
         const auto srvDescription = _rosTypeInfoProvider.getServiceDescription(serviceType);
 
-          cos_bridge_base::ServiceWithoutId service;
+          cobridge_base::ServiceWithoutId service;
         service.name = serviceName;
         service.type = serviceType;
 
@@ -653,7 +653,7 @@ private:
     }
 
     bool success = true;
-    std::vector<cos_bridge_base::Parameter> params;
+    std::vector<cobridge_base::Parameter> params;
     for (const auto& paramName : parameterNames) {
       if (!is_whitelisted(paramName, _paramWhitelistPatterns)) {
         if (allParametersRequested) {
@@ -687,9 +687,9 @@ private:
     }
   }
 
-  void setParameters(const std::vector<cos_bridge_base::Parameter>& parameters,
+  void setParameters(const std::vector<cobridge_base::Parameter>& parameters,
                      const std::optional<std::string>& requestId, ConnectionHandle hdl) {
-    using cos_bridge_base::ParameterType;
+    using cobridge_base::ParameterType;
     auto nh = this->getMTNodeHandle();
 
     bool success = true;
@@ -736,9 +736,9 @@ private:
   }
 
   void subscribeParameters(const std::vector<std::string>& parameters,
-                           cos_bridge_base::ParameterSubscriptionOperation op, ConnectionHandle) {
+                           cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle) {
     const auto opVerb =
-      (op == cos_bridge_base::ParameterSubscriptionOperation::SUBSCRIBE) ? "subscribe" : "unsubscribe";
+      (op == cobridge_base::ParameterSubscriptionOperation::SUBSCRIBE) ? "subscribe" : "unsubscribe";
     bool success = true;
     for (const auto& paramName : parameters) {
       if (!is_whitelisted(paramName, _paramWhitelistPatterns)) {
@@ -789,42 +789,42 @@ private:
     }
   }
 
-  void logHandler(cos_bridge_base::WebSocketLogLevel level, char const* msg) {
+  void logHandler(cobridge_base::WebSocketLogLevel level, char const* msg) {
     switch (level) {
-      case cos_bridge_base::WebSocketLogLevel::Debug:
+      case cobridge_base::WebSocketLogLevel::Debug:
         ROS_DEBUG("[WS] %s", msg);
         break;
-      case cos_bridge_base::WebSocketLogLevel::Info:
+      case cobridge_base::WebSocketLogLevel::Info:
         ROS_INFO("[WS] %s", msg);
         break;
-      case cos_bridge_base::WebSocketLogLevel::Warn:
+      case cobridge_base::WebSocketLogLevel::Warn:
         ROS_WARN("[WS] %s", msg);
         break;
-      case cos_bridge_base::WebSocketLogLevel::Error:
+      case cobridge_base::WebSocketLogLevel::Error:
         ROS_ERROR("[WS] %s", msg);
         break;
-      case cos_bridge_base::WebSocketLogLevel::Critical:
+      case cobridge_base::WebSocketLogLevel::Critical:
         ROS_FATAL("[WS] %s", msg);
         break;
     }
   }
 
   void rosMessageHandler(
-    const cos_bridge_base::ChannelId channelId, ConnectionHandle clientHandle,
+    const cobridge_base::ChannelId channelId, ConnectionHandle clientHandle,
     const ros::MessageEvent<ros_babel_fish::BabelFishMessage const>& msgEvent) {
     const auto& msg = msgEvent.getConstMessage();
     const auto receiptTimeNs = msgEvent.getReceiptTime().toNSec();
     _server->send_message(clientHandle, channelId, receiptTimeNs, msg->buffer(), msg->size());
   }
 
-  void serviceRequest(const cos_bridge_base::ServiceRequest& request, ConnectionHandle clientHandle) {
+  void serviceRequest(const cobridge_base::ServiceRequest& request, ConnectionHandle clientHandle) {
     std::shared_lock<std::shared_mutex> lock(_servicesMutex);
     const auto serviceIt = _advertisedServices.find(request.service_id);
     if (serviceIt == _advertisedServices.end()) {
       const auto errMsg =
         "Service with id " + std::to_string(request.service_id) + " does not exist";
       ROS_ERROR_STREAM(errMsg);
-      throw cos_bridge_base::ServiceError(request.service_id, errMsg);
+      throw cobridge_base::ServiceError(request.service_id, errMsg);
     }
     const auto& serviceName = serviceIt->second.name;
     const auto& serviceType = serviceIt->second.type;
@@ -832,7 +832,7 @@ private:
               serviceType.c_str());
 
     if (!ros::service::exists(serviceName, false)) {
-      throw cos_bridge_base::ServiceError(request.service_id,
+      throw cobridge_base::ServiceError(request.service_id,
                                    "Service '" + serviceName + "' does not exist");
     }
 
@@ -841,7 +841,7 @@ private:
       const auto errMsg =
         "Failed to retrieve type information for service " + serviceName + "(" + serviceType + ")";
       ROS_ERROR_STREAM(errMsg);
-      throw cos_bridge_base::ServiceError(request.service_id, errMsg);
+      throw cobridge_base::ServiceError(request.service_id, errMsg);
     }
 
     GenericService genReq, genRes;
@@ -850,20 +850,20 @@ private:
     genReq.data = request.serv_data;
 
     if (ros::service::call(serviceName, genReq, genRes)) {
-        cos_bridge_base::ServiceResponse res;
+        cobridge_base::ServiceResponse res;
       res.service_id = request.service_id;
       res.call_id = request.call_id;
       res.encoding = request.encoding;
       res.serv_data = genRes.data;
       _server->send_service_response(clientHandle, res);
     } else {
-      throw cos_bridge_base::ServiceError(
+      throw cobridge_base::ServiceError(
         request.service_id, "Failed to call service " + serviceName + "(" + serviceType + ")");
     }
   }
 
   void fetchAsset(const std::string& uri, uint32_t requestId, ConnectionHandle clientHandle) {
-      cos_bridge_base::FetchAssetResponse response;
+      cobridge_base::FetchAssetResponse response;
     response.request_id = requestId;
 
     try {
@@ -878,13 +878,13 @@ private:
 
       resource_retriever::Retriever resource_retriever;
       const resource_retriever::MemoryResource memoryResource = resource_retriever.get(uri);
-      response.status = cos_bridge_base::FetchAssetStatus::Success;
+      response.status = cobridge_base::FetchAssetStatus::Success;
       response.error_message = "";
       response.data.resize(memoryResource.size);
       std::memcpy(response.data.data(), memoryResource.data.get(), memoryResource.size);
     } catch (const std::exception& ex) {
       ROS_WARN("Failed to retrieve asset '%s': %s", uri.c_str(), ex.what());
-      response.status = cos_bridge_base::FetchAssetStatus::Error;
+      response.status = cobridge_base::FetchAssetStatus::Error;
       response.error_message = "Failed to retrieve asset " + uri;
     }
 
@@ -897,16 +897,16 @@ private:
     return std::find(_capabilities.begin(), _capabilities.end(), capability) != _capabilities.end();
   }
 
-  std::unique_ptr<cos_bridge_base::ServerInterface<ConnectionHandle>> _server;
+  std::unique_ptr<cobridge_base::ServerInterface<ConnectionHandle>> _server;
   ros_babel_fish::IntegratedDescriptionProvider _rosTypeInfoProvider;
   std::vector<std::regex> _topicWhitelistPatterns;
   std::vector<std::regex> _paramWhitelistPatterns;
   std::vector<std::regex> _serviceWhitelistPatterns;
   std::vector<std::regex> _assetUriAllowlistPatterns;
   ros::XMLRPCManager xmlrpcServer;
-  std::unordered_map<cos_bridge_base::ChannelId, cos_bridge_base::ChannelWithoutId> _advertisedTopics;
-  std::unordered_map<cos_bridge_base::ChannelId, SubscriptionsByClient> _subscriptions;
-  std::unordered_map<cos_bridge_base::ServiceId, cos_bridge_base::ServiceWithoutId> _advertisedServices;
+  std::unordered_map<cobridge_base::ChannelId, cobridge_base::ChannelWithoutId> _advertisedTopics;
+  std::unordered_map<cobridge_base::ChannelId, SubscriptionsByClient> _subscriptions;
+  std::unordered_map<cobridge_base::ServiceId, cobridge_base::ServiceWithoutId> _advertisedServices;
   PublicationsByClient _clientAdvertisedTopics;
   std::mutex _subscriptionsMutex;
   std::shared_mutex _publicationsMutex;
@@ -919,9 +919,9 @@ private:
   std::vector<std::string> _capabilities;
   int _serviceRetrievalTimeoutMs = DEFAULT_SERVICE_TYPE_RETRIEVAL_TIMEOUT_MS;
   std::atomic<bool> _subscribeGraphUpdates = false;
-  std::unique_ptr<cos_bridge_base::CallbackQueue> _fetchAssetQueue;
+  std::unique_ptr<cobridge_base::CallbackQueue> _fetchAssetQueue;
 };
 
 }
 
-PLUGINLIB_EXPORT_CLASS(cos_bridge::CosBridge, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(cobridge::CosBridge, nodelet::Nodelet)

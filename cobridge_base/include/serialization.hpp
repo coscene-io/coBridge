@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_SERIALIZATION_HPP
-#define COS_BRIDGE_SERIALIZATION_HPP
+#ifndef COBRIDGE_SERIALIZATION_HPP
+#define COBRIDGE_SERIALIZATION_HPP
 
 #include <stdint.h>
 #include <nlohmann/json.hpp>
@@ -23,7 +23,7 @@
 #include "common.hpp"
 #include "parameter.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     inline void write_uint64_LE(uint8_t *buf, uint64_t val) {
 #ifdef ARCH_IS_BIG_ENDIAN
@@ -77,4 +77,4 @@ namespace cos_bridge_base {
     void from_json(const nlohmann::json &json_obj, Service &service);
 }
 
-#endif //COS_BRIDGE_SERIALIZATION_HPP
+#endif //COBRIDGE_SERIALIZATION_HPP

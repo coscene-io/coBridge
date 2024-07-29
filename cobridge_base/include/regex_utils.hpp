@@ -14,15 +14,15 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_REGEX_UTILS_HPP
-#define COS_BRIDGE_REGEX_UTILS_HPP
+#ifndef COBRIDGE_REGEX_UTILS_HPP
+#define COBRIDGE_REGEX_UTILS_HPP
 
 #include <algorithm>
 #include <regex>
 #include <string>
 #include <vector>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     inline bool is_whitelisted(const std::string &name, const std::vector<std::regex> &regex_patterns) {
         return std::find_if(regex_patterns.begin(), regex_patterns.end(), [name](const auto &regex) {
@@ -31,4 +31,4 @@ namespace cos_bridge_base {
     }
 }
 
-#endif //COS_BRIDGE_REGEX_UTILS_HPP
+#endif //COBRIDGE_REGEX_UTILS_HPP

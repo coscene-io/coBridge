@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-namespace cos_bridge {
+namespace cobridge {
 
     inline std::pair<std::string, std::string> get_node_and_node_namespace(const std::string &fqn_node_name) {
         const std::size_t found = fqn_node_name.find_last_of('/');

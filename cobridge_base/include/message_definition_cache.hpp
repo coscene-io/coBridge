@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_MESSAGE_DEFINITION_CACHE_HPP
-#define COS_BRIDGE_MESSAGE_DEFINITION_CACHE_HPP
+#ifndef COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP
+#define COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP
 
 #include <set>
 #include <string>
@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <utility>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
     constexpr char SERVICE_REQUEST_MESSAGE_SUFFIX[] = "_Request";
     constexpr char SERVICE_RESPONSE_MESSAGE_SUFFIX[] = "_Response";
     constexpr char ACTION_GOAL_SERVICE_SUFFIX[] = "_SendGoal";
@@ -102,4 +102,4 @@ namespace cos_bridge_base {
 
 }
 
-#endif //COS_BRIDGE_MESSAGE_DEFINITION_CACHE_HPP
+#endif //COBRIDGE_MESSAGE_DEFINITION_CACHE_HPP

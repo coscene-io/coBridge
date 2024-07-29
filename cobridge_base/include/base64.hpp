@@ -14,18 +14,18 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_BASE64_HPP
-#define COS_BRIDGE_BASE64_HPP
+#ifndef COBRIDGE_BASE64_HPP
+#define COBRIDGE_BASE64_HPP
 
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
     std::string base64_encode(const std::string_view &input);
 
     std::vector<unsigned char> base64_decode(const std::string &input);
 }
 
-#endif //COS_BRIDGE_BASE64_HPP
+#endif //COBRIDGE_BASE64_HPP

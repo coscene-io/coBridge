@@ -21,8 +21,8 @@
     <param name="num_worker_threads"  type="int"        value="$(arg num_threads)" />
   </node>
 
-  <node pkg="nodelet" type="nodelet" name="cos_bridge"
-        args="load cos_bridge/cos_bridge_nodelet $(arg nodelet_manager)">
+  <node pkg="nodelet" type="nodelet" name="cobridge"
+        args="load cobridge/cobridge_nodelet $(arg nodelet_manager)">
     <param name="port"                              type="int"        value="$(arg port)" />
     <param name="address"                           type="string"     value="$(arg address)" />
     <param name="tls"                               type="bool"       value="$(arg tls)" />

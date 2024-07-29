@@ -14,7 +14,7 @@ ENV ROS_WS /ros1_ws
 WORKDIR $ROS_WS
 
 # Add package.xml so we can install package dependencies.
-COPY package.xml src/cos-bridge/
+COPY package.xml src/cobridge/
 
 # Install rosdep dependencies
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
@@ -25,10 +25,10 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
     && rm -rf /var/lib/apt/lists/*
 
 # Add common files and ROS 1 source code
-COPY CMakeLists.txt src/cos-bridge/CMakeLists.txt
-COPY cos_bridge_base src/cos-bridge/cos_bridge_base
-COPY nodelets.xml src/cos-bridge/nodelets.xml
-COPY ros1_bridge src/cos-bridge/ros1_bridge
+COPY CMakeLists.txt src/cobridge/CMakeLists.txt
+COPY cobridge_base src/cobridge/cobridge_base
+COPY nodelets.xml src/cobridge/nodelets.xml
+COPY ros1_bridge src/cobridge/ros1_bridge
 
 ARG USE_ASIO_STANDALONE=ON
 

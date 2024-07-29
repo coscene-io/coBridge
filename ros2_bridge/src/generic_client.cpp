@@ -52,7 +52,7 @@
 //}
 //}  // namespace
 
-namespace cos_bridge {
+namespace cobridge {
 
     constexpr char TYPESUPPORT_INTROSPECTION_LIB_NAME[] = "rosidl_typesupport_introspection_cpp";
     constexpr char TYPESUPPORT_LIB_NAME[] = "rosidl_typesupport_cpp";
@@ -117,9 +117,9 @@ namespace cos_bridge {
         const auto request_type_name = service_type + "_Request";
         const auto response_type_name = service_type + "_Response";
 
-        _type_support_lib = cos_bridge::get_typesupport_library(service_type, TYPESUPPORT_LIB_NAME);
+        _type_support_lib = cobridge::get_typesupport_library(service_type, TYPESUPPORT_LIB_NAME);
         _type_introspection_lib =
-                cos_bridge::get_typesupport_library(service_type, TYPESUPPORT_INTROSPECTION_LIB_NAME);
+                cobridge::get_typesupport_library(service_type, TYPESUPPORT_INTROSPECTION_LIB_NAME);
         if (!_type_support_lib || !_type_introspection_lib) {
             throw std::runtime_error("Failed to load shared library for service type " + service_type);
         }
@@ -141,9 +141,9 @@ namespace cos_bridge {
                 _type_introspection_lib->get_symbol(type_introspection_symbol_name)))();
 
         _request_type_support_handle =
-                cos_bridge::get_typesupport_handle(request_type_name, TYPESUPPORT_LIB_NAME, _type_support_lib);
+                cobridge::get_typesupport_handle(request_type_name, TYPESUPPORT_LIB_NAME, _type_support_lib);
         _response_type_support_handle =
-                cos_bridge::get_typesupport_handle(response_type_name, TYPESUPPORT_LIB_NAME, _type_support_lib);
+                cobridge::get_typesupport_handle(response_type_name, TYPESUPPORT_LIB_NAME, _type_support_lib);
 
         rcl_ret_t ret = rcl_client_init(this->get_client_handle().get(), this->get_rcl_node_handle(),
                                         _service_type_support_handle, service_name.c_str(), &client_options);
@@ -177,13 +177,13 @@ namespace cos_bridge {
         rmw_ret_t r = rmw_serialize(response.get(), _response_type_support_handle,
                                     &ser_response->get_rcl_serialized_message());
         if (r != RMW_RET_OK) {
-            RCUTILS_LOG_ERROR_NAMED("cos_bridge", "Failed to serialize service response. Ignoring...");
+            RCUTILS_LOG_ERROR_NAMED("cobridge", "Failed to serialize service response. Ignoring...");
             return;
         }
 
         // TODO(esteve) this should throw instead since it is not expected to happen in the first place
         if (this->pending_requests_.count(sequence_number) == 0) {
-            RCUTILS_LOG_ERROR_NAMED("cos_bridge", "Received invalid sequence number. Ignoring...");
+            RCUTILS_LOG_ERROR_NAMED("cobridge", "Received invalid sequence number. Ignoring...");
             return;
         }
         auto tuple = this->pending_requests_[sequence_number];

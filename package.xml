@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-    <name>cos-bridge</name>
+    <name>cobridge</name>
     <version>0.0.1</version>
     <description>bridge for ROS2</description>
     <maintainer email="coscene@coscene.io">coscene</maintainer>
