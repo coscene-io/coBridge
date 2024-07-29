@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_PARAM_UTILS_HPP
-#define COS_BRIDGE_PARAM_UTILS_HPP
+#ifndef cobridge_PARAM_UTILS_HPP
+#define cobridge_PARAM_UTILS_HPP
 
 #include <regex>
 #include <string>
@@ -23,7 +23,7 @@
 
 #include <rclcpp/node.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
     constexpr char PARAM_PORT[] = "port";
     constexpr char PARAM_ADDRESS[] = "address";
@@ -54,4 +54,4 @@ namespace cos_bridge {
                                                 const std::vector<std::string> &strings);
 }
 
-#endif //COS_BRIDGE_PARAM_UTILS_HPP
+#endif //cobridge_PARAM_UTILS_HPP

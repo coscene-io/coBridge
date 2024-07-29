@@ -25,7 +25,7 @@
 #include "rclcpp/serialization.hpp"
 #include "rclcpp/subscription.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
 
 /**
  * This class is an implementation of an rclcpp::Subscription for serialized messages whose topic

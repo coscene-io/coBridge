@@ -14,14 +14,11 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_COS_BRIDGE_HPP
-#define COS_BRIDGE_COS_BRIDGE_HPP
+#include "cobridge.hpp"
+#include "websocketpp/version.hpp"
 
-namespace cos_bridge_base {
-    const char *websocket_user_agent();
-
-    extern const char COS_BRIDGE_VERSION[];
-    extern const char COS_BRIDGE_GIT_HASH[];
+namespace cobridge_base {
+    const char *websocket_user_agent() {
+        return websocketpp::user_agent;
+    }
 }
-
-#endif //COS_BRIDGE_COS_BRIDGE_HPP

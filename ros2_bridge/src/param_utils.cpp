@@ -17,7 +17,7 @@
 #include <common.hpp>
 #include <param_utils.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
     void declare_parameters(rclcpp::Node *node) {
         auto port_description = rcl_interfaces::msg::ParameterDescriptor{};
@@ -141,8 +141,8 @@ namespace cos_bridge {
         param_capabilities.read_only = true;
         node->declare_parameter(
                 PARAM_CAPABILITIES,
-                std::vector<std::string>(std::vector<std::string>(cos_bridge_base::DEFAULT_CAPABILITIES.begin(),
-                                                                  cos_bridge_base::DEFAULT_CAPABILITIES.end())),
+                std::vector<std::string>(std::vector<std::string>(cobridge_base::DEFAULT_CAPABILITIES.begin(),
+                                                                  cobridge_base::DEFAULT_CAPABILITIES.end())),
                 param_capabilities);
 
         auto client_topic_whitelist_description = rcl_interfaces::msg::ParameterDescriptor{};

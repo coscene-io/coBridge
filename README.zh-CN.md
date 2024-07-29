@@ -39,16 +39,16 @@ cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket �
   
    cd {your_ros2_ws} 
   
-   colcon build --packages-select cos-bridge
+   colcon build --packages-select cobridge
   ```
 
 ## 运行
   ``` bash
   # ros 1
-  roslaunch cos-bridge cos_bridge.launch
+  roslaunch cobridge cobridge.launch
   
   # ros 2
-  ros2 launch cos-bridge cos-bridge_launch.xml 
+  ros2 launch cobridge cobridge_launch.xml 
   ```
 
 ## 云端可视化

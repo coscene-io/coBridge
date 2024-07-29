@@ -17,7 +17,7 @@
 #include <base64.hpp>
 #include <serialization.hpp>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     void to_json(nlohmann::json &json_obj, const Channel &chan) {
         json_obj = {

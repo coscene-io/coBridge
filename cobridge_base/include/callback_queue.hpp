@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_CALLBACK_QUEUE_HPP
-#define COS_BRIDGE_CALLBACK_QUEUE_HPP
+#ifndef cobridge_CALLBACK_QUEUE_HPP
+#define cobridge_CALLBACK_QUEUE_HPP
 
 #include <atomic>
 #include <condition_variable>
@@ -28,7 +28,7 @@
 
 #include "websocket_logging.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     class CallbackQueue {
     public:
@@ -97,4 +97,4 @@ namespace cos_bridge_base {
         std::vector <std::thread> _worker_threads;
     };
 }
-#endif //COS_BRIDGE_CALLBACK_QUEUE_HPP
+#endif //cobridge_CALLBACK_QUEUE_HPP

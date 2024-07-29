@@ -14,18 +14,21 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_BASE64_HPP
-#define COS_BRIDGE_BASE64_HPP
+#ifndef cobridge_REGEX_UTILS_HPP
+#define cobridge_REGEX_UTILS_HPP
 
-#include <cstdint>
+#include <algorithm>
+#include <regex>
 #include <string>
-#include <string_view>
 #include <vector>
 
-namespace cos_bridge_base {
-    std::string base64_encode(const std::string_view &input);
+namespace cobridge_base {
 
-    std::vector<unsigned char> base64_decode(const std::string &input);
+    inline bool is_whitelisted(const std::string &name, const std::vector<std::regex> &regex_patterns) {
+        return std::find_if(regex_patterns.begin(), regex_patterns.end(), [name](const auto &regex) {
+            return std::regex_match(name, regex);
+        }) != regex_patterns.end();
+    }
 }
 
-#endif //COS_BRIDGE_BASE64_HPP
+#endif //cobridge_REGEX_UTILS_HPP

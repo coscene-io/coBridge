@@ -30,7 +30,7 @@
 
 #include "rosidl_runtime_cpp/message_type_support_decl.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
 
     std::string get_typesupport_library_path(
             const std::string &package_name, const std::string &typesupport_identifier) {

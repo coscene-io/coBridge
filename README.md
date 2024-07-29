@@ -1,6 +1,6 @@
 # cobridge
 
-cobridge runs as a ros node on the robot side, and interacts with the cloud via websocket. cos-bridge establishes a link with the cloud to subscribe to a ros topic and invoke a ros service according to cloud instructions.
+cobridge runs as a ros node on the robot side, and interacts with the cloud via websocket. cobridge establishes a link with the cloud to subscribe to a ros topic and invoke a ros service according to cloud instructions.
 After cobridge establishes a link with the cloud, it can subscribe to ros topic and call ros service according to the instructions from the cloud, so as to real-time monitor the status of the robot and remotely issue commands.
 
 ## Compile
@@ -41,16 +41,16 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
      cp {this_repo} {your_ros_ws}/src/ 
   
      # Build
-     colcon build --packages-select cos-bridge
+     colcon build --packages-select cobridge
   ```
 
 ## Run
   ``` bash
   # ros 1
-  roslaunch cos-bridge cos_bridge.launch
+  roslaunch cobridge cobridge.launch
   
   # ros 2
-  ros2 launch cos-bridge cos-bridge_launch.xml 
+  ros2 launch cobridge cobridge_launch.xml 
   ```
 
 ## Cloud Visualization 

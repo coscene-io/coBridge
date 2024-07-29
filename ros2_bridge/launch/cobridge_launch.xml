@@ -18,7 +18,7 @@
     <arg name="asset_uri_allowlist"
          default="['^package://(?:\\w+/)*\\w+\\.(?:dae|fbx|glb|gltf|jpeg|jpg|mtl|obj|png|stl|tif|tiff|urdf|webp|xacro)$']"/>  <!-- Needs double-escape -->
 
-    <node pkg="cos-bridge" exec="cos-bridge">
+    <node pkg="cobridge" exec="cobridge">
         <param name="port" value="$(var port)"/>
         <param name="address" value="$(var address)"/>
         <param name="tls" value="$(var tls)"/>

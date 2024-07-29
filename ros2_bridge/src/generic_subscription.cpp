@@ -39,7 +39,7 @@ namespace {
     }
 }  // unnamed namespace
 
-namespace cos_bridge {
+namespace cobridge {
     GenericSubscription::GenericSubscription(
             rclcpp::node_interfaces::NodeBaseInterface *node_base,
             const rosidl_message_type_support_t &ts,

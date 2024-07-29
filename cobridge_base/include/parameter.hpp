@@ -14,8 +14,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_PARAMETER_HPP
-#define COS_BRIDGE_PARAMETER_HPP
+#ifndef cobridge_PARAMETER_HPP
+#define cobridge_PARAMETER_HPP
 
 #include <any>
 #include <stdint.h>
@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
     enum class ParameterSubscriptionOperation {
         SUBSCRIBE,
         UNSUBSCRIBE,
@@ -102,4 +102,4 @@ namespace cos_bridge_base {
     };
 }
 
-#endif //COS_BRIDGE_PARAMETER_HPP
+#endif //cobridge_PARAMETER_HPP

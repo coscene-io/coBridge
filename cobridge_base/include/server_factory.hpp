@@ -14,21 +14,25 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_REGEX_UTILS_HPP
-#define COS_BRIDGE_REGEX_UTILS_HPP
+#ifndef cobridge_SERVER_FACTORY_HPP
+#define cobridge_SERVER_FACTORY_HPP
 
-#include <algorithm>
-#include <regex>
+#include <memory>
 #include <string>
-#include <vector>
+#include <websocketpp/common/connection_hdl.hpp>
 
-namespace cos_bridge_base {
+#include "common.hpp"
+#include "server_interface.hpp"
 
-    inline bool is_whitelisted(const std::string &name, const std::vector<std::regex> &regex_patterns) {
-        return std::find_if(regex_patterns.begin(), regex_patterns.end(), [name](const auto &regex) {
-            return std::regex_match(name, regex);
-        }) != regex_patterns.end();
-    }
+namespace cobridge_base {
+
+    class ServerFactory {
+    public:
+        template<typename ConnectionHandle>
+        static std::unique_ptr <ServerInterface<ConnectionHandle>> create_server(
+                const std::string &name, const std::function<void(WebSocketLogLevel, char const *)> &log_handler,
+                const ServerOptions &options);
+    };
 }
 
-#endif //COS_BRIDGE_REGEX_UTILS_HPP
+#endif //cobridge_SERVER_FACTORY_HPP

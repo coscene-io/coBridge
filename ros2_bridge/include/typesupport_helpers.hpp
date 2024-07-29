@@ -26,7 +26,7 @@
 
 #include "rclcpp/visibility_control.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
     RCLCPP_PUBLIC
     std::shared_ptr<rcpputils::SharedLibrary>
     get_typesupport_library(const std::string &type, const std::string &typesupport_identifier);

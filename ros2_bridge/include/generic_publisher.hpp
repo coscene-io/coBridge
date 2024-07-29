@@ -22,7 +22,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
     class GenericPublisher : public rclcpp::PublisherBase {
     public:
         RCLCPP_SMART_PTR_DEFINITIONS(GenericPublisher)

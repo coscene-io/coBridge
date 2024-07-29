@@ -22,7 +22,7 @@
 #include <rclcpp/serialized_message.hpp>
 #include <rcpputils/shared_library.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
     class GenericClient : public rclcpp::ClientBase {
     public:

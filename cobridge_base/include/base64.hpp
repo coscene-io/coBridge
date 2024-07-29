@@ -14,11 +14,18 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#include "cos_bridge.hpp"
-#include "websocketpp/version.hpp"
+#ifndef cobridge_BASE64_HPP
+#define cobridge_BASE64_HPP
 
-namespace cos_bridge_base {
-    const char *websocket_user_agent() {
-        return websocketpp::user_agent;
-    }
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace cobridge_base {
+    std::string base64_encode(const std::string_view &input);
+
+    std::vector<unsigned char> base64_decode(const std::string &input);
 }
+
+#endif //cobridge_BASE64_HPP

@@ -14,15 +14,15 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_WEBSOCKET_NOTLS_HPP
-#define COS_BRIDGE_WEBSOCKET_NOTLS_HPP
+#ifndef cobridge_WEBSOCKET_NOTLS_HPP
+#define cobridge_WEBSOCKET_NOTLS_HPP
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/extensions/permessage_deflate/enabled.hpp>
 #include <websocketpp/server.hpp>
 
 #include "websocket_logging.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     struct WebSocketNoTls : public websocketpp::config::core {
         typedef WebSocketNoTls type;
@@ -62,4 +62,4 @@ namespace cos_bridge_base {
 
 }
 
-#endif //COS_BRIDGE_WEBSOCKET_NOTLS_HPP
+#endif //cobridge_WEBSOCKET_NOTLS_HPP

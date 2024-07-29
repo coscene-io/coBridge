@@ -29,9 +29,9 @@
 
 #include <parameter.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
-    using ParameterList = std::vector<cos_bridge_base::Parameter>;
+    using ParameterList = std::vector<cobridge_base::Parameter>;
     using ParamUpdateFunc = std::function<void(const ParameterList &)>;
 
     class ParameterInterface {

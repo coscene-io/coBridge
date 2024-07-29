@@ -3,7 +3,7 @@
 #include <chrono>
 #include <string>
 
-namespace cos_bridge {
+namespace cobridge {
 
 /**
  * Opens a socket to the service server and retrieves the service type from the connection header.

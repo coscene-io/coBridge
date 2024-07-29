@@ -26,7 +26,7 @@
 #include <websocketpp/common/connection_hdl.hpp>
 
 #include <callback_queue.hpp>
-#include <cos_bridge.hpp>
+#include <cobridge.hpp>
 #include <generic_client.hpp>
 #include <message_definition_cache.hpp>
 #include <param_utils.hpp>
@@ -38,14 +38,14 @@
 #include <create_generic_subscription.hpp>
 #include <create_generic_publisher.hpp>
 
-namespace cos_bridge {
+namespace cobridge {
 
     using ConnectionHandle = websocketpp::connection_hdl;
-    using LogLevel = cos_bridge_base::WebSocketLogLevel;
-    using Subscription = cos_bridge::GenericSubscription::SharedPtr;
+    using LogLevel = cobridge_base::WebSocketLogLevel;
+    using Subscription = cobridge::GenericSubscription::SharedPtr;
     using SubscriptionsByClient = std::map<ConnectionHandle, Subscription, std::owner_less<>>;
-    using Publication = cos_bridge::GenericPublisher::SharedPtr;
-    using ClientPublications = std::unordered_map<cos_bridge_base::ClientChannelId, Publication>;
+    using Publication = cobridge::GenericPublisher::SharedPtr;
+    using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, Publication>;
     using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
 
     class CosBridge : public rclcpp::Node {
@@ -74,17 +74,17 @@ namespace cos_bridge {
             }
         };
 
-        std::unique_ptr<cos_bridge_base::ServerInterface<ConnectionHandle>> _server;
-        cos_bridge_base::MessageDefinitionCache _message_definition_cache;
+        std::unique_ptr<cobridge_base::ServerInterface<ConnectionHandle>> _server;
+        cobridge_base::MessageDefinitionCache _message_definition_cache;
         std::vector<std::regex> _topic_whitelist_patterns;
         std::vector<std::regex> _service_whitelist_patterns;
         std::vector<std::regex> _asset_uri_allowlist_patterns;
 //        std::shared_ptr<ParameterInterface> _param_interface;
-        std::unordered_map<cos_bridge_base::ChannelId, cos_bridge_base::ChannelWithoutId> _advertised_topics;
-        std::unordered_map<cos_bridge_base::ServiceId, cos_bridge_base::ServiceWithoutId> _advertised_services;
-        std::unordered_map<cos_bridge_base::ChannelId, SubscriptionsByClient> _subscriptions;
+        std::unordered_map<cobridge_base::ChannelId, cobridge_base::ChannelWithoutId> _advertised_topics;
+        std::unordered_map<cobridge_base::ServiceId, cobridge_base::ServiceWithoutId> _advertised_services;
+        std::unordered_map<cobridge_base::ChannelId, SubscriptionsByClient> _subscriptions;
         PublicationsByClient _client_advertised_topics;
-        std::unordered_map<cos_bridge_base::ServiceId, GenericClient::SharedPtr> _service_clients;
+        std::unordered_map<cobridge_base::ServiceId, GenericClient::SharedPtr> _service_clients;
         rclcpp::CallbackGroup::SharedPtr _subscription_callback_group;
         rclcpp::CallbackGroup::SharedPtr _client_publish_callback_group;
         rclcpp::CallbackGroup::SharedPtr _services_callback_group;
@@ -99,37 +99,37 @@ namespace cos_bridge {
         std::vector<std::string> _capabilities;
         std::atomic<bool> _subscribe_graph_updates = false;
         bool _include_hidden = false;
-        std::unique_ptr<cos_bridge_base::CallbackQueue> _fetch_asset_queue;
+        std::unique_ptr<cobridge_base::CallbackQueue> _fetch_asset_queue;
 
         void subscribe_connection_graph(bool subscribe);
 
-        void subscribe(cos_bridge_base::ChannelId channel_id, ConnectionHandle client_handle);
+        void subscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle);
 
-        void unsubscribe(cos_bridge_base::ChannelId channel_id, ConnectionHandle client_handle);
+        void unsubscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle);
 
-        void client_advertise(const cos_bridge_base::ClientAdvertisement &advertisement, ConnectionHandle hdl);
+        void client_advertise(const cobridge_base::ClientAdvertisement &advertisement, ConnectionHandle hdl);
 
-        void client_unadvertise(cos_bridge_base::ChannelId channel_id, ConnectionHandle hdl);
+        void client_unadvertise(cobridge_base::ChannelId channel_id, ConnectionHandle hdl);
 
-        void client_message(const cos_bridge_base::ClientMessage &message, ConnectionHandle hdl);
+        void client_message(const cobridge_base::ClientMessage &message, ConnectionHandle hdl);
 
-//        void set_parameters(const std::vector<cos_bridge_base::Parameter> &parameters,
+//        void set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
 //                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
 //
 //        void get_parameters(const std::vector<std::string> &parameters,
 //                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
 //
 //        void subscribe_parameters(const std::vector<std::string> &parameters,
-//                                 cos_bridge_base::ParameterSubscriptionOperation op, ConnectionHandle);
+//                                 cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle);
 
-        void parameter_updates(const std::vector<cos_bridge_base::Parameter> &parameters);
+        void parameter_updates(const std::vector<cobridge_base::Parameter> &parameters);
 
         void log_handler(LogLevel level, char const *msg);
 
-        void  ros_message_handler(const cos_bridge_base::ChannelId &channel_id, ConnectionHandle client_handle,
+        void  ros_message_handler(const cobridge_base::ChannelId &channel_id, ConnectionHandle client_handle,
                                   std::shared_ptr<rclcpp::SerializedMessage> msg, uint64_t timestamp);
 
-        void service_request(const cos_bridge_base::ServiceRequest &request, ConnectionHandle client_handle);
+        void service_request(const cobridge_base::ServiceRequest &request, ConnectionHandle client_handle);
 
         void fetch_asset(const std::string &asset_id, uint32_t request_id, ConnectionHandle client_handle);
 

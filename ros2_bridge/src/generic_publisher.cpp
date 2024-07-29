@@ -27,7 +27,7 @@ namespace {
     }
 }  // unnamed namespace
 
-namespace cos_bridge {
+namespace cobridge {
     GenericPublisher::GenericPublisher(
             rclcpp::node_interfaces::NodeBaseInterface *node_base,
             const rosidl_message_type_support_t &type_support,

@@ -31,16 +31,16 @@
 #include "generic_subscription.hpp"
 #include "typesupport_helpers.hpp"
 
-namespace cos_bridge {
+namespace cobridge {
     std::shared_ptr<GenericSubscription> create_generic_subscription(
             rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
             const std::string &topic,
             const std::string &type,
             const rclcpp::QoS &qos,
             std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> callback) {
-        auto library_generic_subscriber = cos_bridge::get_typesupport_library(
+        auto library_generic_subscriber = cobridge::get_typesupport_library(
                 type, "rosidl_typesupport_cpp");
-        auto type_support = cos_bridge::get_typesupport_handle(
+        auto type_support = cobridge::get_typesupport_handle(
                 type, "rosidl_typesupport_cpp", library_generic_subscriber);
         auto subscription = std::shared_ptr<GenericSubscription>();
 

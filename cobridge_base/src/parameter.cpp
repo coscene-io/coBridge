@@ -16,7 +16,7 @@
 
 #include "parameter.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     ParameterValue::ParameterValue()
             : _type(ParameterType::PARAMETER_NOT_SET) {}

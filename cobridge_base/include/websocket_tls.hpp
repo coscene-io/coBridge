@@ -14,15 +14,15 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_WEBSOCKET_TLS_HPP
-#define COS_BRIDGE_WEBSOCKET_TLS_HPP
+#ifndef cobridge_WEBSOCKET_TLS_HPP
+#define cobridge_WEBSOCKET_TLS_HPP
 
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/extensions/permessage_deflate/enabled.hpp>
 
 #include "websocket_logging.hpp"
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     struct WebSocketTls : public websocketpp::config::core {
         typedef WebSocketTls type;
@@ -61,4 +61,4 @@ namespace cos_bridge_base {
     };
 }
 
-#endif //COS_BRIDGE_WEBSOCKET_TLS_HPP
+#endif //cobridge_WEBSOCKET_TLS_HPP

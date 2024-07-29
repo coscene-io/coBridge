@@ -14,25 +14,14 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COS_BRIDGE_SERVER_FACTORY_HPP
-#define COS_BRIDGE_SERVER_FACTORY_HPP
+#ifndef cobridge_cobridge_HPP
+#define cobridge_cobridge_HPP
 
-#include <memory>
-#include <string>
-#include <websocketpp/common/connection_hdl.hpp>
+namespace cobridge_base {
+    const char *websocket_user_agent();
 
-#include "common.hpp"
-#include "server_interface.hpp"
-
-namespace cos_bridge_base {
-
-    class ServerFactory {
-    public:
-        template<typename ConnectionHandle>
-        static std::unique_ptr <ServerInterface<ConnectionHandle>> create_server(
-                const std::string &name, const std::function<void(WebSocketLogLevel, char const *)> &log_handler,
-                const ServerOptions &options);
-    };
+    extern const char cobridge_VERSION[];
+    extern const char cobridge_GIT_HASH[];
 }
 
-#endif //COS_BRIDGE_SERVER_FACTORY_HPP
+#endif //cobridge_cobridge_HPP

@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <base64.hpp>
 
-namespace cos_bridge_base {
+namespace cobridge_base {
 
     std::string base64_encode(const std::string_view &input) {
         constexpr const char ALPHABET[] =
