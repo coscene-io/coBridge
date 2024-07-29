@@ -18,8 +18,8 @@
 
 namespace cobridge_base{
 
-        const char cobridge_VERSION[] = "@cobridge_VERSION@";
+        const char COBRIDGE_VERSION[] = "@COBRIDGE_VERSION@";
 
-        const char cobridge_GIT_HASH[] = "@cobridge_GIT_HASH@";
+        const char COBRIDGE_GIT_HASH[] = "@COBRIDGE_GIT_HASH@";
 
 }

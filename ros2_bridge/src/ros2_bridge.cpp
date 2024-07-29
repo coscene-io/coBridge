@@ -46,7 +46,7 @@ namespace cobridge {
             : Node("cobridge", options) {
         const char *ros_distro = std::getenv("ROS_DISTRO");
         RCLCPP_INFO(this->get_logger(), "Starting cobridge (%s, %s@%s) with %s", ros_distro,
-                    cobridge_base::cobridge_VERSION, cobridge_base::cobridge_GIT_HASH,
+                    cobridge_base::COBRIDGE_VERSION, cobridge_base::COBRIDGE_GIT_HASH,
                     cobridge_base::websocket_user_agent());
 
         cobridge::declare_parameters(this);
