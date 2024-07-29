@@ -114,7 +114,7 @@ public:
 
     const char* rosDistro = std::getenv("ROS_DISTRO");
     ROS_INFO("Starting cobridge (%s, %s@%s) with %s", rosDistro,
-             cobridge_base::cobridge_VERSION, cobridge_base::cobridge_GIT_HASH,
+             cobridge_base::COBRIDGE_VERSION, cobridge_base::COBRIDGE_GIT_HASH,
              cobridge_base::websocket_user_agent());
 
     try {
