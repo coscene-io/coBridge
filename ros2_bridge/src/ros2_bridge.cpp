@@ -42,7 +42,7 @@ namespace cobridge {
     using namespace std::placeholders;
     using cobridge_base::is_whitelisted;
 
-    CosBridge::CosBridge(const rclcpp::NodeOptions &options)
+    CoBridge::CoBridge(const rclcpp::NodeOptions &options)
             : Node("cobridge", options) {
         const char *ros_distro = std::getenv("ROS_DISTRO");
         RCLCPP_INFO(this->get_logger(), "Starting cobridge (%s, %s@%s) with %s", ros_distro,
@@ -76,7 +76,7 @@ namespace cobridge {
         const auto asset_uri_allowlist = this->get_parameter(PARAM_ASSET_URI_ALLOWLIST).as_string_array();
         _asset_uri_allowlist_patterns = parse_regex_strings(this, asset_uri_allowlist);
 
-        const auto log_handler = std::bind(&CosBridge::log_handler, this, _1, _2);
+        const auto log_handler = std::bind(&CoBridge::log_handler, this, _1, _2);
         // Fetching of assets may be blocking, hence we fetch them in a separate thread.
         _fetch_asset_queue = std::make_unique<cobridge_base::CallbackQueue>(log_handler, 1 /* num_threads */);
 
@@ -99,31 +99,31 @@ namespace cobridge {
                                                                                   server_options);
 
         cobridge_base::ServerHandlers<ConnectionHandle> handlers;
-        handlers.subscribe_handler = std::bind(&CosBridge::subscribe, this, _1, _2);
-        handlers.unsubscribe_handler = std::bind(&CosBridge::unsubscribe, this, _1, _2);
-        handlers.client_advertise_handler = std::bind(&CosBridge::client_advertise, this, _1, _2);
-        handlers.client_unadvertise_handler = std::bind(&CosBridge::client_unadvertise, this, _1, _2);
-        handlers.client_message_handler = std::bind(&CosBridge::client_message, this, _1, _2);
-        handlers.service_request_handler = std::bind(&CosBridge::service_request, this, _1, _2);
+        handlers.subscribe_handler = std::bind(&CoBridge::subscribe, this, _1, _2);
+        handlers.unsubscribe_handler = std::bind(&CoBridge::unsubscribe, this, _1, _2);
+        handlers.client_advertise_handler = std::bind(&CoBridge::client_advertise, this, _1, _2);
+        handlers.client_unadvertise_handler = std::bind(&CoBridge::client_unadvertise, this, _1, _2);
+        handlers.client_message_handler = std::bind(&CoBridge::client_message, this, _1, _2);
+        handlers.service_request_handler = std::bind(&CoBridge::service_request, this, _1, _2);
         handlers.subscribe_connection_graph_handler =
-                std::bind(&CosBridge::subscribe_connection_graph, this, _1);
+                std::bind(&CoBridge::subscribe_connection_graph, this, _1);
 
 //        if (has_capability(cobridge_base::CAPABILITY_PARAMETERS) ||
 //                has_capability(cobridge_base::CAPABILITY_PARAMETERS_SUBSCRIBE)) {
-//            handlers.parameter_request_handler = std::bind(&CosBridge::get_parameters, this, _1, _2, _3);
-//            handlers.parameter_change_handler = std::bind(&CosBridge::set_parameters, this, _1, _2, _3);
+//            handlers.parameter_request_handler = std::bind(&CoBridge::get_parameters, this, _1, _2, _3);
+//            handlers.parameter_change_handler = std::bind(&CoBridge::set_parameters, this, _1, _2, _3);
 //            handlers.parameter_subscription_handler =
-//                    std::bind(&CosBridge::subscribe_parameters, this, _1, _2, _3);
+//                    std::bind(&CoBridge::subscribe_parameters, this, _1, _2, _3);
 //
 //            _param_interface = std::make_shared<ParameterInterface>(this, param_whitelist_patterns);
-//            _param_interface->setParamUpdateCallback(std::bind(&CosBridge::parameterUpdates, this, _1));
+//            _param_interface->setParamUpdateCallback(std::bind(&CoBridge::parameterUpdates, this, _1));
 //        }
 
         if (has_capability(cobridge_base::CAPABILITY_ASSETS)) {
             handlers.fetch_asset_handler = [this](const std::string &uri, uint32_t requestId,
                                              ConnectionHandle hdl) {
                 _fetch_asset_queue->add_callback(
-                        std::bind(&CosBridge::fetch_asset, this, uri, requestId, hdl));
+                        std::bind(&CoBridge::fetch_asset, this, uri, requestId, hdl));
             };
         }
 
@@ -140,7 +140,7 @@ namespace cobridge {
 
         // Start the thread polling for rosgraph changes
         _rosgraph_poll_thread =
-                std::make_unique<std::thread>(std::bind(&CosBridge::rosgraph_poll_thread, this));
+                std::make_unique<std::thread>(std::bind(&CoBridge::rosgraph_poll_thread, this));
 
         _subscription_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
         _client_publish_callback_group =
@@ -158,7 +158,7 @@ namespace cobridge {
         }
     }
 
-    CosBridge::~CosBridge() {
+    CoBridge::~CoBridge() {
         RCLCPP_INFO(this->get_logger(), "Shutting down %s", this->get_name());
         if (_rosgraph_poll_thread) {
             _rosgraph_poll_thread->join();
@@ -167,7 +167,7 @@ namespace cobridge {
         RCLCPP_INFO(this->get_logger(), "Shutdown complete");
     }
 
-    void CosBridge::rosgraph_poll_thread() {
+    void CoBridge::rosgraph_poll_thread() {
         RCLCPP_INFO(this->get_logger(), "rosgraph_poll_thread was called");
         update_advertised_topics(get_topic_names_and_types());
         update_advertised_services();
@@ -196,7 +196,7 @@ namespace cobridge {
         RCLCPP_DEBUG(this->get_logger(), "rosgraph polling thread exiting");
     }
 
-    void CosBridge::update_advertised_topics(
+    void CoBridge::update_advertised_topics(
             const std::map<std::string, std::vector<std::string>> &topic_names_and_types) {
         if (!rclcpp::ok()) {
             return;
@@ -303,7 +303,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::update_advertised_services() {
+    void CoBridge::update_advertised_services() {
         if (!rclcpp::ok()) {
             return;
         } else if (!has_capability(cobridge_base::CAPABILITY_SERVICES)) {
@@ -399,7 +399,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::update_connection_graph(
+    void CoBridge::update_connection_graph(
             const std::map<std::string, std::vector<std::string>> &topic_names_and_types) {
         cobridge_base::MapOfSets publishers, subscribers;
 
@@ -442,13 +442,13 @@ namespace cobridge {
         _server->update_connection_graph(publishers, subscribers, services);
     }
 
-    void CosBridge::subscribe_connection_graph(bool subscribe) {
+    void CoBridge::subscribe_connection_graph(bool subscribe) {
         if ((_subscribe_graph_updates = subscribe)) {
             update_connection_graph(get_topic_names_and_types());
         };
     }
 
-    void CosBridge::subscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle) {
+    void CoBridge::subscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle) {
         std::lock_guard<std::mutex> lock(_subscriptions_mutex);
         auto it = _advertised_topics.find(channel_id);
         if (it == _advertised_topics.end()) {
@@ -552,7 +552,7 @@ namespace cobridge {
             auto subscriber = cobridge::create_generic_subscription(
                     this->get_node_topics_interface(),
                     topic, datatype, qos,
-                    std::bind(&CosBridge::ros_message_handler, this, channel_id, client_handle, _1, _2));//,
+                    std::bind(&CoBridge::ros_message_handler, this, channel_id, client_handle, _1, _2));//,
 //      subscriptionOptions);
             subscriptions_by_client.emplace(client_handle, std::move(subscriber));
         } catch (const std::exception &ex) {
@@ -561,7 +561,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::unsubscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle) {
+    void CoBridge::unsubscribe(cobridge_base::ChannelId channel_id, ConnectionHandle client_handle) {
         std::lock_guard<std::mutex> lock(_subscriptions_mutex);
 
         const auto channel_iter = _advertised_topics.find(channel_id);
@@ -598,7 +598,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::client_advertise(const cobridge_base::ClientAdvertisement &advertisement,
+    void CoBridge::client_advertise(const cobridge_base::ClientAdvertisement &advertisement,
                                      ConnectionHandle hdl) {
         std::lock_guard<std::mutex> lock(_client_advertisements_mutex);
 
@@ -656,7 +656,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::client_unadvertise(cobridge_base::ChannelId channel_id, ConnectionHandle hdl) {
+    void CoBridge::client_unadvertise(cobridge_base::ChannelId channel_id, ConnectionHandle hdl) {
         std::lock_guard<std::mutex> lock(_client_advertisements_mutex);
 
         auto it = _client_advertised_topics.find(hdl);
@@ -693,7 +693,7 @@ namespace cobridge {
         this->create_wall_timer(1s, []() {});
     }
 
-    void CosBridge::client_message(const cobridge_base::ClientMessage &message, ConnectionHandle hdl) {
+    void CoBridge::client_message(const cobridge_base::ClientMessage &message, ConnectionHandle hdl) {
         // Get the publisher
         cobridge::GenericPublisher::SharedPtr publisher;
         {
@@ -729,7 +729,7 @@ namespace cobridge {
         publisher->publish(std::make_shared<rcl_serialized_message_t>(serialized_message.get_rcl_serialized_message()));
     }
 
-//    void CosBridge::set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
+//    void CoBridge::set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
 //                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
 //        _param_interface->set_params(parameters, std::chrono::seconds(5));
 //
@@ -743,13 +743,13 @@ namespace cobridge {
 //        }
 //    }
 //
-//    void CosBridge::get_parameters(const std::vector<std::string> &parameters,
+//    void CoBridge::get_parameters(const std::vector<std::string> &parameters,
 //                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
 //        const auto params = _param_interface->getParams(parameters, std::chrono::seconds(5));
 //        _server->publish_parameter_values(hdl, params, request_id);
 //    }
 //
-//    void CosBridge::subscribe_parameters(const std::vector<std::string> &parameters,
+//    void CoBridge::subscribe_parameters(const std::vector<std::string> &parameters,
 //                                         cobridge_base::ParameterSubscriptionOperation op,
 //                                         cobridge::ConnectionHandle) {
 //        if (op == cobridge_base::ParameterSubscriptionOperation::SUBSCRIBE) {
@@ -759,11 +759,11 @@ namespace cobridge {
 //        }
 //    }
 
-    void CosBridge::parameter_updates(const std::vector<cobridge_base::Parameter> &parameters) {
+    void CoBridge::parameter_updates(const std::vector<cobridge_base::Parameter> &parameters) {
         _server->update_parameter_values(parameters);
     }
 
-    void CosBridge::log_handler(LogLevel level, char const *msg) {
+    void CoBridge::log_handler(LogLevel level, char const *msg) {
         switch (level) {
             case LogLevel::Debug:
                 RCLCPP_DEBUG(this->get_logger(), "[WS] %s", msg);
@@ -783,7 +783,7 @@ namespace cobridge {
         }
     }
 
-    void CosBridge::ros_message_handler(const cobridge_base::ChannelId &channel_id,
+    void CoBridge::ros_message_handler(const cobridge_base::ChannelId &channel_id,
                                         ConnectionHandle client_handle,
                                         std::shared_ptr<rclcpp::SerializedMessage> msg,
                                         uint64_t timestamp) {
@@ -796,7 +796,7 @@ namespace cobridge {
                               rcl_serialized_msg.buffer_length);
     }
 
-    void CosBridge::service_request(const cobridge_base::ServiceRequest &request,
+    void CoBridge::service_request(const cobridge_base::ServiceRequest &request,
                                     ConnectionHandle client_handle) {
         RCLCPP_DEBUG(this->get_logger(), "Received a request for service %d", request.service_id);
 
@@ -847,7 +847,7 @@ namespace cobridge {
         client->async_send_request(req_message, response_received_callback);
     }
 
-    void CosBridge::fetch_asset(const std::string &asset_id, uint32_t request_id,
+    void CoBridge::fetch_asset(const std::string &asset_id, uint32_t request_id,
                                 ConnectionHandle client_handle) {
         cobridge_base::FetchAssetResponse response;
         response.request_id = request_id;
@@ -879,7 +879,7 @@ namespace cobridge {
         }
     }
 
-    bool CosBridge::has_capability(const std::string &capability) {
+    bool CoBridge::has_capability(const std::string &capability) {
         return std::find(_capabilities.begin(), _capabilities.end(), capability) != _capabilities.end();
     }
 
@@ -890,4 +890,4 @@ namespace cobridge {
 // Register the component with class_loader.
 // This acts as a sort of entry point, allowing the component to be discoverable when its library
 // is being loaded into a running process.
-RCLCPP_COMPONENTS_REGISTER_NODE(cobridge::CosBridge)
+RCLCPP_COMPONENTS_REGISTER_NODE(cobridge::CoBridge)

@@ -167,7 +167,7 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
         #ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
         ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
         target_link_libraries(cobridge_component cobridge_base)
-        rclcpp_components_register_nodes(cobridge_component "cobridge::CosBridge")
+        rclcpp_components_register_nodes(cobridge_component "cobridge::CoBridge")
         enable_strict_compiler_warnings(cobridge_component)
         add_executable(cobridge
                 ros2_bridge/src/ros2_bridge_node.cpp

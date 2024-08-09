@@ -56,9 +56,9 @@ using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, ro
 using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
 using cobridge_base::is_whitelisted;
 
-class CosBridge : public nodelet::Nodelet {
+class CoBridge : public nodelet::Nodelet {
 public:
-  CosBridge() = default;
+  CoBridge() = default;
   virtual void onInit() {
     auto& nhp = getPrivateNodeHandle();
     const auto address = nhp.param<std::string>("address", DEFAULT_ADDRESS);
@@ -134,7 +134,7 @@ public:
       serverOptions.client_topic_whitelist_patterns = clientTopicWhitelistPatterns;
 
       const auto logHandler =
-        std::bind(&CosBridge::logHandler, this, std::placeholders::_1, std::placeholders::_2);
+        std::bind(&CoBridge::logHandler, this, std::placeholders::_1, std::placeholders::_2);
 
       // Fetching of assets may be blocking, hence we fetch them in a separate thread.
       _fetchAssetQueue = std::make_unique<cobridge_base::CallbackQueue>(logHandler, 1 /* num_threads */);
@@ -143,25 +143,25 @@ public:
                                                                         logHandler, serverOptions);
         cobridge_base::ServerHandlers<ConnectionHandle> hdlrs;
       hdlrs.subscribe_handler =
-        std::bind(&CosBridge::subscribe, this, std::placeholders::_1, std::placeholders::_2);
+        std::bind(&CoBridge::subscribe, this, std::placeholders::_1, std::placeholders::_2);
       hdlrs.unsubscribe_handler =
-        std::bind(&CosBridge::unsubscribe, this, std::placeholders::_1, std::placeholders::_2);
-      hdlrs.client_advertise_handler = std::bind(&CosBridge::clientAdvertise, this,
+        std::bind(&CoBridge::unsubscribe, this, std::placeholders::_1, std::placeholders::_2);
+      hdlrs.client_advertise_handler = std::bind(&CoBridge::clientAdvertise, this,
                                                  std::placeholders::_1, std::placeholders::_2);
-      hdlrs.client_unadvertise_handler = std::bind(&CosBridge::clientUnadvertise, this,
+      hdlrs.client_unadvertise_handler = std::bind(&CoBridge::clientUnadvertise, this,
                                                    std::placeholders::_1, std::placeholders::_2);
-      hdlrs.client_message_handler = std::bind(&CosBridge::clientMessage, this,
+      hdlrs.client_message_handler = std::bind(&CoBridge::clientMessage, this,
                                                std::placeholders::_1, std::placeholders::_2);
       hdlrs.parameter_request_handler =
-        std::bind(&CosBridge::getParameters, this, std::placeholders::_1,
+        std::bind(&CoBridge::getParameters, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3);
       hdlrs.parameter_change_handler =
-        std::bind(&CosBridge::setParameters, this, std::placeholders::_1,
+        std::bind(&CoBridge::setParameters, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3);
       hdlrs.parameter_subscription_handler =
-        std::bind(&CosBridge::subscribeParameters, this, std::placeholders::_1,
+        std::bind(&CoBridge::subscribeParameters, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3);
-      hdlrs.service_request_handler = std::bind(&CosBridge::serviceRequest, this,
+      hdlrs.service_request_handler = std::bind(&CoBridge::serviceRequest, this,
                                                 std::placeholders::_1, std::placeholders::_2);
       hdlrs.subscribe_connection_graph_handler = [this](bool subscribe) {
         _subscribeGraphUpdates = subscribe;
@@ -171,7 +171,7 @@ public:
         hdlrs.fetch_asset_handler = [this](const std::string& uri, uint32_t requestId,
                                            cobridge_base::ConnHandle hdl) {
           _fetchAssetQueue->add_callback(
-            std::bind(&CosBridge::fetchAsset, this, uri, requestId, hdl));
+            std::bind(&CoBridge::fetchAsset, this, uri, requestId, hdl));
         };
       }
 
@@ -179,7 +179,7 @@ public:
 
       _server->start(address, static_cast<uint16_t>(port));
 
-      xmlrpcServer.bind("paramUpdate", std::bind(&CosBridge::parameterUpdates, this,
+      xmlrpcServer.bind("paramUpdate", std::bind(&CoBridge::parameterUpdates, this,
                                                  std::placeholders::_1, std::placeholders::_2));
       xmlrpcServer.start();
 
@@ -197,7 +197,7 @@ public:
       throw err;
     }
   };
-  virtual ~CosBridge() {
+  virtual ~CoBridge() {
     xmlrpcServer.shutdown();
     if (_server) {
       _server->stop();
@@ -244,7 +244,7 @@ private:
       subscriptionsByClient.emplace(
         clientHandle, getMTNodeHandle().subscribe<ros_babel_fish::BabelFishMessage>(
                         topic, SUBSCRIPTION_QUEUE_LENGTH,
-                        std::bind(&CosBridge::rosMessageHandler, this, channelId, clientHandle,
+                        std::bind(&CoBridge::rosMessageHandler, this, channelId, clientHandle,
                                   std::placeholders::_1)));
       if (firstSubscription) {
         ROS_INFO("Subscribed to topic \"%s\" (%s) on channel %d", topic.c_str(), datatype.c_str(),
@@ -481,7 +481,7 @@ private:
     const auto nextUpdateMs = std::max(
       MIN_UPDATE_PERIOD_MS, static_cast<double>(std::min(size_t(1) << _updateCount, _maxUpdateMs)));
     _updateTimer = getMTNodeHandle().createTimer(
-            ros::Duration(nextUpdateMs / 1e3), &CosBridge::updateAdvertisedTopicsAndServices, this);
+            ros::Duration(nextUpdateMs / 1e3), &CoBridge::updateAdvertisedTopicsAndServices, this);
   }
 
   void updateAdvertisedTopics() {
@@ -924,4 +924,4 @@ private:
 
 }
 
-PLUGINLIB_EXPORT_CLASS(cobridge::CosBridge, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(cobridge::CoBridge, nodelet::Nodelet)
