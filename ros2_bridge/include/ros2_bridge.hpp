@@ -48,13 +48,13 @@ namespace cobridge {
     using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, Publication>;
     using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
 
-    class CosBridge : public rclcpp::Node {
+    class CoBridge : public rclcpp::Node {
     public:
         using TopicAndDatatype = std::pair<std::string, std::string>;
 
-        CosBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+        CoBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
-        ~CosBridge();
+        ~CoBridge();
 
         void rosgraph_poll_thread();
 
