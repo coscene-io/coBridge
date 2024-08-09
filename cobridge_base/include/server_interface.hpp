@@ -28,7 +28,7 @@
 #include "common.hpp"
 #include "parameter.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     constexpr size_t DEFAULT_SEND_BUFFER_LIMIT_BYTES = 10000000UL;  // 10 MB
 

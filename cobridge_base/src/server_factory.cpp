@@ -21,7 +21,7 @@
 #include <websocket_notls.hpp>
 #include <websocket_server.hpp>
 
-namespace cobridge_base {
+namespace cobridge {
 
     template<>
     std::unique_ptr<ServerInterface<websocketpp::connection_hdl>> ServerFactory::create_server(

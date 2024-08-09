@@ -13,15 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////////////////
+#include <string>
 
-#ifndef COBRIDGE_COBRIDGE_HPP
-#define COBRIDGE_COBRIDGE_HPP
+#include <gtest/gtest.h>
 
-namespace cobridge {
-    const char *websocket_user_agent();
+#include <cobridge/foxglove_bridge.hpp>
 
-    extern const char COBRIDGE_VERSION[];
-    extern const char COBRIDGE_GIT_HASH[];
+TEST(VersionTest, TestWebSocketVersion) {
+    // ex: "WebSocket++/0.8.1"
+    const std::string version = foxglove::WebSocketUserAgent();
+    EXPECT_EQ(version.substr(0, 14), "WebSocket++/0.");
 }
 
-#endif //COBRIDGE_COBRIDGE_HPP
+int main(int argc, char** argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

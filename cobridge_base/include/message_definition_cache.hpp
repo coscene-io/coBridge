@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <utility>
 
-namespace cobridge_base {
+namespace cobridge {
     constexpr char SERVICE_REQUEST_MESSAGE_SUFFIX[] = "_Request";
     constexpr char SERVICE_RESPONSE_MESSAGE_SUFFIX[] = "_Response";
     constexpr char ACTION_GOAL_SERVICE_SUFFIX[] = "_SendGoal";

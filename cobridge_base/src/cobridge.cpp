@@ -17,7 +17,7 @@
 #include "cobridge.hpp"
 #include "websocketpp/version.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
     const char *websocket_user_agent() {
         return websocketpp::user_agent;
     }

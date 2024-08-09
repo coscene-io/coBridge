@@ -11,12 +11,8 @@ endif ()
 
 project(cobridge LANGUAGES CXX VERSION 0.0.1)
 
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-#add_compile_definitions(ROS2_VERSION_HUMBLE)
-add_compile_definitions(ROS2_VERSION_FOXY)
 
 macro(enable_strict_compiler_warnings target)
     if (MSVC)
@@ -38,6 +34,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
+# Determine whether to use standalone or boost asio
 option(USE_ASIO_STANDALONE "Build with standalone ASIO" ON)
 if (USE_ASIO_STANDALONE)
     message(STATUS "Using standalone ASIO")
@@ -47,12 +44,14 @@ else ()
     find_package(Boost REQUIRED)
 endif (USE_ASIO_STANDALONE)
 
+# Detect big-endian architectures
 include(TestBigEndian)
 TEST_BIG_ENDIAN(ENDIAN)
 if (ENDIAN)
     add_compile_definitions(ARCH_IS_BIG_ENDIAN=1)
 endif ()
 
+# Get git commit hash and replace variables in version.cpp.in
 find_program(GIT_SCM git DOC "Git version control")
 if (GIT_SCM)
     execute_process(
@@ -63,16 +62,18 @@ if (GIT_SCM)
     )
 endif ()
 set(COBRIDGE_VERSION "${CMAKE_PROJECT_VERSION}")
-configure_file(cobridge_base/src/version.cpp.in
-        cobridge_base/src/version.cpp @ONLY)
+configure_file(cobridge/src/version.cpp.in
+        cobridge/src/version.cpp @ONLY)
 
-add_library(cobridge_base SHARED
+# Build the cobridge library
+add_library(cobridge SHARED
         cobridge_base/src/base64.cpp
         cobridge_base/src/cobridge.cpp
         cobridge_base/src/parameter.cpp
         cobridge_base/src/serialization.cpp
         cobridge_base/src/server_factory.cpp
-#        cobridge_base/src/test/test_client.cpp
+        cobridge_base/src/test/test_client.cpp
+        # Generated:
         ${CMAKE_CURRENT_BINARY_DIR}/cobridge_base/src/version.cpp
 )
 target_include_directories(cobridge_base
@@ -97,6 +98,7 @@ message(STATUS "ROS_VERSION: " $ENV{ROS_VERSION})
 message(STATUS "ROS_DISTRO: " $ENV{ROS_DISTRO})
 message(STATUS "ROS_ROOT: " $ENV{ROS_ROOT})
 if("$ENV{ROS_VERSION}" STREQUAL "1")
+    # ROS 1
     if(CATKIN_DEVEL_PREFIX OR catkin_FOUND OR CATKIN_BUILD_BINARY_PACKAGE)
         message(STATUS "Building with catkin")
         set(ROS_BUILD_TYPE "catkin")
@@ -116,7 +118,6 @@ if("$ENV{ROS_VERSION}" STREQUAL "1")
                 ros1_bridge/src/param_utils.cpp
                 ros1_bridge/src/service_utils.cpp
         )
-
         target_include_directories(cobridge_nodelet
                 SYSTEM PRIVATE
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
@@ -135,6 +136,7 @@ if("$ENV{ROS_VERSION}" STREQUAL "1")
         message(FATAL_ERROR "Could not find catkin")
     endif()
 elseif("$ENV{ROS_VERSION}" STREQUAL "2")
+    # ROS 2
     if (DEFINED ENV{AMENT_PREFIX_PATH})
         message(STATUS "Building with ament_cmake")
         set(ROS_BUILD_TYPE "ament_cmake")
@@ -181,6 +183,70 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
 else()
     message(FATAL_ERROR "ROS_VERSION environment variable must be 1 or 2")
 endif()
+
+#### TESTS #####################################################################
+if(ROS_BUILD_TYPE STREQUAL "catkin")
+    if (CATKIN_ENABLE_TESTING)
+        message(STATUS "Building tests with catkin")
+
+        find_package(catkin REQUIRED COMPONENTS roscpp std_msgs std_srvs)
+        if(NOT "$ENV{ROS_DISTRO}" STREQUAL "melodic")
+            find_package(GTest REQUIRED)
+        endif()
+        find_package(rostest REQUIRED)
+        find_package(Boost REQUIRED COMPONENTS system)
+
+        catkin_add_gtest(version_test cobridge_base/tests/version_test.cpp)
+        target_link_libraries(version_test cobridge_base ${Boost_LIBRARIES})
+        enable_strict_compiler_warnings(version_test)
+
+        catkin_add_gtest(serialization_test cobridge_base/tests/serialization_test.cpp)
+        target_link_libraries(serialization_test cobridge_base ${Boost_LIBRARIES})
+        enable_strict_compiler_warnings(foxglove_bridge)
+
+        catkin_add_gtest(base64_test cobridge_base/tests/base64_test.cpp)
+        target_link_libraries(base64_test cobridge_base ${Boost_LIBRARIES})
+        enable_strict_compiler_warnings(foxglove_bridge)
+
+        add_rostest_gtest(smoke_test ros1_foxglove_bridge/tests/smoke.test ros1_foxglove_bridge/tests/smoke_test.cpp)
+        target_include_directories(smoke_test SYSTEM PRIVATE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
+                ${catkin_INCLUDE_DIRS}
+                $<INSTALL_INTERFACE:include>
+        )
+        target_link_libraries(smoke_test cobridge_base ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(smoke_test)
+    endif()
+elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
+    if(BUILD_TESTING)
+        message(STATUS "Building tests with ament_cmake")
+
+        find_package(ament_cmake_gtest REQUIRED)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+
+        ament_add_gtest(version_test cobridge_base/tests/version_test.cpp)
+        target_link_libraries(version_test cobridge_base)
+        enable_strict_compiler_warnings(version_test)
+
+        ament_add_gtest(serialization_test cobridge_base/tests/serialization_test.cpp)
+        target_link_libraries(serialization_test cobridge_base)
+        enable_strict_compiler_warnings(serialization_test)
+
+        ament_add_gtest(base64_test cobridge_base/tests/base64_test.cpp)
+        target_link_libraries(base64_test cobridge_base)
+        enable_strict_compiler_warnings(base64_test)
+
+        ament_add_gtest(smoke_test ros2_foxglove_bridge/tests/smoke_test.cpp)
+        ament_target_dependencies(smoke_test rclcpp rclcpp_components std_msgs std_srvs)
+        target_link_libraries(smoke_test foxglove_bridge_component)
+        enable_strict_compiler_warnings(smoke_test)
+
+        ament_add_gtest(utils_test ros2_foxglove_bridge/tests/utils_test.cpp)
+        target_link_libraries(utils_test foxglove_bridge_component)
+        enable_strict_compiler_warnings(utils_test)
+    endif()
+#### INSTALL ###################################################################
 
 if(ROS_BUILD_TYPE STREQUAL "catkin")
     install(TARGETS cobridge

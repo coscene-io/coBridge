@@ -141,8 +141,8 @@ namespace cobridge {
         param_capabilities.read_only = true;
         node->declare_parameter(
                 PARAM_CAPABILITIES,
-                std::vector<std::string>(std::vector<std::string>(cobridge_base::DEFAULT_CAPABILITIES.begin(),
-                                                                  cobridge_base::DEFAULT_CAPABILITIES.end())),
+                std::vector<std::string>(std::vector<std::string>(cobridge::DEFAULT_CAPABILITIES.begin(),
+                                                                  cobridge::DEFAULT_CAPABILITIES.end())),
                 param_capabilities);
 
         auto client_topic_whitelist_description = rcl_interfaces::msg::ParameterDescriptor{};

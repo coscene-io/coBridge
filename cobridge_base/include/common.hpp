@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace cobridge_base {
+namespace cobridge {
 
     using ChannelId = uint32_t;
     using ClientChannelId = uint32_t;

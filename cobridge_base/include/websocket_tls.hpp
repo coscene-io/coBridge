@@ -22,7 +22,7 @@
 
 #include "websocket_logging.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     struct WebSocketTls : public websocketpp::config::core {
         typedef WebSocketTls type;

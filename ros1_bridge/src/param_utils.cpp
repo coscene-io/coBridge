@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <stdexcept>
 
@@ -6,29 +5,29 @@
 
 namespace cobridge {
 
-    cobridge_base::ParameterValue fromRosParam(const XmlRpc::XmlRpcValue &value) {
+    cobridge::ParameterValue fromRosParam(const XmlRpc::XmlRpcValue &value) {
         const auto type = value.getType();
 
         if (type == XmlRpc::XmlRpcValue::Type::TypeBoolean) {
-            return cobridge_base::ParameterValue(static_cast<bool>(value));
+            return cobridge::ParameterValue(static_cast<bool>(value));
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeInt) {
-            return cobridge_base::ParameterValue(static_cast<int64_t>(static_cast<int>(value)));
+            return cobridge::ParameterValue(static_cast<int64_t>(static_cast<int>(value)));
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeDouble) {
-            return cobridge_base::ParameterValue(static_cast<double>(value));
+            return cobridge::ParameterValue(static_cast<double>(value));
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeString) {
-            return cobridge_base::ParameterValue(static_cast<std::string>(value));
+            return cobridge::ParameterValue(static_cast<std::string>(value));
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeStruct) {
-            std::unordered_map<std::string, cobridge_base::ParameterValue> paramMap;
+            std::unordered_map<std::string, cobridge::ParameterValue> paramMap;
             for (const auto &[elementName, elementVal]: value) {
                 paramMap.insert({elementName, fromRosParam(elementVal)});
             }
-            return cobridge_base::ParameterValue(paramMap);
+            return cobridge::ParameterValue(paramMap);
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeArray) {
-            std::vector<cobridge_base::ParameterValue> paramVec;
+            std::vector<cobridge::ParameterValue> paramVec;
             for (int i = 0; i < value.size(); ++i) {
                 paramVec.push_back(fromRosParam(value[i]));
             }
-            return cobridge_base::ParameterValue(paramVec);
+            return cobridge::ParameterValue(paramVec);
         } else if (type == XmlRpc::XmlRpcValue::Type::TypeInvalid) {
             throw std::runtime_error("Parameter not set");
         } else {
@@ -36,31 +35,31 @@ namespace cobridge {
         }
     }
 
-    cobridge_base::Parameter fromRosParam(const std::string &name, const XmlRpc::XmlRpcValue &value) {
-        return cobridge_base::Parameter(name, fromRosParam(value));
+    cobridge::Parameter fromRosParam(const std::string &name, const XmlRpc::XmlRpcValue &value) {
+        return cobridge::Parameter(name, fromRosParam(value));
     }
 
-    XmlRpc::XmlRpcValue toRosParam(const cobridge_base::ParameterValue &param) {
+    XmlRpc::XmlRpcValue toRosParam(const cobridge::ParameterValue &param) {
         const auto paramType = param.getType();
-        if (paramType == cobridge_base::ParameterType::PARAMETER_BOOL) {
+        if (paramType == cobridge::ParameterType::PARAMETER_BOOL) {
             return param.getValue<bool>();
-        } else if (paramType == cobridge_base::ParameterType::PARAMETER_INTEGER) {
+        } else if (paramType == cobridge::ParameterType::PARAMETER_INTEGER) {
             return static_cast<int>(param.getValue<int64_t>());
-        } else if (paramType == cobridge_base::ParameterType::PARAMETER_DOUBLE) {
+        } else if (paramType == cobridge::ParameterType::PARAMETER_DOUBLE) {
             return param.getValue<double>();
-        } else if (paramType == cobridge_base::ParameterType::PARAMETER_STRING) {
+        } else if (paramType == cobridge::ParameterType::PARAMETER_STRING) {
             return param.getValue<std::string>();
-        } else if (paramType == cobridge_base::ParameterType::PARAMETER_STRUCT) {
+        } else if (paramType == cobridge::ParameterType::PARAMETER_STRUCT) {
             XmlRpc::XmlRpcValue valueStruct;
             const auto &paramMap =
-                    param.getValue<std::unordered_map<std::string, cobridge_base::ParameterValue>>();
+                    param.getValue<std::unordered_map<std::string, cobridge::ParameterValue>>();
             for (const auto &[paramName, paramElement]: paramMap) {
                 valueStruct[paramName] = toRosParam(paramElement);
             }
             return valueStruct;
-        } else if (paramType == cobridge_base::ParameterType::PARAMETER_ARRAY) {
+        } else if (paramType == cobridge::ParameterType::PARAMETER_ARRAY) {
             XmlRpc::XmlRpcValue arr;
-            const auto vec = param.getValue<std::vector<cobridge_base::ParameterValue>>();
+            const auto vec = param.getValue<std::vector<cobridge::ParameterValue>>();
             for (int i = 0; i < static_cast<int>(vec.size()); ++i) {
                 arr[i] = toRosParam(vec[i]);
             }

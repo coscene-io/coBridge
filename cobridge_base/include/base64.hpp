@@ -22,7 +22,7 @@
 #include <string_view>
 #include <vector>
 
-namespace cobridge_base {
+namespace cobridge {
     std::string base64_encode(const std::string_view &input);
 
     std::vector<unsigned char> base64_decode(const std::string &input);

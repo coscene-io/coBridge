@@ -23,7 +23,7 @@
 #include "common.hpp"
 #include "parameter.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     inline void write_uint64_LE(uint8_t *buf, uint64_t val) {
 #ifdef ARCH_IS_BIG_ENDIAN

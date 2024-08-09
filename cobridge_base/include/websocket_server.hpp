@@ -82,7 +82,7 @@ namespace {
     constexpr auto FETCH_ASSET = string_hash("fetchAsset");
 }  // namespace
 
-namespace cobridge_base {
+namespace cobridge {
     using Json = nlohmann::json;
     using ConnHandle = websocketpp::connection_hdl;
     using OpCode = websocketpp::frame::opcode::value;
@@ -833,7 +833,7 @@ namespace cobridge_base {
     }
 
     template<typename ServerConfiguration>
-    inline std::string Server<ServerConfiguration>::remote_endpoint_string(cobridge_base::ConnHandle client_handle) {
+    inline std::string Server<ServerConfiguration>::remote_endpoint_string(cobridge::ConnHandle client_handle) {
         websocketpp::lib::error_code ec;
         const auto con = _server.get_con_from_hdl(client_handle, ec);
         return con ? con->get_remote_endpoint() : "(unknown)";
@@ -868,7 +868,7 @@ namespace cobridge_base {
     }
 
     template<typename ServerConfiguration>
-    inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base::ConnHandle hdl) {
+    inline void Server<ServerConfiguration>::handle_connection_opened(cobridge::ConnHandle hdl) {
         auto con = _server.get_con_from_hdl(hdl);
         const auto endpoint = remote_endpoint_string(hdl);
         {

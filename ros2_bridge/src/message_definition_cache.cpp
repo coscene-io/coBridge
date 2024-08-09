@@ -30,7 +30,7 @@
 #include <ament_index_cpp/get_resources.hpp>
 #include <rcutils/logging_macros.h>
 
-namespace cobridge_base {
+namespace cobridge {
 
 // Match datatype names (foo_msgs/Bar or foo_msgs/msg/Bar or foo_msgs/srv/Bar)
     static const std::regex PACKAGE_TYPENAME_REGEX{

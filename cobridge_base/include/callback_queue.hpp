@@ -28,7 +28,7 @@
 
 #include "websocket_logging.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     class CallbackQueue {
     public:

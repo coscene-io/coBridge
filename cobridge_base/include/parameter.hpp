@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace cobridge_base {
+namespace cobridge {
     enum class ParameterSubscriptionOperation {
         SUBSCRIBE,
         UNSUBSCRIBE,

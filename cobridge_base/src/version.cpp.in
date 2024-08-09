@@ -16,7 +16,7 @@
 
 #include <cobridge.hpp>
 
-namespace cobridge_base{
+namespace cobridge{
 
         const char COBRIDGE_VERSION[] = "@COBRIDGE_VERSION@";
 

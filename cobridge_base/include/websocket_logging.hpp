@@ -23,7 +23,7 @@
 
 #include "common.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     using LogCallback = std::function<void(WebSocketLogLevel, char const *)>;
 

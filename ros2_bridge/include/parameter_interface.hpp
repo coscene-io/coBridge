@@ -31,7 +31,7 @@
 
 namespace cobridge {
 
-    using ParameterList = std::vector<cobridge_base::Parameter>;
+    using ParameterList = std::vector<cobridge::Parameter>;
     using ParamUpdateFunc = std::function<void(const ParameterList &)>;
 
     class ParameterInterface {

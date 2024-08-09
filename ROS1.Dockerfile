@@ -33,10 +33,13 @@ COPY ros1_bridge src/cobridge/ros1_bridge
 ARG USE_ASIO_STANDALONE=ON
 
 ## Build the Catkin workspace
-#RUN . /opt/ros/$ROS_DISTRO/setup.sh \
-#  && catkin_make -DUSE_ASIO_STANDALONE=$USE_ASIO_STANDALONE
-#
+RUN . /opt/ros/$ROS_DISTRO/setup.sh \
+  && catkin_make -DUSE_ASIO_STANDALONE=$USE_ASIO_STANDALONE
+
 ## source workspace from entrypoint
-#RUN sed --in-place \
-#      's|^source .*|source "$ROS_WS/devel/setup.bash"|' \
-#      /ros_entrypoint.sh
+RUN sed --in-place \
+      's|^source .*|source "$ROS_WS/devel/setup.bash"|' \
+      /ros_entrypoint.sh
+
+# Run cobridge
+CMD ["rosrun", "cobridge", "cobridge"]

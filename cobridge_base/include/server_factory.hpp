@@ -24,7 +24,7 @@
 #include "common.hpp"
 #include "server_interface.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     class ServerFactory {
     public:

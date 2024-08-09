@@ -16,7 +16,7 @@
 
 #include "parameter.hpp"
 
-namespace cobridge_base {
+namespace cobridge {
 
     ParameterValue::ParameterValue()
             : _type(ParameterType::PARAMETER_NOT_SET) {}

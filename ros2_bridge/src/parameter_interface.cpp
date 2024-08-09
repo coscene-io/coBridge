@@ -36,9 +36,9 @@ namespace {
         return node_name + PARAM_SEP + param_name;
     }
 
-    rclcpp::Parameter to_ros_param(const cobridge_base::Parameter &p) {
-        using cobridge_base::Parameter;
-        using cobridge_base::ParameterType;
+    rclcpp::Parameter to_ros_param(const cobridge::Parameter &p) {
+        using cobridge::Parameter;
+        using cobridge::ParameterType;
 
         const auto param_type = p.get_type();
         const auto value = p.get_value();
@@ -54,7 +54,7 @@ namespace {
         } else if (param_type == ParameterType::PARAMETER_BYTE_ARRAY) {
             return {p.get_name(), value.getValue<std::vector<unsigned char>>()};
         } else if (param_type == ParameterType::PARAMETER_ARRAY) {
-            const auto param_array = value.getValue<std::vector<cobridge_base::ParameterValue>>();
+            const auto param_array = value.getValue<std::vector<cobridge::ParameterValue>>();
 
             const auto element_type = param_array.front().getType();
             if (element_type == ParameterType::PARAMETER_BOOL) {
@@ -95,11 +95,11 @@ namespace {
         return rclcpp::Parameter();
     }
 
-    cobridge_base::Parameter from_ros_param(const rclcpp::Parameter &p) {
+    cobridge::Parameter from_ros_param(const rclcpp::Parameter &p) {
         const auto type = p.get_type();
 
         if (type == rclcpp::ParameterType::PARAMETER_NOT_SET) {
-            return { p.get_name(), cobridge_base::ParameterValue()};
+            return { p.get_name(), cobridge::ParameterValue()};
         } else if (type == rclcpp::ParameterType::PARAMETER_BOOL) {
             return {p.get_name(), p.as_bool()};
         } else if (type == rclcpp::ParameterType::PARAMETER_INTEGER) {
@@ -111,25 +111,25 @@ namespace {
         } else if (type == rclcpp::ParameterType::PARAMETER_BYTE_ARRAY) {
             return {p.get_name(), p.as_byte_array()};
         } else if (type == rclcpp::ParameterType::PARAMETER_BOOL_ARRAY) {
-            std::vector<cobridge_base::ParameterValue> param_array;
+            std::vector<cobridge::ParameterValue> param_array;
             for (const auto value: p.as_bool_array()) {
                 param_array.emplace_back(value);
             }
             return {p.get_name(), param_array};
         } else if (type == rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY) {
-            std::vector<cobridge_base::ParameterValue> param_array;
+            std::vector<cobridge::ParameterValue> param_array;
             for (const auto value: p.as_integer_array()) {
                 param_array.emplace_back(value);
             }
             return {p.get_name(), param_array};
         } else if (type == rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY) {
-            std::vector<cobridge_base::ParameterValue> param_array;
+            std::vector<cobridge::ParameterValue> param_array;
             for (const auto value: p.as_double_array()) {
                 param_array.emplace_back(value);
             }
             return {p.get_name(), param_array};
         } else if (type == rclcpp::ParameterType::PARAMETER_STRING_ARRAY) {
-            std::vector<cobridge_base::ParameterValue> param_array;
+            std::vector<cobridge::ParameterValue> param_array;
             for (const auto &value: p.as_string_array()) {
                 param_array.emplace_back(value);
             }
@@ -143,7 +143,7 @@ namespace {
 
 namespace cobridge {
 
-    using cobridge_base::is_whitelisted;
+    using cobridge::is_whitelisted;
 
     ParameterInterface::ParameterInterface(rclcpp::Node *node,
                                            std::vector<std::regex> param_whitelist_patterns)

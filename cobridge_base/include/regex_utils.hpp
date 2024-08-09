@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace cobridge_base {
+namespace cobridge {
 
     inline bool is_whitelisted(const std::string &name, const std::vector<std::regex> &regex_patterns) {
         return std::find_if(regex_patterns.begin(), regex_patterns.end(), [name](const auto &regex) {
