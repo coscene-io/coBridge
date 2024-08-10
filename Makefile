@@ -4,7 +4,7 @@ ROS2_DISTRIBUTIONS := foxy humble iron rolling
 define generate_ros1_targets
 .PHONY: $(1)
 $(1):
-	docker build -t $(1)_bridge --pull -f Dockerfile.ros1 --build-arg ROS_DISTRIBUTION=$(1) .
+	docker build -t $(1)_bridge --pull -f ROS1.Dockerfile --build-arg ROS_DISTRIBUTION=$(1) .
 
 .PHONY: $(1)-test
 $(1)-test: $(1)
@@ -12,7 +12,7 @@ $(1)-test: $(1)
 
 .PHONY: $(1)-boost-asio
 $(1)-boost-asio:
-	docker build -t $(1)_bridge_boost_asio --pull -f Dockerfile.ros1 --build-arg ROS_DISTRIBUTION=$(1) --build-arg USE_ASIO_STANDALONE=OFF .
+	docker build -t $(1)_bridge_boost_asio --pull -f ROS1.Dockerfile --build-arg ROS_DISTRIBUTION=$(1) --build-arg USE_ASIO_STANDALONE=OFF .
 
 .PHONY: $(1)-test-boost-asio
 $(1)-test-boost-asio: $(1)-boost-asio
@@ -22,7 +22,7 @@ endef
 define generate_ros2_targets
 .PHONY: $(1)
 $(1):
-	docker build -t $(1)_bridge --pull -f Dockerfile.ros2 --build-arg ROS_DISTRIBUTION=$(1) .
+	docker build -t $(1)_bridge --pull -f ROS2.Dockerfile --build-arg ROS_DISTRIBUTION=$(1) .
 
 .PHONY: $(1)-test
 $(1)-test: $(1)
@@ -30,7 +30,7 @@ $(1)-test: $(1)
 
 .PHONY: $(1)-boost-asio
 $(1)-boost-asio:
-	docker build -t $(1)_bridge-boost-asio --pull -f Dockerfile.ros2 --build-arg ROS_DISTRIBUTION=$(1) --build-arg USE_ASIO_STANDALONE=OFF .
+	docker build -t $(1)_bridge-boost-asio --pull -f ROS2.Dockerfile --build-arg ROS_DISTRIBUTION=$(1) --build-arg USE_ASIO_STANDALONE=OFF .
 
 .PHONY: $(1)-test-boost-asio
 $(1)-test-boost-asio: $(1)-boost-asio
