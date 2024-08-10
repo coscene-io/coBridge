@@ -17,7 +17,7 @@
     <depend condition="$ROS_VERSION == 2">ament_index_cpp</depend>
     <depend condition="$ROS_VERSION == 2">rclcpp</depend>
     <depend condition="$ROS_VERSION == 2">rclcpp_components</depend>
-
+<!--    <depend condition="$ROS_VERSION == 2">rosx_introspection</depend>-->
 
     <test_depend condition="$ROS_VERSION == 1">gtest</test_depend>
     <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
