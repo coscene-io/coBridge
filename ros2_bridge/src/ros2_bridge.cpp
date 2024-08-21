@@ -549,11 +549,21 @@ namespace cobridge {
         }
 
         try {
+#ifdef ROS2_VERSION_FOXY
             auto subscriber = cobridge::create_generic_subscription(
                     this->get_node_topics_interface(),
                     topic, datatype, qos,
-                    std::bind(&CoBridge::ros_message_handler, this, channel_id, client_handle, _1, _2));//,
-//      subscriptionOptions);
+                    std::bind(&CoBridge::ros_message_handler, this, channel_id, client_handle, _1, _2));
+#endif
+
+#ifdef ROS2_VERSION_HUMBLE
+            auto subscriber = this->create_generic_subscription(
+                    topic, datatype, qos,
+                    [this, channel_id, client_handle](std::shared_ptr<rclcpp::SerializedMessage> msg) {
+                        this->ros_message_handler(channel_id, client_handle, msg);
+                        },
+                    subscription_options);
+#endif
             subscriptions_by_client.emplace(client_handle, std::move(subscriber));
         } catch (const std::exception &ex) {
             throw cobridge_base::ChannelError(
@@ -641,9 +651,15 @@ namespace cobridge {
             }
             rclcpp::PublisherOptions publisher_options{};
             publisher_options.callback_group = _client_publish_callback_group;
+#ifdef ROS2_VERSION_FOXY
             auto publisher = cobridge::create_generic_publisher(
-                    this->get_node_topics_interface(), topic_name, topic_type, qos);//, publisherOptions);
+                    this->get_node_topics_interface(), topic_name, topic_type, qos);
+#endif
 
+#ifdef ROS2_VERSION_HUMBLE
+            auto publisher = rclcpp::create_generic_publisher(
+                    this->get_node_topics_interface(), topic_name, topic_type, qos);
+#endif
             RCLCPP_INFO(this->get_logger(), "Client %s is advertising \"%s\" (%s) on channel %d",
                         _server->remote_endpoint_string(hdl).c_str(), topic_name.c_str(), topic_type.c_str(),
                         advertisement.channel_id);
@@ -694,8 +710,12 @@ namespace cobridge {
     }
 
     void CoBridge::client_message(const cobridge_base::ClientMessage &message, ConnectionHandle hdl) {
-        // Get the publisher
+#ifdef ROS2_VERSION_FOXY
         cobridge::GenericPublisher::SharedPtr publisher;
+#endif
+#ifdef ROS2_VERSION_HUMBLE
+        rclcpp::GenericPublisher::SharedPtr publisher;
+#endif
         {
             const auto channel_id = message.advertisement.channel_id;
             std::lock_guard<std::mutex> lock(_client_advertisements_mutex);
@@ -726,38 +746,44 @@ namespace cobridge {
         rcl_serialized_msg.buffer_length = message.getLength();
 
         // Publish the message
+#ifdef ROS2_VERSION_FOXY
         publisher->publish(std::make_shared<rcl_serialized_message_t>(serialized_message.get_rcl_serialized_message()));
+#endif
+
+#ifdef ROS2_VERSION_HUMBLE
+        publisher->publish(serialized_message);
+#endif
     }
 
-//    void CoBridge::set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
-//                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
-//        _param_interface->set_params(parameters, std::chrono::seconds(5));
-//
-//        // If a request Id was given, send potentially updated parameters back to client
-//        if (request_id) {
-//            std::vector<std::string> parameter_names(parameters.size());
-//            for (size_t i = 0; i < parameters.size(); ++i) {
-//                parameter_names[i] = parameters[i].get_name();
-//            }
-//            get_parameters(parameter_names, request_id, hdl);
-//        }
-//    }
-//
-//    void CoBridge::get_parameters(const std::vector<std::string> &parameters,
-//                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
-//        const auto params = _param_interface->getParams(parameters, std::chrono::seconds(5));
-//        _server->publish_parameter_values(hdl, params, request_id);
-//    }
-//
-//    void CoBridge::subscribe_parameters(const std::vector<std::string> &parameters,
-//                                         cobridge_base::ParameterSubscriptionOperation op,
-//                                         cobridge::ConnectionHandle) {
-//        if (op == cobridge_base::ParameterSubscriptionOperation::SUBSCRIBE) {
-//            _param_interface->subscribe_params(parameters);
-//        } else {
-//            _param_interface->unsubscribe_params(parameters);
-//        }
-//    }
+    void CoBridge::set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
+                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
+        _param_interface->set_params(parameters, std::chrono::seconds(5));
+
+        // If a request Id was given, send potentially updated parameters back to client
+        if (request_id) {
+            std::vector<std::string> parameter_names(parameters.size());
+            for (size_t i = 0; i < parameters.size(); ++i) {
+                parameter_names[i] = parameters[i].get_name();
+            }
+            get_parameters(parameter_names, request_id, hdl);
+        }
+    }
+
+    void CoBridge::get_parameters(const std::vector<std::string> &parameters,
+                                   const std::optional<std::string> &request_id, cobridge::ConnectionHandle hdl) {
+        const auto params = _param_interface->get_params(parameters, std::chrono::seconds(5));
+        _server->publish_parameter_values(hdl, params, request_id);
+    }
+
+    void CoBridge::subscribe_parameters(const std::vector<std::string> &parameters,
+                                         cobridge_base::ParameterSubscriptionOperation op,
+                                         cobridge::ConnectionHandle) {
+        if (op == cobridge_base::ParameterSubscriptionOperation::SUBSCRIBE) {
+            _param_interface->subscribe_params(parameters);
+        } else {
+            _param_interface->unsubscribe_params(parameters);
+        }
+    }
 
     void CoBridge::parameter_updates(const std::vector<cobridge_base::Parameter> &parameters) {
         _server->update_parameter_values(parameters);
@@ -792,8 +818,8 @@ namespace cobridge {
         // const auto timestamp = this->now().nanoseconds();
         assert(timestamp >= 0 && "Timestamp is negative");
         const auto rcl_serialized_msg = msg->get_rcl_serialized_message();
-        _server->send_message(client_handle, channel_id, timestamp, rcl_serialized_msg.buffer,
-                              rcl_serialized_msg.buffer_length);
+        _server->send_message(client_handle, channel_id, timestamp != 0 ? timestamp : this->now().nanoseconds(),
+                              rcl_serialized_msg.buffer, rcl_serialized_msg.buffer_length);
     }
 
     void CoBridge::service_request(const cobridge_base::ServiceRequest &request,

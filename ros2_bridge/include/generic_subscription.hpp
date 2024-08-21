@@ -49,8 +49,8 @@ namespace cobridge {
         GenericSubscription(
                 rclcpp::node_interfaces::NodeBaseInterface *node_base,
                 const rosidl_message_type_support_t &ts,
-                const std::string &topic_name,
-                const std::string &topic_type,
+                std::string topic_name,
+                std::string topic_type,
                 const rclcpp::QoS &qos,
                 std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> callback);
 
@@ -82,7 +82,7 @@ namespace cobridge {
     private:
         RCLCPP_DISABLE_COPY(GenericSubscription)
 
-        std::shared_ptr<rclcpp::SerializedMessage> borrow_serialized_message(size_t capacity);
+        static std::shared_ptr<rclcpp::SerializedMessage> borrow_serialized_message(size_t capacity);
 
         rcutils_allocator_t _default_allocator;
         std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> _callback;
@@ -90,7 +90,7 @@ namespace cobridge {
         int64_t _last_frame_timestamp;
         std::string _message_type;
         std::string _topic_name;
-        bool _use_down_sample;
+        bool _use_down_sample{};
     };
 }
 

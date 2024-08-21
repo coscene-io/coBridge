@@ -43,8 +43,8 @@ namespace cobridge {
     GenericSubscription::GenericSubscription(
             rclcpp::node_interfaces::NodeBaseInterface *node_base,
             const rosidl_message_type_support_t &ts,
-            const std::string &topic_name,
-            const std::string &topic_type,
+            std::string topic_name,
+            std::string topic_type,
             const rclcpp::QoS &qos,
             std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> callback)
             : SubscriptionBase(node_base, ts, topic_name, get_subscription_options(qos), true),
@@ -52,13 +52,8 @@ namespace cobridge {
               _callback(std::move(callback)),
               _qos(qos),
               _last_frame_timestamp(0),
-              _message_type(topic_type),
-              _topic_name(topic_name) {
-        //if (topic_type == "sensor_msgs/msg/Image" || topic_type == "sensor_msgs/msg/CameraInfo") {
-        //    use_down_sample_ = true;
-        //} else {
-        //    use_down_sample_ = false;
-        //}
+              _message_type(std::move(topic_type)),
+              _topic_name(std::move(topic_name)){
     }
 
     std::shared_ptr<void> GenericSubscription::create_message() {

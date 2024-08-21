@@ -101,9 +101,9 @@ namespace cobridge_base {
             {"setParameters",               CAPABILITY_PARAMETERS},
             {"subscribeParameterUpdates",   CAPABILITY_PARAMETERS_SUBSCRIBE},
             {"unsubscribeParameterUpdates", CAPABILITY_PARAMETERS_SUBSCRIBE},
-            {"subscribe_connection_graph",    CAPABILITY_CONNECTION_GRAPH},
+            {"subscribeConnectionGraph",    CAPABILITY_CONNECTION_GRAPH},
             {"unsubscribeConnectionGraph",  CAPABILITY_CONNECTION_GRAPH},
-            {"fetch_asset",                  CAPABILITY_ASSETS},
+            {"fetchAsset",                  CAPABILITY_ASSETS},
     };
 
     /// Map of required capability by client operation (binary).

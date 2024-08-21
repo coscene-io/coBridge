@@ -35,26 +35,38 @@
 #include <server_factory.hpp>
 #include <utils.hpp>
 
+#ifdef ROS2_VERSION_FOXY
 #include <create_generic_subscription.hpp>
 #include <create_generic_publisher.hpp>
+#endif
 
 namespace cobridge {
 
     using ConnectionHandle = websocketpp::connection_hdl;
     using LogLevel = cobridge_base::WebSocketLogLevel;
-    using Subscription = cobridge::GenericSubscription::SharedPtr;
-    using SubscriptionsByClient = std::map<ConnectionHandle, Subscription, std::owner_less<>>;
-    using Publication = cobridge::GenericPublisher::SharedPtr;
-    using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, Publication>;
+//    using Subscription = cobridge::GenericSubscription::SharedPtr;
+//    using SubscriptionsByClient = std::map<ConnectionHandle, Subscription, std::owner_less<>>;
+//    using Publication = cobridge::GenericPublisher::SharedPtr;
+//    using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, Publication>;
+//    using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
+
+#ifdef ROS2_VERSION_FOXY
+    using SubscriptionsByClient = std::map<ConnectionHandle, cobridge::GenericSubscription::SharedPtr, std::owner_less<>>;
+    using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, cobridge::GenericPublisher::SharedPtr>;
     using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
+#else
+    using SubscriptionsByClient = std::map<ConnectionHandle, rclcpp::GenericSubscription::SharedPtr, std::owner_less<>>;
+    using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, rclcpp::GenericPublisher::SharedPtr>;
+    using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
+#endif
 
     class CoBridge : public rclcpp::Node {
     public:
         using TopicAndDatatype = std::pair<std::string, std::string>;
 
-        CoBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+        explicit CoBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
-        ~CoBridge();
+        ~CoBridge() override;
 
         void rosgraph_poll_thread();
 
@@ -79,7 +91,7 @@ namespace cobridge {
         std::vector<std::regex> _topic_whitelist_patterns;
         std::vector<std::regex> _service_whitelist_patterns;
         std::vector<std::regex> _asset_uri_allowlist_patterns;
-//        std::shared_ptr<ParameterInterface> _param_interface;
+        std::shared_ptr<ParameterInterface> _param_interface;
         std::unordered_map<cobridge_base::ChannelId, cobridge_base::ChannelWithoutId> _advertised_topics;
         std::unordered_map<cobridge_base::ServiceId, cobridge_base::ServiceWithoutId> _advertised_services;
         std::unordered_map<cobridge_base::ChannelId, SubscriptionsByClient> _subscriptions;
@@ -113,21 +125,21 @@ namespace cobridge {
 
         void client_message(const cobridge_base::ClientMessage &message, ConnectionHandle hdl);
 
-//        void set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
-//                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
-//
-//        void get_parameters(const std::vector<std::string> &parameters,
-//                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
-//
-//        void subscribe_parameters(const std::vector<std::string> &parameters,
-//                                 cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle);
+        void set_parameters(const std::vector<cobridge_base::Parameter> &parameters,
+                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
+
+        void get_parameters(const std::vector<std::string> &parameters,
+                           const std::optional<std::string> &request_id, ConnectionHandle hdl);
+
+        void subscribe_parameters(const std::vector<std::string> &parameters,
+                                 cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle);
 
         void parameter_updates(const std::vector<cobridge_base::Parameter> &parameters);
 
         void log_handler(LogLevel level, char const *msg);
 
         void  ros_message_handler(const cobridge_base::ChannelId &channel_id, ConnectionHandle client_handle,
-                                  std::shared_ptr<rclcpp::SerializedMessage> msg, uint64_t timestamp);
+                                  std::shared_ptr<rclcpp::SerializedMessage> msg, uint64_t timestamp = 0);
 
         void service_request(const cobridge_base::ServiceRequest &request, ConnectionHandle client_handle);
 
