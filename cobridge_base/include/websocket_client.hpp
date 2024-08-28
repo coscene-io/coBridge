@@ -1,4 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////
 // Copyright 2024 coScene
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,267 +11,332 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COBRIDGE_WEBSOCKET_CLIENT_HPP
-#define COBRIDGE_WEBSOCKET_CLIENT_HPP
+#ifndef WEBSOCKET_CLIENT_HPP_
+#define WEBSOCKET_CLIENT_HPP_
 #pragma once
 
-#include <functional>
-#include <future>
 #include <optional>
 #include <shared_mutex>
-#include <utility>
-#include <vector>
 
 #include <nlohmann/json.hpp>
 #include <websocketpp/client.hpp>
 #include <websocketpp/common/memory.hpp>
 #include <websocketpp/common/thread.hpp>
 
+#include <string>
+#include <memory>
+#include <functional>
+#include <future>
+#include <utility>
+#include <vector>
+
 #include "common.hpp"
 #include "parameter.hpp"
 #include "serialization.hpp"
 
-namespace cobridge_base {
+namespace cobridge_base
+{
 
-    inline void to_json(nlohmann::json& j, const ClientAdvertisement& p) {
-        j = nlohmann::json{{"id", p.channel_id},
-                           {"topic", p.topic},
-                           {"encoding", p.encoding},
-                           {"schemaName", p.schema_name}};
+inline void to_json(nlohmann::json & j, const ClientAdvertisement & p)
+{
+  j = nlohmann::json{
+    {"id", p.channel_id},
+    {"topic", p.topic},
+    {"encoding", p.encoding},
+    {"schemaName", p.schema_name}
+  };
+}
+
+using TextMessageHandler = std::function<void (const std::string &)>;
+using BinaryMessageHandler = std::function<void (const uint8_t *, size_t)>;
+using OpCode = websocketpp::frame::opcode::value;
+
+class ClientInterface
+{
+public:
+  virtual void connect(
+    const std::string & uri, std::function<void(websocketpp::connection_hdl)> on_open_handler,
+    std::function<void(websocketpp::connection_hdl)> on_close_handler = nullptr) = 0;
+
+  virtual std::future<void> connect(const std::string & uri) = 0;
+
+  virtual void close() = 0;
+
+  virtual void subscribe(
+    const std::vector<std::pair<SubscriptionId, ChannelId>> & subscriptions) = 0;
+
+  virtual void unsubscribe(const std::vector<SubscriptionId> & subscription_ids) = 0;
+
+  virtual void advertise(const std::vector<ClientAdvertisement> & channels) = 0;
+
+  virtual void unadvertise(const std::vector<ClientChannelId> & channel_ids) = 0;
+
+  virtual void publish(ClientChannelId channel_id, const uint8_t * buffer, size_t size) = 0;
+
+  virtual void sendServiceRequest(const ServiceRequest & request) = 0;
+
+  virtual void getParameters(
+    const std::vector<std::string> & parameter_names,
+    const std::optional<std::string> & request_id) = 0;
+
+  virtual void setParameters(
+    const std::vector<Parameter> & parameters,
+    const std::optional<std::string> & request_id) = 0;
+
+  virtual void subscribeParameterUpdates(const std::vector<std::string> & parameter_names) = 0;
+
+  virtual void unsubscribeParameterUpdates(const std::vector<std::string> & parameter_names) = 0;
+
+  virtual void fetchAsset(const std::string & name, uint32_t request_id) = 0;
+
+  virtual void setTextMessageHandler(TextMessageHandler handler) = 0;
+
+  virtual void setBinaryMessageHandler(BinaryMessageHandler handler) = 0;
+};
+
+template<typename ClientConfiguration>
+class Client : public ClientInterface
+{
+public:
+  using ClientType = websocketpp::client<ClientConfiguration>;
+  using MessagePtr = typename ClientType::message_ptr;
+  using ConnectionPtr = typename ClientType::connection_ptr;
+
+  Client()
+  {
+    _endpoint.clear_access_channels(websocketpp::log::alevel::all);
+    _endpoint.clear_error_channels(websocketpp::log::elevel::all);
+
+    _endpoint.init_asio();
+    _endpoint.start_perpetual();
+
+    _endpoint.set_message_handler(
+      bind(&Client::messageHandler, this, std::placeholders::_1, std::placeholders::_2));
+
+    _thread.reset(new websocketpp::lib::thread(&ClientType::run, &_endpoint));
+  }
+
+  virtual ~Client()
+  {
+    close();
+    _endpoint.stop_perpetual();
+    _thread->join();
+  }
+
+  void connect(
+    const std::string & uri,
+    std::function<void(websocketpp::connection_hdl)> on_open_handler,
+    std::function<void(websocketpp::connection_hdl)> on_close_handler = nullptr) override
+  {
+    std::unique_lock<std::shared_mutex> lock(_mutex);
+
+    websocketpp::lib::error_code ec;
+    _con = _endpoint.get_connection(uri, ec);
+
+    if (ec) {
+      throw std::runtime_error("Failed to get connection from URI " + uri);
     }
 
-    using TextMessageHandler = std::function<void(const std::string&)>;
-    using BinaryMessageHandler = std::function<void(const uint8_t*, size_t)>;
-    using OpCode = websocketpp::frame::opcode::value;
+    if (on_open_handler) {
+      _con->set_open_handler(on_open_handler);
+    }
+    if (on_close_handler) {
+      _con->set_close_handler(on_close_handler);
+    }
 
-    class ClientInterface {
-    public:
-        virtual void connect(
-                const std::string& uri, std::function<void(websocketpp::connection_hdl)> on_open_handler,
-                std::function<void(websocketpp::connection_hdl)> on_close_handler = nullptr) = 0;
-        virtual std::future<void> connect(const std::string& uri) = 0;
-        virtual void close() = 0;
+    _con->add_subprotocol(SUPPORTED_SUB_PROTOCOL);
+    _endpoint.connect(_con);
+  }
 
-        virtual void subscribe(
-                const std::vector<std::pair<SubscriptionId, ChannelId>>& subscriptions) = 0;
-        virtual void unsubscribe(const std::vector<SubscriptionId>& subscription_ids) = 0;
-        virtual void advertise(const std::vector<ClientAdvertisement>& channels) = 0;
-        virtual void unadvertise(const std::vector<ClientChannelId>& channel_ids) = 0;
-        virtual void publish(ClientChannelId channel_id, const uint8_t* buffer, size_t size) = 0;
-        virtual void sendServiceRequest(const ServiceRequest& request) = 0;
-        virtual void getParameters(const std::vector<std::string>& parameter_names,
-                                   const std::optional<std::string>& request_id) = 0;
-        virtual void setParameters(const std::vector<Parameter>& parameters,
-                                   const std::optional<std::string>& request_id) = 0;
-        virtual void subscribeParameterUpdates(const std::vector<std::string>& parameter_names) = 0;
-        virtual void unsubscribeParameterUpdates(const std::vector<std::string>& parameter_names) = 0;
-        virtual void fetchAsset(const std::string& name, uint32_t request_id) = 0;
+  std::future<void> connect(const std::string & uri) override
+  {
+    auto promise = std::make_shared<std::promise<void>>();
+    auto future = promise->get_future();
 
-        virtual void setTextMessageHandler(TextMessageHandler handler) = 0;
-        virtual void setBinaryMessageHandler(BinaryMessageHandler handler) = 0;
-    };
+    connect(
+      uri, [p = std::move(promise)](websocketpp::connection_hdl) mutable
+      {
+        p->set_value();
+      });
 
-    template <typename ClientConfiguration>
-    class Client : public ClientInterface {
-    public:
-        using ClientType = websocketpp::client<ClientConfiguration>;
-        using MessagePtr = typename ClientType::message_ptr;
-        using ConnectionPtr = typename ClientType::connection_ptr;
+    return future;
+  }
 
-        Client() {
-            _endpoint.clear_access_channels(websocketpp::log::alevel::all);
-            _endpoint.clear_error_channels(websocketpp::log::elevel::all);
+  void close() override
+  {
+    std::unique_lock<std::shared_mutex> lock(_mutex);
+    if (!_con) {
+      return;  // Already disconnected
+    }
 
-            _endpoint.init_asio();
-            _endpoint.start_perpetual();
+    _endpoint.close(_con, websocketpp::close::status::going_away, "");
+    _con.reset();
+  }
 
-            _endpoint.set_message_handler(
-                    bind(&Client::messageHandler, this, std::placeholders::_1, std::placeholders::_2));
+  void messageHandler(websocketpp::connection_hdl hdl, MessagePtr msg)
+  {
+    (void) hdl;
+    const OpCode op = msg->get_opcode();
 
-            _thread.reset(new websocketpp::lib::thread(&ClientType::run, &_endpoint));
+    switch (op) {
+      case OpCode::TEXT: {
+          std::shared_lock<std::shared_mutex> lock(_mutex);
+          if (_text_message_handler) {
+            _textMessageHandler(msg->get_payload());
+          }
         }
-
-        virtual ~Client() {
-            close();
-            _endpoint.stop_perpetual();
-            _thread->join();
+        break;
+      case OpCode::BINARY: {
+          std::shared_lock<std::shared_mutex> lock(_mutex);
+          const auto & payload = msg->get_payload();
+          if (_binary_message_handler) {
+            _binaryMessageHandler(
+              reinterpret_cast<const uint8_t *>(payload.data()), payload.size());
+          }
         }
+        break;
+      default: break;
+    }
+  }
 
-        void connect(const std::string& uri,
-                     std::function<void(websocketpp::connection_hdl)> on_open_handler,
-                     std::function<void(websocketpp::connection_hdl)> on_close_handler = nullptr) override {
-            std::unique_lock<std::shared_mutex> lock(_mutex);
+  void subscribe(const std::vector<std::pair<SubscriptionId, ChannelId>> & subscriptions) override
+  {
+    nlohmann::json sub_json;
+    for (const auto & [subId, channelId] : subscriptions) {
+      sub_json.push_back(
+        {{"id", subId},
+          {"channelId", channelId}});
+    }
 
-            websocketpp::lib::error_code ec;
-            _con = _endpoint.get_connection(uri, ec);
+    const std::string payload =
+      nlohmann::json{
+      {"op", "subscribe"},
+      {"subscriptions", std::move(sub_json)}}.dump();
+    sendText(payload);
+  }
 
-            if (ec) {
-                throw std::runtime_error("Failed to get connection from URI " + uri);
-            }
+  void unsubscribe(const std::vector<SubscriptionId> & subscription_ids) override
+  {
+    const std::string payload =
+      nlohmann::json{
+      {"op", "unsubscribe"},
+      {"subscriptionIds", subscription_ids}}.dump();
+    sendText(payload);
+  }
 
-            if (on_open_handler) {
-                _con->set_open_handler(on_open_handler);
-            }
-            if (on_close_handler) {
-                _con->set_close_handler(on_close_handler);
-            }
+  void advertise(const std::vector<ClientAdvertisement> & channels) override
+  {
+    const std::string payload = nlohmann::json{
+      {"op", "advertise"},
+      {"channels", channels}}.dump();
+    sendText(payload);
+  }
 
-            _con->add_subprotocol(SUPPORTED_SUB_PROTOCOL);
-            _endpoint.connect(_con);
-        }
+  void unadvertise(const std::vector<ClientChannelId> & channel_ids) override
+  {
+    const std::string payload =
+      nlohmann::json{
+      {"op", "unadvertise"},
+      {"channelIds", channel_ids}}.dump();
+    sendText(payload);
+  }
 
-        std::future<void> connect(const std::string& uri) override {
-            auto promise = std::make_shared<std::promise<void>>();
-            auto future = promise->get_future();
+  void publish(ClientChannelId channel_id, const uint8_t * buffer, size_t size) override
+  {
+    std::vector<uint8_t> payload(1 + 4 + size);
+    payload[0] = uint8_t(ClientBinaryOpcode::MESSAGE_DATA);
+    write_uint32_LE(payload.data() + 1, channel_id);
+    std::memcpy(payload.data() + 1 + 4, buffer, size);
+    sendBinary(payload.data(), payload.size());
+  }
 
-            connect(uri, [p = std::move(promise)](websocketpp::connection_hdl) mutable {
-                p->set_value();
-            });
+  void sendServiceRequest(const ServiceRequest & request) override
+  {
+    std::vector<uint8_t> payload(1 + request.size());
+    payload[0] = uint8_t(ClientBinaryOpcode::SERVICE_CALL_REQUEST);
+    request.write(payload.data() + 1);
+    sendBinary(payload.data(), payload.size());
+  }
 
-            return future;
-        }
+  void getParameters(
+    const std::vector<std::string> & parameter_names,
+    const std::optional<std::string> & request_id = std::nullopt) override
+  {
+    nlohmann::json jsonPayload{{"op", "getParameters"},
+      {"parameterNames", parameter_names}};
+    if (request_id) {
+      jsonPayload["id"] = request_id.value();
+    }
+    sendText(jsonPayload.dump());
+  }
 
-        void close() override {
-            std::unique_lock<std::shared_mutex> lock(_mutex);
-            if (!_con) {
-                return;  // Already disconnected
-            }
+  void setParameters(
+    const std::vector<Parameter> & parameters,
+    const std::optional<std::string> & request_id = std::nullopt) override
+  {
+    nlohmann::json jsonPayload{{"op", "setParameters"},
+      {"parameters", parameters}};
+    if (request_id) {
+      jsonPayload["id"] = request_id.value();
+    }
+    sendText(jsonPayload.dump());
+  }
 
-            _endpoint.close(_con, websocketpp::close::status::going_away, "");
-            _con.reset();
-        }
+  void subscribeParameterUpdates(const std::vector<std::string> & parameter_names) override
+  {
+    nlohmann::json jsonPayload{{"op", "subscribeParameterUpdates"},
+      {"parameterNames", parameter_names}};
+    sendText(jsonPayload.dump());
+  }
 
-        void messageHandler(websocketpp::connection_hdl hdl, MessagePtr msg) {
-            (void)hdl;
-            const OpCode op = msg->get_opcode();
+  void unsubscribeParameterUpdates(const std::vector<std::string> & parameter_names) override
+  {
+    nlohmann::json jsonPayload{{"op", "unsubscribeParameterUpdates"},
+      {"parameterNames", parameter_names}};
+    sendText(jsonPayload.dump());
+  }
 
-            switch (op) {
-                case OpCode::TEXT: {
-                    std::shared_lock<std::shared_mutex> lock(_mutex);
-                    if (_text_message_handler) {
-                        _textMessageHandler(msg->get_payload());
-                    }
-                } break;
-                case OpCode::BINARY: {
-                    std::shared_lock<std::shared_mutex> lock(_mutex);
-                    const auto& payload = msg->get_payload();
-                    if (_binary_message_handler) {
-                        _binaryMessageHandler(reinterpret_cast<const uint8_t*>(payload.data()), payload.size());
-                    }
-                } break;
-                default:
-                    break;
-            }
-        }
+  void fetchAsset(const std::string & uri, uint32_t request_id) override
+  {
+    nlohmann::json jsonPayload{{"op", "fetchAsset"},
+      {"uri", uri},
+      {"requestId", request_id}};
+    sendText(jsonPayload.dump());
+  }
 
-        void subscribe(const std::vector<std::pair<SubscriptionId, ChannelId>>& subscriptions) override {
-            nlohmann::json sub_json;
-            for (const auto& [subId, channelId] : subscriptions) {
-                sub_json.push_back({{"id", subId}, {"channelId", channelId}});
-            }
+  void setTextMessageHandler(TextMessageHandler handler) override
+  {
+    std::unique_lock<std::shared_mutex> lock(_mutex);
+    _text_message_handler = std::move(handler);
+  }
 
-            const std::string payload =
-                    nlohmann::json{{"op", "subscribe"}, {"subscriptions", std::move(sub_json)}}.dump();
-            sendText(payload);
-        }
+  void setBinaryMessageHandler(BinaryMessageHandler handler) override
+  {
+    std::unique_lock<std::shared_mutex> lock(_mutex);
+    _binary_message_handler = std::move(handler);
+  }
 
-        void unsubscribe(const std::vector<SubscriptionId>& subscription_ids) override {
-            const std::string payload =
-                    nlohmann::json{{"op", "unsubscribe"}, {"subscriptionIds", subscription_ids}}.dump();
-            sendText(payload);
-        }
+  void sendText(const std::string & payload)
+  {
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+    _endpoint.send(_con, payload, OpCode::TEXT);
+  }
 
-        void advertise(const std::vector<ClientAdvertisement>& channels) override {
-            const std::string payload = nlohmann::json{{"op", "advertise"}, {"channels", channels}}.dump();
-            sendText(payload);
-        }
+  void sendBinary(const uint8_t * data, size_t dataLength)
+  {
+    std::shared_lock<std::shared_mutex> lock(_mutex);
+    _endpoint.send(_con, data, dataLength, OpCode::BINARY);
+  }
 
-        void unadvertise(const std::vector<ClientChannelId>& channel_ids) override {
-            const std::string payload =
-                    nlohmann::json{{"op", "unadvertise"}, {"channelIds", channel_ids}}.dump();
-            sendText(payload);
-        }
+protected:
+  ClientType _endpoint;
+  websocketpp::lib::shared_ptr<websocketpp::lib::thread> _thread;
+  ConnectionPtr _con;
+  std::shared_mutex _mutex;
+  TextMessageHandler _text_message_handler;
+  BinaryMessageHandler _binary_message_handler;
+};
 
-        void publish(ClientChannelId channel_id, const uint8_t* buffer, size_t size) override {
-            std::vector<uint8_t> payload(1 + 4 + size);
-            payload[0] = uint8_t(ClientBinaryOpcode::MESSAGE_DATA);
-            write_uint32_LE(payload.data() + 1, channel_id);
-            std::memcpy(payload.data() + 1 + 4, buffer, size);
-            sendBinary(payload.data(), payload.size());
-        }
-
-        void sendServiceRequest(const ServiceRequest& request) override {
-            std::vector<uint8_t> payload(1 + request.size());
-            payload[0] = uint8_t(ClientBinaryOpcode::SERVICE_CALL_REQUEST);
-            request.write(payload.data() + 1);
-            sendBinary(payload.data(), payload.size());
-        }
-
-        void getParameters(const std::vector<std::string>& parameter_names,
-                           const std::optional<std::string>& request_id = std::nullopt) override {
-            nlohmann::json jsonPayload{{"op", "getParameters"}, {"parameterNames", parameter_names}};
-            if (request_id) {
-                jsonPayload["id"] = request_id.value();
-            }
-            sendText(jsonPayload.dump());
-        }
-
-        void setParameters(const std::vector<Parameter>& parameters,
-                           const std::optional<std::string>& request_id = std::nullopt) override {
-            nlohmann::json jsonPayload{{"op", "setParameters"}, {"parameters", parameters}};
-            if (request_id) {
-                jsonPayload["id"] = request_id.value();
-            }
-            sendText(jsonPayload.dump());
-        }
-
-        void subscribeParameterUpdates(const std::vector<std::string>& parameter_names) override {
-            nlohmann::json jsonPayload{{"op", "subscribeParameterUpdates"},
-                                       {"parameterNames", parameter_names}};
-            sendText(jsonPayload.dump());
-        }
-
-        void unsubscribeParameterUpdates(const std::vector<std::string>& parameter_names) override {
-            nlohmann::json jsonPayload{{"op", "unsubscribeParameterUpdates"},
-                                       {"parameterNames", parameter_names}};
-            sendText(jsonPayload.dump());
-        }
-
-        void fetchAsset(const std::string& uri, uint32_t request_id) override {
-            nlohmann::json jsonPayload{{"op", "fetchAsset"}, {"uri", uri}, {"requestId", request_id}};
-            sendText(jsonPayload.dump());
-        }
-
-        void setTextMessageHandler(TextMessageHandler handler) override {
-            std::unique_lock<std::shared_mutex> lock(_mutex);
-            _text_message_handler = std::move(handler);
-        }
-
-        void setBinaryMessageHandler(BinaryMessageHandler handler) override {
-            std::unique_lock<std::shared_mutex> lock(_mutex);
-            _binary_message_handler = std::move(handler);
-        }
-
-        void sendText(const std::string& payload) {
-            std::shared_lock<std::shared_mutex> lock(_mutex);
-            _endpoint.send(_con, payload, OpCode::TEXT);
-        }
-
-        void sendBinary(const uint8_t* data, size_t dataLength) {
-            std::shared_lock<std::shared_mutex> lock(_mutex);
-            _endpoint.send(_con, data, dataLength, OpCode::BINARY);
-        }
-
-    protected:
-        ClientType _endpoint;
-        websocketpp::lib::shared_ptr<websocketpp::lib::thread> _thread;
-        ConnectionPtr _con;
-        std::shared_mutex _mutex;
-        TextMessageHandler _text_message_handler;
-        BinaryMessageHandler _binary_message_handler;
-    };
-
-}
-#endif //COBRIDGE_WEBSOCKET_CLIENT_HPP
+}  // namespace cobridge_base
+#endif  // WEBSOCKET_CLIENT_HPP_

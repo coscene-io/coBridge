@@ -1,5 +1,17 @@
-#include <chrono>
-#include <future>
+// Copyright 2024 coScene
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 
 #include <ros/connection.h>
 #include <ros/service_manager.h>
@@ -7,11 +19,18 @@
 
 #include <service_utils.hpp>
 
-namespace cobridge {
+#include <chrono>
+#include <future>
+#include <string>
 
-std::string retrieveServiceType(const std::string& serviceName, std::chrono::milliseconds timeout) {
-  auto link = ros::ServiceManager::instance()->createServiceServerLink(serviceName, false, "*", "*",
-                                                                       {{"probe", "1"}});
+namespace cobridge
+{
+
+std::string retrieveServiceType(const std::string & serviceName, std::chrono::milliseconds timeout)
+{
+  auto link = ros::ServiceManager::instance()->createServiceServerLink(
+    serviceName, false, "*", "*",
+    {{"probe", "1"}});
   if (!link) {
     throw std::runtime_error("Failed to create service link");
   } else if (!link->getConnection()) {
@@ -22,13 +41,14 @@ std::string retrieveServiceType(const std::string& serviceName, std::chrono::mil
   auto future = promise.get_future();
 
   link->getConnection()->setHeaderReceivedCallback(
-    [&promise](const ros::ConnectionPtr& conn, const ros::Header& header) {
+    [&promise](const ros::ConnectionPtr & conn, const ros::Header & header) {
       std::string serviceType;
       if (header.getValue("type", serviceType)) {
         promise.set_value(serviceType);
       } else {
-        promise.set_exception(std::make_exception_ptr(
-          std::runtime_error("Key 'type' not found in service connection header")));
+        promise.set_exception(
+          std::make_exception_ptr(
+            std::runtime_error("Key 'type' not found in service connection header")));
       }
       // Close connection since we don't need it any more.
       conn->drop(ros::Connection::DropReason::Destructing);
@@ -45,4 +65,4 @@ std::string retrieveServiceType(const std::string& serviceName, std::chrono::mil
   return future.get();
 }
 
-}
+}  // namespace cobridge
