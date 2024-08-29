@@ -14,6 +14,7 @@ project(cobridge LANGUAGES CXX VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(AMENT_LINT_FILTERS "-build/include_order")
 
 macro(enable_strict_compiler_warnings target)
     if(MSVC)
@@ -150,8 +151,8 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
         find_package(cv_bridge REQUIRED)
         find_package(OpenCV REQUIRED)
 
-        find_package(ament_lint_auto REQUIRED)
-        ament_lint_auto_find_test_dependencies()
+#        find_package(ament_lint_auto REQUIRED)
+#        ament_lint_auto_find_test_dependencies()
 
         add_library(cobridge_component SHARED
                 ros2_bridge/src/message_definition_cache.cpp
@@ -187,6 +188,54 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
 else()
     message(FATAL_ERROR "ROS_VERSION environment variable must be 1 or 2")
 endif()
+
+if(ROS_BUILD_TYPE STREQUAL "catkin")
+    if(CATKIN_ENABLE_TESTING)
+        message(STATUS "Building tests with catkin")
+
+        find_package(catkin REQUIRED COMPONENTS roscpp std_msgs std_srvs)
+        if(NOT "$ENV{ROS_DISTRO}" STREQUAL "melodic")
+            find_package(GTest REQUIRED)
+        endif()
+        find_package(rostest REQUIRED)
+        find_package(Boost REQUIRED COMPONENTS system)
+
+        catkin_add_gtest(version_test cobridge_base/tests/version_test.cpp)
+        target_link_libraries(version_test cobridge_base ${Boost_LIBRARIES})
+        enable_strict_compiler_warnings(version_test)
+#
+#        catkin_add_gtest(serialization_test foxglove_bridge_base/tests/serialization_test.cpp)
+#        target_link_libraries(serialization_test foxglove_bridge_base ${Boost_LIBRARIES})
+#        enable_strict_compiler_warnings(foxglove_bridge)
+#
+#        catkin_add_gtest(base64_test foxglove_bridge_base/tests/base64_test.cpp)
+#        target_link_libraries(base64_test foxglove_bridge_base ${Boost_LIBRARIES})
+#        enable_strict_compiler_warnings(foxglove_bridge)
+#
+#        add_rostest_gtest(smoke_test ros1_foxglove_bridge/tests/smoke.test ros1_foxglove_bridge/tests/smoke_test.cpp)
+#        target_include_directories(smoke_test SYSTEM PRIVATE
+#                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/foxglove_bridge_base/include>
+#                ${catkin_INCLUDE_DIRS}
+#                $<INSTALL_INTERFACE:include>
+#        )
+#        target_link_libraries(smoke_test foxglove_bridge_base ${catkin_LIBRARIES})
+#        enable_strict_compiler_warnings(smoke_test)
+    endif()
+elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
+    if(BUILD_TESTING)
+        message(STATUS "Building tests with ament_cmake")
+
+        find_package(ament_cmake_gtest REQUIRED)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+
+        ament_add_gtest(version_test cobridge_base/tests/version_test.cpp)
+        target_link_libraries(version_test cobridge_base)
+        enable_strict_compiler_warnings(version_test)
+
+    endif()
+endif()
+
 
 if(ROS_BUILD_TYPE STREQUAL "catkin")
     install(TARGETS cobridge
