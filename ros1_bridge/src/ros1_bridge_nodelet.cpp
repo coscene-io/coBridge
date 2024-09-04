@@ -317,7 +317,7 @@ private:
     auto subscriptions_it = subscriptions_.find(channel_id);
     if (subscriptions_it == subscriptions_.end()) {
       throw cobridge_base::ChannelError(
-        channel_id, "Received unsubscribe request for channel " +
+              channel_id, "Received unsubscribe request for channel " +
               std::to_string(channel_id) +
               " that was not subscribed to ");
     }
@@ -326,7 +326,7 @@ private:
     const auto client_subscription = subscriptions_by_client.find(client_handle);
     if (client_subscription == subscriptions_by_client.end()) {
       throw cobridge_base::ChannelError(
-        channel_id, "Received unsubscribe request for channel " + std::to_string(channel_id) +
+              channel_id, "Received unsubscribe request for channel " + std::to_string(channel_id) +
               "from a client that was not subscribed to this channel");
     }
 
@@ -409,7 +409,7 @@ private:
     auto client_publications_it = client_advertised_topics_.find(client_handle);
     if (client_publications_it == client_advertised_topics_.end()) {
       throw cobridge_base::ClientChannelError(
-        channel_id, "Ignoring client unadvertisement from " +
+              channel_id, "Ignoring client unadvertisement from " +
               _server->remote_endpoint_string(client_handle) + " for unknown channel " +
               std::to_string(channel_id) + ", client has no advertised topics");
     }
@@ -419,7 +419,7 @@ private:
     auto channel_publication_it = client_publications.find(channel_id);
     if (channel_publication_it == client_publications.end()) {
       throw cobridge_base::ClientChannelError(
-        channel_id, "Ignoring client unadvertisement from " +
+              channel_id, "Ignoring client unadvertisement from " +
               _server->remote_endpoint_string(client_handle) + " for unknown channel " +
               std::to_string(channel_id) + ", client has " +
               std::to_string(client_publications.size()) + " advertised topic(s)");
@@ -437,7 +437,9 @@ private:
     }
   }
 
-  void client_message(const cobridge_base::ClientMessage & client_msg, ConnectionHandle client_handle)
+  void client_message(
+    const cobridge_base::ClientMessage & client_msg,
+    ConnectionHandle client_handle)
   {
     ros_babel_fish::BabelFishMessage::Ptr msg(new ros_babel_fish::BabelFishMessage);
     msg->read(client_msg);
@@ -448,8 +450,8 @@ private:
     auto client_publications_it = client_advertised_topics_.find(client_handle);
     if (client_publications_it == client_advertised_topics_.end()) {
       throw cobridge_base::ClientChannelError(
-        channel_id,
-        "Dropping client message from " + _server->remote_endpoint_string(client_handle) +
+              channel_id,
+              "Dropping client message from " + _server->remote_endpoint_string(client_handle) +
               " for unknown channel " + std::to_string(channel_id) +
               ", client has no advertised topics");
     }
@@ -459,8 +461,8 @@ private:
     auto channel_publication_it = client_publications.find(client_msg.advertisement.channel_id);
     if (channel_publication_it == client_publications.end()) {
       throw cobridge_base::ClientChannelError(
-        channel_id,
-        "Dropping client message from " + _server->remote_endpoint_string(client_handle) +
+              channel_id,
+              "Dropping client message from " + _server->remote_endpoint_string(client_handle) +
               " for unknown channel " + std::to_string(channel_id) + ", client has " +
               std::to_string(client_publications.size()) + " advertised topic(s)");
     }
@@ -469,7 +471,7 @@ private:
       channel_publication_it->second.publish(msg);
     } catch (const std::exception & ex) {
       throw cobridge_base::ClientChannelError(
-        channel_id, "Failed to publish message on topic '" +
+              channel_id, "Failed to publish message on topic '" +
               channel_publication_it->second.getTopic() +
               "': " + ex.what());
     }
@@ -536,7 +538,9 @@ private:
     // and `_maxUpdateMs`
     update_count_++;
     const auto next_update_ms = std::max(
-      MIN_UPDATE_PERIOD_MS, static_cast<double>(std::min(size_t(1) << update_count_, max_update_ms_)));
+      MIN_UPDATE_PERIOD_MS, static_cast<double>(std::min(
+        size_t(
+          1) << update_count_, max_update_ms_)));
     update_timer_ = getMTNodeHandle().createTimer(
       ros::Duration(next_update_ms / 1e3), &CoBridge::update_advertised_topics_and_services, this);
   }
@@ -593,8 +597,8 @@ private:
     std::vector<cobridge_base::ChannelWithoutId> channels_to_add;
     for (const auto & topic_and_datatype : latest_topics) {
       if (std::find_if(
-        advertised_topics_.begin(), advertised_topics_.end(),
-        [topic_and_datatype](const auto & channel_id_and_channel) {
+          advertised_topics_.begin(), advertised_topics_.end(),
+          [topic_and_datatype](const auto & channel_id_and_channel) {
             const auto & channel = channel_id_and_channel.second;
             return channel.topic == topic_and_datatype.first &&
             channel.schema_name == topic_and_datatype.second;
@@ -649,7 +653,7 @@ private:
     for (const auto & service : advertised_services_) {
       const auto it =
         std::find_if(
-          service_names.begin(), service_names.end(), [service](const auto & service_name) {
+        service_names.begin(), service_names.end(), [service](const auto & service_name) {
           return service_name == service.second.name;
         });
       if (it == service_names.end()) {
@@ -665,8 +669,8 @@ private:
     std::vector<cobridge_base::ServiceWithoutId> new_services;
     for (const auto & service_name : service_names) {
       if (std::find_if(
-        advertised_services_.begin(), advertised_services_.end(),
-        [&service_name](const auto & id_with_service) {
+          advertised_services_.begin(), advertised_services_.end(),
+          [&service_name](const auto & id_with_service) {
             return id_with_service.second.name == service_name;
           }) != advertised_services_.end())
       {
@@ -675,7 +679,9 @@ private:
 
       try {
         const auto service_type =
-          retrieve_service_type(service_name, std::chrono::milliseconds(service_retrieval_timeout_ms_));
+          retrieve_service_type(
+          service_name,
+          std::chrono::milliseconds(service_retrieval_timeout_ms_));
         const auto srv_description = ros_type_info_provider_.getServiceDescription(service_type);
 
         cobridge_base::ServiceWithoutId service;
@@ -837,7 +843,9 @@ private:
     }
 
     if (!success) {
-      throw std::runtime_error("Failed to " + std::string(op_verb) + " one or multiple parameters.");
+      throw std::runtime_error(
+              "Failed to " + std::string(op_verb) +
+              " one or multiple parameters.");
     }
   }
 
@@ -896,7 +904,9 @@ private:
     _server->send_message(client_handle, channel_id, receipt_time_ns, msg->buffer(), msg->size());
   }
 
-  void service_request(const cobridge_base::ServiceRequest & request, ConnectionHandle client_handle)
+  void service_request(
+    const cobridge_base::ServiceRequest & request,
+    ConnectionHandle client_handle)
   {
     std::shared_lock<std::shared_mutex> lock(services_mutex_);
     const auto service_it = advertised_services_.find(request.service_id);
@@ -921,7 +931,8 @@ private:
     const auto srv_description = ros_type_info_provider_.getServiceDescription(service_type);
     if (!srv_description) {
       const auto err_msg =
-        "Failed to retrieve type information for service " + service_name + "(" + service_type + ")";
+        "Failed to retrieve type information for service " + service_name + "(" + service_type +
+        ")";
       ROS_ERROR_STREAM(err_msg);
       throw cobridge_base::ServiceError(request.service_id, err_msg);
     }
@@ -956,7 +967,9 @@ private:
       // be accessible over the WebSocket connection. Example:
       // `package://<pkg_name>/../../../secret.txt`. This is an extra security measure and should
       // not be necessary if the allowlist is strict enough.
-      if (uri.find("..") != std::string::npos || !is_whitelisted(uri, asset_uri_allowlist_patterns_)) {
+      if (uri.find("..") != std::string::npos ||
+        !is_whitelisted(uri, asset_uri_allowlist_patterns_))
+      {
         throw std::runtime_error("Asset URI not allowed: " + uri);
       }
 
@@ -991,7 +1004,8 @@ private:
   ros::XMLRPCManager xmlrpc_server_;
   std::unordered_map<cobridge_base::ChannelId, cobridge_base::ChannelWithoutId> advertised_topics_;
   std::unordered_map<cobridge_base::ChannelId, SubscriptionsByClient> subscriptions_;
-  std::unordered_map<cobridge_base::ServiceId, cobridge_base::ServiceWithoutId> advertised_services_;
+  std::unordered_map<cobridge_base::ServiceId,
+    cobridge_base::ServiceWithoutId> advertised_services_;
   PublicationsByClient client_advertised_topics_;
   std::mutex subscriptions_mutex_;
   std::shared_mutex publications_mutex_;

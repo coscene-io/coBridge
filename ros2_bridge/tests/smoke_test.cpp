@@ -202,37 +202,37 @@ TEST(SmokeTest, testConnection) {
 TEST(SmokeTest, testSubscription) {
   // Publish a string message on a latched ros topic
   const std::string topic_name = "/pub_topic";
-  std_msgs::msg::String rosMsg;
-  rosMsg.data = "hello world";
+  std_msgs::msg::String ros_msg;
+  ros_msg.data = "hello world";
 
   auto node = rclcpp::Node::make_shared("tester");
   rclcpp::QoS qos = rclcpp::QoS{rclcpp::KeepLast(1lu)};
   qos.reliable();
   qos.transient_local();
   auto pub = node->create_publisher<std_msgs::msg::String>(topic_name, qos);
-  pub->publish(rosMsg);
+  pub->publish(ros_msg);
 
   // Connect a few clients and make sure that they receive the correct message
-  const auto clientCount = 3;
-  for (auto i = 0; i < clientCount; ++i) {
+  const auto client_count = 3;
+  for (auto i = 0; i < client_count; ++i) {
     // Set up a client and subscribe to the channel.
     auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-    auto channelFuture = cobridge_base::wait_for_channel(client, topic_name);
+    auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
     ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
-    ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(ONE_SECOND));
-    const cobridge_base::Channel channel = channelFuture.get();
-    const cobridge_base::SubscriptionId subscriptionId = 1;
+    ASSERT_EQ(std::future_status::ready, channel_future.wait_for(ONE_SECOND));
+    const cobridge_base::Channel channel = channel_future.get();
+    const cobridge_base::SubscriptionId subscription_id = 1;
 
     // Subscribe to the channel and confirm that the promise resolves
-    auto msgFuture = cobridge_base::wait_for_channel_msg(client.get(), subscriptionId);
-    client->subscribe({{subscriptionId, channel.id}});
-    ASSERT_EQ(std::future_status::ready, msgFuture.wait_for(ONE_SECOND));
-    const auto msgData = msgFuture.get();
-    ASSERT_EQ(sizeof(HELLO_WORLD_BINARY), msgData.size());
-    EXPECT_EQ(0, std::memcmp(HELLO_WORLD_BINARY, msgData.data(), msgData.size()));
+    auto msg_future = cobridge_base::wait_for_channel_msg(client.get(), subscription_id);
+    client->subscribe({{subscription_id, channel.id}});
+    ASSERT_EQ(std::future_status::ready, msg_future.wait_for(ONE_SECOND));
+    const auto msg_data = msg_future.get();
+    ASSERT_EQ(sizeof(HELLO_WORLD_BINARY), msg_data.size());
+    EXPECT_EQ(0, std::memcmp(HELLO_WORLD_BINARY, msg_data.data(), msg_data.size()));
 
     // Unsubscribe from the channel again.
-    client->unsubscribe({subscriptionId});
+    client->unsubscribe({subscription_id});
   }
 }
 
@@ -248,7 +248,7 @@ TEST(SmokeTest, testPublishing) {
 #ifdef ROS2_VERSION_FOXY
   auto msg_future = msg_promise.get_future().share();
 #else
-  auto msgFuture = msgPromise.get_future();
+  auto msg_future = msg_promise.get_future();
 #endif
   auto node = rclcpp::Node::make_shared("tester");
   auto sub = node->create_subscription<std_msgs::msg::String>(
@@ -290,7 +290,7 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 #ifdef ROS2_VERSION_FOXY
   auto msg_future = msg_promise.get_future().share();
 #else
-  auto msgFuture = msgPromise.get_future();
+  auto msg_future = msg_promise.get_future();
 #endif
   auto node = rclcpp::Node::make_shared("tester");
   auto sub = node->create_subscription<std_msgs::msg::String>(
@@ -560,22 +560,22 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 TEST_F(ServiceTest, testCallService) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
 
-  auto serviceFuture = cobridge_base::wait_for_service(client, SERVICE_NAME);
+  auto service_future = cobridge_base::wait_for_service(client, SERVICE_NAME);
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
-  ASSERT_EQ(std::future_status::ready, serviceFuture.wait_for(DEFAULT_TIMEOUT));
+  ASSERT_EQ(std::future_status::ready, service_future.wait_for(DEFAULT_TIMEOUT));
 
-  const cobridge_base::Service service = serviceFuture.get();
-  std_srvs::srv::SetBool::Request requestMsg;
-  requestMsg.data = true;
-  const auto serializedRequest = serializeMsg(&requestMsg);
-  const auto & serRequestMsg = serializedRequest->get_rcl_serialized_message();
+  const cobridge_base::Service service = service_future.get();
+  std_srvs::srv::SetBool::Request request_msg;
+  request_msg.data = true;
+  const auto serialized_request = serializeMsg(&request_msg);
+  const auto & ser_request_msg = serialized_request->get_rcl_serialized_message();
 
   cobridge_base::ServiceRequest request;
   request.service_id = service.id;
   request.call_id = 123lu;
   request.encoding = "cdr";
-  request.serv_data.resize(serRequestMsg.buffer_length);
-  std::memcpy(request.serv_data.data(), serRequestMsg.buffer, serRequestMsg.buffer_length);
+  request.serv_data.resize(ser_request_msg.buffer_length);
+  std::memcpy(request.serv_data.data(), ser_request_msg.buffer, ser_request_msg.buffer_length);
 
   auto future = cobridge_base::wait_for_service_response(client);
   client->send_service_request(request);
@@ -586,18 +586,18 @@ TEST_F(ServiceTest, testCallService) {
   EXPECT_EQ(response.call_id, request.call_id);
   EXPECT_EQ(response.encoding, request.encoding);
 
-  rclcpp::SerializedMessage serializedResponseMsg(response.serv_data.size());
-  auto & serMsg = serializedResponseMsg.get_rcl_serialized_message();
-  std::memcpy(serMsg.buffer, response.serv_data.data(), response.serv_data.size());
-  serMsg.buffer_length = response.serv_data.size();
-  const auto resMsg = deserializeMsg<std_srvs::srv::SetBool::Response>(&serMsg);
+  rclcpp::SerializedMessage serialized_response_msg(response.serv_data.size());
+  auto & ser_msg = serialized_response_msg.get_rcl_serialized_message();
+  std::memcpy(ser_msg.buffer, response.serv_data.data(), response.serv_data.size());
+  ser_msg.buffer_length = response.serv_data.size();
+  const auto res_msg = deserializeMsg<std_srvs::srv::SetBool::Response>(&ser_msg);
 
-  EXPECT_EQ(resMsg->message, "hello");
-  EXPECT_EQ(resMsg->success, requestMsg.data);
+  EXPECT_EQ(res_msg->message, "hello");
+  EXPECT_EQ(res_msg->success, request_msg.data);
 }
 
 TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
-  const std::string topicName = "/latched";
+  const std::string topic_name = "/latched";
   auto node = rclcpp::Node::make_shared("node");
   rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1));
   qos.transient_local();
@@ -613,7 +613,7 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
   constexpr size_t nPubs = 15;
   std::vector<rclcpp::Publisher<std_msgs::msg::String>::SharedPtr> pubs;
   for (size_t i = 0; i < nPubs; ++i) {
-    auto pub = pubs.emplace_back(node->create_publisher<std_msgs::msg::String>(topicName, qos));
+    auto pub = pubs.emplace_back(node->create_publisher<std_msgs::msg::String>(topic_name, qos));
     std_msgs::msg::String msg;
     msg.data = "Hello";
     pub->publish(msg);
@@ -621,11 +621,11 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
 
   // Set up a client and subscribe to the channel.
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-  auto channelFuture = cobridge_base::wait_for_channel(client, topicName);
+  auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
-  ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(ONE_SECOND));
-  const cobridge_base::Channel channel = channelFuture.get();
-  const cobridge_base::SubscriptionId subscriptionId = 1;
+  ASSERT_EQ(std::future_status::ready, channel_future.wait_for(ONE_SECOND));
+  const cobridge_base::Channel channel = channel_future.get();
+  const cobridge_base::SubscriptionId subscription_id = 1;
 
   // Set up binary message handler to resolve the promise when all nPub msg have been received
   std::promise<void> promise;
@@ -638,10 +638,10 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
     });
 
   // Subscribe to the channel and confirm that the promise resolves
-  client->subscribe({{subscriptionId, channel.id}});
+  client->subscribe({{subscription_id, channel.id}});
   EXPECT_EQ(std::future_status::ready, promise.get_future().wait_for(DEFAULT_TIMEOUT));
   EXPECT_EQ(n_received_messages, nPubs);
-  client->unsubscribe({subscriptionId});
+  client->unsubscribe({subscription_id});
 
   pubs.clear();
   executor.remove_node(node);
@@ -650,47 +650,47 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
 }
 
 TEST(FetchAssetTest, fetchExistingAsset) {
-  auto wsClient = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-  EXPECT_EQ(std::future_status::ready, wsClient->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  EXPECT_EQ(std::future_status::ready, client->connect(URI).wait_for(DEFAULT_TIMEOUT));
 
-  const auto millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+  const auto millis_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch());
-  const auto tmpFilePath =
-    std::filesystem::temp_directory_path() / std::to_string(millisSinceEpoch.count());
+  const auto tmp_file_path =
+    std::filesystem::temp_directory_path() / std::to_string(millis_since_epoch.count());
   constexpr char content[] = "Hello, world";
-  FILE * tmpAssetFile = std::fopen(tmpFilePath.c_str(), "w");
-  std::fputs(content, tmpAssetFile);
-  std::fclose(tmpAssetFile);
+  FILE * tmp_asset_file = std::fopen(tmp_file_path.c_str(), "w");
+  std::fputs(content, tmp_asset_file);
+  std::fclose(tmp_asset_file);
 
-  const std::string uri = std::string("file://") + tmpFilePath.string();
-  const uint32_t requestId = 123;
+  const std::string uri = std::string("file://") + tmp_file_path.string();
+  const uint32_t request_id = 123;
 
-  auto future = cobridge_base::wait_for_fetch_asset_response(wsClient);
-  wsClient->fetch_asset(uri, requestId);
+  auto future = cobridge_base::wait_for_fetch_asset_response(client);
+  client->fetch_asset(uri, request_id);
   ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
   const cobridge_base::FetchAssetResponse response = future.get();
 
-  EXPECT_EQ(response.request_id, requestId);
+  EXPECT_EQ(response.request_id, request_id);
   EXPECT_EQ(response.status, cobridge_base::FetchAssetStatus::Success);
   // +1 since NULL terminator is not written to file.
   ASSERT_EQ(response.data.size() + 1ul, sizeof(content));
   EXPECT_EQ(0, std::memcmp(content, response.data.data(), response.data.size()));
-  std::remove(tmpFilePath.c_str());
+  std::remove(tmp_file_path.c_str());
 }
 
 TEST(FetchAssetTest, fetchNonExistingAsset) {
-  auto wsClient = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-  EXPECT_EQ(std::future_status::ready, wsClient->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  EXPECT_EQ(std::future_status::ready, client->connect(URI).wait_for(DEFAULT_TIMEOUT));
 
-  const std::string assetId = "file:///foo/bar";
-  const uint32_t requestId = 456;
+  const std::string asset_id = "file:///foo/bar";
+  const uint32_t request_id = 456;
 
-  auto future = cobridge_base::wait_for_fetch_asset_response(wsClient);
-  wsClient->fetch_asset(assetId, requestId);
+  auto future = cobridge_base::wait_for_fetch_asset_response(client);
+  client->fetch_asset(asset_id, request_id);
   ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
   const cobridge_base::FetchAssetResponse response = future.get();
 
-  EXPECT_EQ(response.request_id, requestId);
+  EXPECT_EQ(response.request_id, request_id);
   EXPECT_EQ(response.status, cobridge_base::FetchAssetStatus::Error);
   EXPECT_FALSE(response.error_message.empty());
 }

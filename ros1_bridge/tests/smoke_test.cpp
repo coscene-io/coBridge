@@ -11,12 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-
-#include <chrono>
-#include <future>
-#include <thread>
-
 #include <boost/filesystem.hpp>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
@@ -27,16 +21,24 @@
 #include <test/test_client.hpp>
 #include <websocket_client.hpp>
 
+#include <chrono>
+#include <future>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
+
 constexpr char URI[] = "ws://localhost:9876";
 
-constexpr uint8_t HELLO_WORLD_BINARY[] = {11,  0,  0,   0,   104, 101, 108, 108,
+constexpr uint8_t HELLO_WORLD_BINARY[] = {11, 0, 0, 0, 104, 101, 108, 108,
   111, 32, 119, 111, 114, 108, 100};
 
 constexpr auto ONE_SECOND = std::chrono::seconds(1);
 constexpr auto DEFAULT_TIMEOUT = std::chrono::seconds(8);
 
 
-class ParameterTest : public ::testing::Test {
+class ParameterTest : public ::testing::Test
+{
 public:
   using PARAM_1_TYPE = std::string;
   inline static const std::string PARAM_1_NAME = "/node_1/string_param";
@@ -47,7 +49,8 @@ public:
   inline static const PARAM_2_TYPE PARAM_2_DEFAULT_VALUE = {1.2, 2.1, 3.3};
 
 protected:
-  void SetUp() override {
+  void SetUp() override
+  {
     nh_ = ros::NodeHandle();
     nh_.setParam(PARAM_1_NAME, PARAM_1_DEFAULT_VALUE);
     nh_.setParam(PARAM_2_NAME, PARAM_2_DEFAULT_VALUE);
@@ -61,15 +64,17 @@ protected:
 };
 
 
-class ServiceTest : public ::testing::Test {
+class ServiceTest : public ::testing::Test
+{
 public:
   inline static const std::string SERVICE_NAME = "/foo_service";
 
 protected:
-  void SetUp() override {
+  void SetUp() override
+  {
     _nh = ros::NodeHandle();
     _service = _nh.advertiseService<std_srvs::SetBool::Request, std_srvs::SetBool::Response>(
-      SERVICE_NAME, [&](auto& req, auto& res) {
+      SERVICE_NAME, [&](auto & req, auto & res) {
         res.message = "hello";
         res.success = req.data;
         return true;
@@ -111,7 +116,6 @@ TEST(SmokeTest, testSubscription) {
 
   // Unsubscribe from the channel again.
   client->unsubscribe({subscription_id});
-
 }
 
 TEST(SmokeTest, testPublishing) {
@@ -128,7 +132,7 @@ TEST(SmokeTest, testPublishing) {
   std::promise<std::string> msg_promise;
   auto msg_future = msg_promise.get_future();
   auto subscriber = nh.subscribe<std_msgs::String>(
-    advertisement.topic, 10, [&msg_promise](const std_msgs::String::ConstPtr& msg) {
+    advertisement.topic, 10, [&msg_promise](const std_msgs::String::ConstPtr & msg) {
       msg_promise.set_value(msg->data);
     });
 
@@ -311,7 +315,6 @@ TEST_F(ServiceTest, testCallService) {
   EXPECT_EQ(response.call_id, request.call_id);
   EXPECT_EQ(response.encoding, request.encoding);
   EXPECT_EQ(response.serv_data, expectedSerializedResponse);
-
 }
 
 TEST(FetchAssetTest, fetchExistingAsset) {
@@ -323,7 +326,7 @@ TEST(FetchAssetTest, fetchExistingAsset) {
   const auto tmp_file_path =
     boost::filesystem::temp_directory_path() / std::to_string(millis_since_epoch.count());
   constexpr char content[] = "Hello, world";
-  FILE* tmp_asset_file = std::fopen(tmp_file_path.c_str(), "w");
+  FILE * tmp_asset_file = std::fopen(tmp_file_path.c_str(), "w");
   std::fputs(content, tmp_asset_file);
   std::fclose(tmp_asset_file);
 
@@ -362,7 +365,8 @@ TEST(FetchAssetTest, fetchNonExistingAsset) {
 
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "tester");
   ros::NodeHandle nh;
