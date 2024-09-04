@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
 #include <gtest/gtest.h>
 #include <cobridge.hpp>
 
+#include <string>
 TEST(VersionTest, TestWebSocketVersion)
 {
   // ex: "WebSocket++/0.8.1"

@@ -26,7 +26,7 @@
 namespace cobridge
 {
 
-std::string retrieveServiceType(const std::string & serviceName, std::chrono::milliseconds timeout)
+std::string retrieve_service_type(const std::string & serviceName, std::chrono::milliseconds timeout)
 {
   auto link = ros::ServiceManager::instance()->createServiceServerLink(
     serviceName, false, "*", "*",

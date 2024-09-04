@@ -54,12 +54,12 @@ cobridge_base::ParameterValue fromRosParam(const XmlRpc::XmlRpcValue & value)
   }
 }
 
-cobridge_base::Parameter fromRosParam(const std::string & name, const XmlRpc::XmlRpcValue & value)
+cobridge_base::Parameter from_ros_param(const std::string & name, const XmlRpc::XmlRpcValue & value)
 {
   return cobridge_base::Parameter(name, fromRosParam(value));
 }
 
-XmlRpc::XmlRpcValue toRosParam(const cobridge_base::ParameterValue & param)
+XmlRpc::XmlRpcValue to_ros_param(const cobridge_base::ParameterValue & param)
 {
   const auto paramType = param.getType();
   if (paramType == cobridge_base::ParameterType::PARAMETER_BOOL) {
@@ -75,14 +75,14 @@ XmlRpc::XmlRpcValue toRosParam(const cobridge_base::ParameterValue & param)
     const auto & paramMap =
       param.getValue<std::unordered_map<std::string, cobridge_base::ParameterValue>>();
     for (const auto & [paramName, paramElement] : paramMap) {
-      valueStruct[paramName] = toRosParam(paramElement);
+      valueStruct[paramName] = to_ros_param(paramElement);
     }
     return valueStruct;
   } else if (paramType == cobridge_base::ParameterType::PARAMETER_ARRAY) {
     XmlRpc::XmlRpcValue arr;
     const auto vec = param.getValue<std::vector<cobridge_base::ParameterValue>>();
     for (int i = 0; i < static_cast<int>(vec.size()); ++i) {
-      arr[i] = toRosParam(vec[i]);
+      arr[i] = to_ros_param(vec[i]);
     }
     return arr;
   } else {
@@ -92,7 +92,7 @@ XmlRpc::XmlRpcValue toRosParam(const cobridge_base::ParameterValue & param)
   return XmlRpc::XmlRpcValue();
 }
 
-std::vector<std::regex> parseRegexPatterns(const std::vector<std::string> & patterns)
+std::vector<std::regex> parse_regex_patterns(const std::vector<std::string> & patterns)
 {
   std::vector<std::regex> result;
   for (const auto & pattern : patterns) {

@@ -70,7 +70,7 @@ add_library(cobridge_base SHARED
         cobridge_base/src/parameter.cpp
         cobridge_base/src/serialization.cpp
         cobridge_base/src/server_factory.cpp
-#        cobridge_base/src/test/test_client.cpp
+        cobridge_base/src/test/test_client.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/cobridge_base/src/version.cpp
 )
 target_include_directories(cobridge_base
@@ -212,14 +212,14 @@ if(ROS_BUILD_TYPE STREQUAL "catkin")
 #        target_link_libraries(base64_test foxglove_bridge_base ${Boost_LIBRARIES})
 #        enable_strict_compiler_warnings(foxglove_bridge)
 #
-#        add_rostest_gtest(smoke_test ros1_foxglove_bridge/tests/smoke.test ros1_foxglove_bridge/tests/smoke_test.cpp)
-#        target_include_directories(smoke_test SYSTEM PRIVATE
-#                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/foxglove_bridge_base/include>
-#                ${catkin_INCLUDE_DIRS}
-#                $<INSTALL_INTERFACE:include>
-#        )
-#        target_link_libraries(smoke_test foxglove_bridge_base ${catkin_LIBRARIES})
-#        enable_strict_compiler_warnings(smoke_test)
+        add_rostest_gtest(smoke_test ros1_bridge/tests/smoke_test.xml ros1_bridge/tests/smoke_test.cpp)
+        target_include_directories(smoke_test SYSTEM PRIVATE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>
+                ${catkin_INCLUDE_DIRS}
+                $<INSTALL_INTERFACE:include>
+        )
+        target_link_libraries(smoke_test cobridge_base ${catkin_LIBRARIES})
+        enable_strict_compiler_warnings(smoke_test)
     endif()
 elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
     if(BUILD_TESTING)
@@ -232,6 +232,11 @@ elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
         ament_add_gtest(version_test cobridge_base/tests/version_test.cpp)
         target_link_libraries(version_test cobridge_base)
         enable_strict_compiler_warnings(version_test)
+
+        ament_add_gtest(smoke_test ros2_bridge/tests/smoke_test.cpp)
+        ament_target_dependencies(smoke_test rclcpp rclcpp_components std_msgs std_srvs)
+        target_link_libraries(smoke_test cobridge_component)
+        enable_strict_compiler_warnings(smoke_test)
 
     endif()
 endif()
