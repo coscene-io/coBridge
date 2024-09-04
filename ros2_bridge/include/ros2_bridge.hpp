@@ -146,13 +146,13 @@ private:
     const std::vector<cobridge_base::Parameter> & parameters,
     const std::optional<std::string> & request_id, ConnectionHandle hdl);
 
+  void subscribe_parameters(
+    const std::vector<std::string> & parameters,
+    cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle hdl);
+
   void get_parameters(
     const std::vector<std::string> & parameters,
     const std::optional<std::string> & request_id, ConnectionHandle hdl);
-
-  void subscribe_parameters(
-    const std::vector<std::string>&parameters,
-    cobridge_base::ParameterSubscriptionOperation op, ConnectionHandle);
 
   void parameter_updates(const std::vector<cobridge_base::Parameter> & parameters);
 
