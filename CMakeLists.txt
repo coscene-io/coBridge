@@ -152,9 +152,6 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
         find_package(cv_bridge REQUIRED)
         find_package(OpenCV REQUIRED)
 
-#        find_package(ament_lint_auto REQUIRED)
-#        ament_lint_auto_find_test_dependencies()
-
         add_library(cobridge_component SHARED
                 ros2_bridge/src/message_definition_cache.cpp
                 ros2_bridge/src/param_utils.cpp

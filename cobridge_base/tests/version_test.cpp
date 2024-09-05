@@ -13,9 +13,9 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <string>
 #include <cobridge.hpp>
 
-#include <string>
 TEST(VersionTest, TestWebSocketVersion)
 {
   // ex: "WebSocket++/0.8.1"
