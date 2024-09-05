@@ -2,6 +2,9 @@ name: lint
 on:
   push:
 
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   lint:
