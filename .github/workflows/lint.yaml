@@ -9,6 +9,12 @@ jobs:
     strategy:
       fail-fast: false
 
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/coscene/ros2-foxy-runner:latest
+      credentials:
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
