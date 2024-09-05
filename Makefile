@@ -1,6 +1,5 @@
 SHELL := /bin/bash
 
-ROS_DISTRO := $(shell rosversion -d)
 ROS_BIN_PATH := /opt/ros/$(ROS_DISTRO)/bin
 
 lint:
