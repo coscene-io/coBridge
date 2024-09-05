@@ -29,6 +29,6 @@ jobs:
 
       - name: Build and test
         run: |
-          /ros_entrypoint.sh colcon build
+          /ros_entrypoint.sh colcon build --event-handlers console_direct+
           cd ./src/cobridge
           make test

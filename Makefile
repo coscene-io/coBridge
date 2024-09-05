@@ -11,5 +11,5 @@ lint:
 	/ros_entrypoint.sh $(ROS_BIN_PATH)/ament_lint_cmake .
 
 test:
-	../../build/cobridge/version_test
-	../../build/cobridge/smoke_test
+	/ros_entrypoint.sh ../../build/cobridge/version_test
+	/ros_entrypoint.sh ../../build/cobridge/smoke_test
