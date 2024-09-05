@@ -20,14 +20,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          path: src
+          path: src/cobridge
 
       - name: Run lint
         run: |
-          cd ./src
+          cd ./src/cobridge
           make lint
 
       - name: Build and test
         run: |
-          ls -lah ./src
-          pwd
+          /ros_entrypoint.sh colcon build
+          cd ./src/cobridge
+          make test
