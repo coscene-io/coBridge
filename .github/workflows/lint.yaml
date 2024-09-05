@@ -20,7 +20,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          path: /cos_ws/src
+          path: src
 
       - name: Run lint
-        run: make lint
+        run: |
+          ls -lah
+          make lint
