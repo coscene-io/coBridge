@@ -25,4 +25,11 @@ jobs:
       - name: Run lint
         run: |
           ls -lah
+          pwd
+          cd ./src
           make lint
+
+      - name: Build and test
+        run: |
+          ls -lah
+          pwd
