@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
 
     container:
-      image: ros:foxy
+      image: registry.cn-hangzhou.aliyuncs.com/coscene/ros2-foxy-runner:latest
 
     steps:
       - name: Checkout code
