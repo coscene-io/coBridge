@@ -1,5 +1,8 @@
 SHELL := /bin/bash
 
+ROS1_DISTRO := noetic
+ROS2_DISTRO := foxy humble
+
 ROS_BIN_PATH := /opt/ros/$(ROS_DISTRO)/bin
 
 lint:
@@ -24,22 +27,20 @@ ros1-build:
 ros2-build:
 	/ros_entrypoint.sh colcon build --event-handlers console_direct+
 
-
-
-noetic-test:
-	ros1-test
-
-foxy-test:
-	ros2-test
-
-noetic-build:
-	ros1-build
-
-foxy-build:
-	ros2-build
-
 test:
-	$(ROS_DISTRO)-test
+ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
+	$(MAKE) ros1-test
+else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
+	$(MAKE) ros2-test
+else
+	$(error Unsupported ROS_DISTRO: $(ROS_DISTRO))
+endif
 
 build:
-	$(ROS_DISTRO)-build
+ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
+	$(MAKE) ros1-build
+else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
+	$(MAKE) ros2-build
+else
+	$(error Unsupported ROS_DISTRO: $(ROS_DISTRO))
+endif
