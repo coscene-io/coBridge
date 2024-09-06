@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: [foxy, noetic]
+        ros_distribution: [foxy, noetic, humble]
 
     name: Build-And-Test (ROS ${{ matrix.ros_distribution }})
     runs-on: ubuntu-latest
@@ -27,3 +27,12 @@ jobs:
       - name: Test
         run: |
           make -f ./src/cobridge/Makefile test
+
+      - name: zip-artifact
+        run: zip -r install.zip install
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.ros_distribution }}-cobridge
+          path: install.zip
