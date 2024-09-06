@@ -13,7 +13,7 @@ jobs:
     name: Build-And-Test (ROS ${{ matrix.ros_distribution }})
     runs-on: ubuntu-latest
     container:
-      image: registry.cn-hangzhou.aliyuncs.com/coscene/ros2-foxy-runner:latest
+      image: cobridge/ros-${{ matrix.ros_distribution }}:24.09.06
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
