@@ -1,5 +1,6 @@
 name: Build runner
 on:
+  pull_request:
   workflow_dispatch:
 
 permissions:
