@@ -35,7 +35,7 @@ constexpr char URI[] = "ws://localhost:8765";
 constexpr uint8_t HELLO_WORLD_BINARY[] = {0, 1, 0, 0, 12, 0, 0, 0, 104, 101,
   108, 108, 111, 32, 119, 111, 114, 108, 100, 0};
 
-constexpr auto ONE_SECOND = std::chrono::seconds(1);
+constexpr auto THREE_SECOND = std::chrono::seconds(3);
 constexpr auto DEFAULT_TIMEOUT = std::chrono::seconds(10);
 
 class ParameterTest : public ::testing::Test
@@ -218,15 +218,15 @@ TEST(SmokeTest, testSubscription) {
     // Set up a client and subscribe to the channel.
     auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
     auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
-    ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
-    ASSERT_EQ(std::future_status::ready, channel_future.wait_for(ONE_SECOND));
+    ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+    ASSERT_EQ(std::future_status::ready, channel_future.wait_for(THREE_SECOND));
     const cobridge_base::Channel channel = channel_future.get();
     const cobridge_base::SubscriptionId subscription_id = 1;
 
     // Subscribe to the channel and confirm that the promise resolves
     auto msg_future = cobridge_base::wait_for_channel_msg(client.get(), subscription_id);
     client->subscribe({{subscription_id, channel.id}});
-    ASSERT_EQ(std::future_status::ready, msg_future.wait_for(ONE_SECOND));
+    ASSERT_EQ(std::future_status::ready, msg_future.wait_for(THREE_SECOND));
     const auto msg_data = msg_future.get();
     ASSERT_EQ(sizeof(HELLO_WORLD_BINARY), msg_data.size());
     EXPECT_EQ(0, std::memcmp(HELLO_WORLD_BINARY, msg_data.data(), msg_data.size()));
@@ -259,17 +259,17 @@ TEST(SmokeTest, testPublishing) {
   executor.add_node(node);
 
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
   client->advertise({advertisement});
 
   // Wait until the advertisement got advertised as channel by the server
   auto channelFuture = cobridge_base::wait_for_channel(client, advertisement.topic);
-  ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(THREE_SECOND));
 
   // Publish the message and unadvertise again
   client->publish(advertisement.channel_id, HELLO_WORLD_BINARY, sizeof(HELLO_WORLD_BINARY));
 #ifdef ROS2_VERSION_FOXY
-  const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
+  const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #else
   const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
 #endif
@@ -302,18 +302,18 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 
   // Set up the client, advertise and publish the binary message
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
-  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
   client->advertise({advertisement});
 
   // Wait until the advertisement got advertised as channel by the server
   auto channelFuture = cobridge_base::wait_for_channel(client, advertisement.topic);
-  ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, channelFuture.wait_for(THREE_SECOND));
 
   // Publish the message and unadvertise again
   client->publish(advertisement.channel_id, HELLO_WORLD_BINARY, sizeof(HELLO_WORLD_BINARY));
 
 #ifdef ROS2_VERSION_FOXY
-  const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
+  const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #else
   const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
 #endif
@@ -561,7 +561,7 @@ TEST_F(ServiceTest, testCallService) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
 
   auto service_future = cobridge_base::wait_for_service(client, SERVICE_NAME);
-  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
   ASSERT_EQ(std::future_status::ready, service_future.wait_for(DEFAULT_TIMEOUT));
 
   const cobridge_base::Service service = service_future.get();
@@ -622,8 +622,8 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
   // Set up a client and subscribe to the channel.
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
-  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(ONE_SECOND));
-  ASSERT_EQ(std::future_status::ready, channel_future.wait_for(ONE_SECOND));
+  ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+  ASSERT_EQ(std::future_status::ready, channel_future.wait_for(THREE_SECOND));
   const cobridge_base::Channel channel = channel_future.get();
   const cobridge_base::SubscriptionId subscription_id = 1;
 

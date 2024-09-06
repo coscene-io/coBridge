@@ -1,0 +1,27 @@
+name: build-and-test
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution: [noetic, foxy]
+
+    name: Build-And-Test (ROS ${{ matrix.ros_distribution }})
+    runs-on: ubuntu-latest
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/coscene/ros2-foxy-runner:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: src/cobridge
+
+      - name: Build and test
+        run: |
+          /ros_entrypoint.sh colcon build --event-handlers console_direct+
+          cd ./src/cobridge
+          make test

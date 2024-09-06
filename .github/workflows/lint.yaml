@@ -2,19 +2,14 @@ name: lint
 on:
   push:
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-
     container:
-      image: registry.cn-hangzhou.aliyuncs.com/coscene/ros2-foxy-runner:latest
+      image: ros:foxy
 
     steps:
       - name: Checkout code
@@ -26,9 +21,3 @@ jobs:
         run: |
           cd ./src/cobridge
           make lint
-
-      - name: Build and test
-        run: |
-          /ros_entrypoint.sh colcon build --event-handlers console_direct+
-          cd ./src/cobridge
-          make test 
