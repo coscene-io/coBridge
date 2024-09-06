@@ -1,4 +1,4 @@
-name: Build runner
+name: Build Image
 on:
   pull_request:
   workflow_dispatch:
