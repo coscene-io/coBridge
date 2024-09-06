@@ -14,8 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         ros_distribution: [foxy, noetic, humble]
-    env:
-      REGISTRY: hub.docker.com/cobridge
 
     steps:
       - name: Checkout repository
@@ -31,7 +29,6 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@v3.1.0
         with:
-          registry: ${{ env.REGISTRY }}
           username: cobridge
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
@@ -39,7 +36,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ env.REGISTRY }}/ros-${{ matrix.ros_distribution }}
+          images: cobridge/ros-${{ matrix.ros_distribution }}
           tags: |
             type=raw,value={{ date 'now' 'YY.MM.DD' }}
 
