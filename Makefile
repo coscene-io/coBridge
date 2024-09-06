@@ -18,8 +18,7 @@ lint:
 
 test:
 ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
-	src/cobridge/ros1_entry.sh devel/lib/cobridge/version_test
-	src/cobridge/ros1_entry.sh devel/lib/cobridge/smoke_test
+	/ros_entrypoint.sh catkin_make run_tests
 else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
 	src/cobridge/ros2_entry.sh build/cobridge/version_test
 	src/cobridge/ros2_entry.sh build/cobridge/smoke_test
@@ -29,7 +28,7 @@ endif
 
 build:
 ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
-	/ros_entrypoint.sh catkin_make && /ros_entrypoint.sh catkin_make tests && /ros_entrypoint.sh catkin_make install
+	/ros_entrypoint.sh catkin_make install
 else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
 	/ros_entrypoint.sh colcon build --event-handlers console_direct+
 else
