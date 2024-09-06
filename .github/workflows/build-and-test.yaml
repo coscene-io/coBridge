@@ -22,10 +22,8 @@ jobs:
 
       - name: Build
         run: |
-          cd ./src/cobridge
-          make build
+          make -f ./src/cobridge/Makefile build
 
       - name: Test
         run: |
-          cd ./src/cobridge
-          make test
+          make -f ./src/cobridge/Makefile test
