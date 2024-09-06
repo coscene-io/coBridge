@@ -31,4 +31,4 @@ jobs:
         run: |
           /ros_entrypoint.sh colcon build --event-handlers console_direct+
           cd ./src/cobridge
-          make test
+          make test 
