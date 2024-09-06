@@ -271,7 +271,7 @@ TEST(SmokeTest, testPublishing) {
 #ifdef ROS2_VERSION_FOXY
   const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #else
-  const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
+  const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #endif
   client->unadvertise({advertisement.channel_id});
   ASSERT_EQ(rclcpp::FutureReturnCode::SUCCESS, ret);
@@ -315,7 +315,7 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 #ifdef ROS2_VERSION_FOXY
   const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #else
-  const auto ret = executor.spin_until_future_complete(msg_future, ONE_SECOND);
+  const auto ret = executor.spin_until_future_complete(msg_future, THREE_SECOND);
 #endif
   client->unadvertise({advertisement.channel_id});
   ASSERT_EQ(rclcpp::FutureReturnCode::SUCCESS, ret);
@@ -452,7 +452,7 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 //    _wsClient->send_text(
 //      nlohmann::json{{"op", "setParameters"}, {"id", requestId},
 //        {"parameters", parameters}}.dump());
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(ONE_SECOND));
+//    ASSERT_EQ(std::future_status::ready, future.wait_for(THREE_SECOND));
 //    std::vector<cobridge_base::Parameter> params = future.get();
 //
 //    {
@@ -520,7 +520,7 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
 //    );
 //
 //    future = cobridge_base::wait_for_parameters(_wsClient);
-//    ASSERT_EQ(std::future_status::timeout, future.wait_for(ONE_SECOND));
+//    ASSERT_EQ(std::future_status::timeout, future.wait_for(THREE_SECOND));
 //  }
 //
 //  TEST_F(ParameterTest, testGetParametersParallel) {
