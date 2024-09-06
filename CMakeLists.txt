@@ -201,15 +201,7 @@ if(ROS_BUILD_TYPE STREQUAL "catkin")
         catkin_add_gtest(version_test cobridge_base/tests/version_test.cpp)
         target_link_libraries(version_test cobridge_base ${Boost_LIBRARIES})
         enable_strict_compiler_warnings(version_test)
-#
-#        catkin_add_gtest(serialization_test foxglove_bridge_base/tests/serialization_test.cpp)
-#        target_link_libraries(serialization_test foxglove_bridge_base ${Boost_LIBRARIES})
-#        enable_strict_compiler_warnings(foxglove_bridge)
-#
-#        catkin_add_gtest(base64_test foxglove_bridge_base/tests/base64_test.cpp)
-#        target_link_libraries(base64_test foxglove_bridge_base ${Boost_LIBRARIES})
-#        enable_strict_compiler_warnings(foxglove_bridge)
-#
+
         add_rostest_gtest(smoke_test ros1_bridge/tests/smoke_test.xml ros1_bridge/tests/smoke_test.cpp)
         target_include_directories(smoke_test SYSTEM PRIVATE
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cobridge_base/include>

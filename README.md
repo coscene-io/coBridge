@@ -7,19 +7,13 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
 
 * Install deps 
     ``` bash
-  apt install -y nlohmann-json3-dev
-  apt install -y libasio-dev 
-  apt install -y libboost-all-dev
-  apt install -y libssl-dev 
-  apt install -y libwebsocketpp-dev
-  apt install -y ros-${ROS_DISTRO}-cv-bridge
-  apt install -y ros-${ROS_DISTRO}-resource-retriever
+  sudo apt install -y nlohmann-json3-dev libasio-dev libboost-all-dev libssl-dev libwebsocketpp-dev ros-${ROS_DISTRO}-cv-bridge ros-${ROS_DISTRO}-resource-retriever
     ```
 
   * ROS1
   ``` bash
     # copy this project into {your_ros_ws}/src/
-    cp {this_repo} {your_ros_ws}/src/
+    cp -r {this_repo} {your_ros_ws}/src/.
   
     # Init Env variables
     source /opt/ros/{ros_distro}/setup.bash
@@ -38,7 +32,7 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
      source /opt/ros/{ros_distro}/setup.bash
      
      # Copy this repo into your workspace
-     cp {this_repo} {your_ros_ws}/src/ 
+     cp -r {this_repo} {your_ros_ws}/src/.b 
   
      # Build
      colcon build --packages-select cobridge

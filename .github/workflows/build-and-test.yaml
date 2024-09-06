@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: [foxy]
+        ros_distribution: [foxy, noetic]
 
     name: Build-And-Test (ROS ${{ matrix.ros_distribution }})
     runs-on: ubuntu-latest
