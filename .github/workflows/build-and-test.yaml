@@ -20,8 +20,11 @@ jobs:
         with:
           path: src/cobridge
 
-      - name: Build and test
+      - name: Build
         run: |
-          /ros_entrypoint.sh colcon build --event-handlers console_direct+
+          make build
+
+      - name: Test
+        run: |
           cd ./src/cobridge
           make test

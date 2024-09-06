@@ -14,16 +14,32 @@ ros1-test:
 	./ros1_entry.sh ../../devel/cobridge/version_test
 	./ros1_entry.sh ../../devel/cobridge/smoke_test
 
-
 ros2-test:
 	./ros2_entry.sh ../../build/cobridge/version_test
 	./ros2_entry.sh ../../build/cobridge/smoke_test
 
+ros1-build:
+	/ros_entrypoint.sh catkin_make
+
+ros2-build:
+	/ros_entrypoint.sh colcon build --event-handlers console_direct+
+
+
+
+noetic-test:
+	ros1-test
+
+foxy-test:
+	ros2-test
+
+noetic-build:
+	ros1-build
+
+foxy-build:
+	ros2-build
+
 test:
-ifeq ($(ROS_DISTRO),ros1)
-	$(MAKE) ros1-test
-else ifeq ($(TEST_TYPE),ros2)
-	$(MAKE) ros2-test
-else
-	$(error Please specify TEST_TYPE as ros1 or ros2)
-endif
+	$(ROS_DISTRO)-test
+
+build:
+	$(ROS_DISTRO)-build
