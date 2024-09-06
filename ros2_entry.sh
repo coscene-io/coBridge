@@ -2,5 +2,5 @@
 set -e
 
 # setup workspace environment
-source "../install/setup.bash" --
+source "../../install/setup.bash" --
 exec "$@"
