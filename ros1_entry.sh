@@ -2,5 +2,6 @@
 set -e
 
 # setup ros2 environment
-source "../../devel/setup.bash" --
+echo "source env: $ROS_WS/devel/setup.bash"
+source "$ROS_WS/devel/setup.bash" --
 exec "$@"

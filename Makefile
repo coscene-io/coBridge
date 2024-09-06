@@ -3,6 +3,9 @@ SHELL := /bin/bash
 ROS1_DISTRO := noetic
 ROS2_DISTRO := foxy humble
 
+ROS_WS := $(shell pwd)
+export ROS_WS
+
 ROS_BIN_PATH := /opt/ros/$(ROS_DISTRO)/bin
 
 lint:
@@ -15,11 +18,11 @@ lint:
 
 test:
 ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
-	./ros1_entry.sh devel/cobridge/version_test
-	./ros1_entry.sh devel/cobridge/smoke_test
+	src/cobridge/ros1_entry.sh devel/cobridge/version_test
+	src/cobridge/ros1_entry.sh devel/cobridge/smoke_test
 else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
-	./ros2_entry.sh build/cobridge/version_test
-	./ros2_entry.sh build/cobridge/smoke_test
+	src/cobridge/ros2_entry.sh build/cobridge/version_test
+	src/cobridge/ros2_entry.sh build/cobridge/smoke_test
 else
 	$(error Unsupported ROS_DISTRO: $(ROS_DISTRO))
 endif

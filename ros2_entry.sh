@@ -2,5 +2,6 @@
 set -e
 
 # setup workspace environment
-source "../../install/setup.bash" --
+echo "source env: $ROS_WS/install/setup.bash"
+source "$ROS_WS/install/setup.bash" --
 exec "$@"
