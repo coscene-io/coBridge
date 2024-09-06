@@ -29,7 +29,7 @@ endif
 
 build:
 ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
-	/ros_entrypoint.sh catkin_make && catkin_make tests && catkin_make install
+	/ros_entrypoint.sh catkin_make && /ros_entrypoint.sh catkin_make tests && /ros_entrypoint.sh catkin_make install
 else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
 	/ros_entrypoint.sh colcon build --event-handlers console_direct+
 else
