@@ -40,6 +40,7 @@ jobs:
         with:
           images: cobridge/ros-${{ matrix.ros_distribution }}
           tags: |
+            type=raw,latest
             type=raw,value=${{ env.CURRENT_DATE }}
 
       - name: Build and push Docker image
