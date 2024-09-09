@@ -149,151 +149,157 @@ TEST(SmokeTest, testPublishing) {
   client.unadvertise({advertisement.channel_id});
 }
 
-//
-//  TEST_F(ParameterTest, testGetAllParams) {
-//    const std::string requestId = "req-testGetAllParams";
-//    auto future = cobridge_base::wait_for_parameters(client_, requestId);
-//    client_->get_parameters({}, requestId);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_GE(params.size(), 2UL);
-//  }
-//
-//  TEST_F(ParameterTest, testGetNonExistingParameters) {
-//    const std::string request_id = "req-testGetNonExistingParameters";
-//    auto future = cobridge_base::wait_for_parameters(client_, request_id);
-//    client_->get_parameters(
-//      {"/foo_1/non_existing_parameter", "/foo_2/non_existing/nested_parameter"}, request_id);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_TRUE(params.empty());
-//  }
-//
-//  TEST_F(ParameterTest, testGetParameters) {
-//    const std::string requestId = "req-testGetParameters";
-//    auto future = cobridge_base::wait_for_parameters(client_, requestId);
-//    client_->get_parameters({PARAM_1_NAME, PARAM_2_NAME}, requestId);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_EQ(2UL, params.size());
-//    auto p1Iter = std::find_if(params.begin(), params.end(), [](const auto& param) {
-//      return param.get_name() == PARAM_1_NAME;
-//    });
-//    auto p2Iter = std::find_if(params.begin(), params.end(), [](const auto& param) {
-//      return param.get_name() == PARAM_2_NAME;
-//    });
-//    ASSERT_NE(p1Iter, params.end());
-//    EXPECT_EQ(PARAM_1_DEFAULT_VALUE, p1Iter->get_value().getValue<PARAM_1_TYPE>());
-//    ASSERT_NE(p2Iter, params.end());
-//
-//    std::vector<double> double_array_val;
-//    const auto array_params =
-//      p2Iter->get_value().getValue<std::vector<cobridge_base::ParameterValue>>();
-//    for (const auto& paramValue : array_params) {
-//      double_array_val.push_back(paramValue.getValue<double>());
-//    }
-//    EXPECT_EQ(double_array_val, PARAM_2_DEFAULT_VALUE);
-//  }
-//
-//  TEST_F(ParameterTest, testSetParameters) {
-//    const PARAM_1_TYPE newP1value = "world";
-//    const std::vector<cobridge_base::ParameterValue> newP2value = {
-//      cobridge_base::ParameterValue(4.1), cobridge_base::ParameterValue(5.5),
-//      cobridge_base::ParameterValue(6.6)};
-//
-//    const std::vector<cobridge_base::Parameter> parameters = {
-//      cobridge_base::Parameter(PARAM_1_NAME, cobridge_base::ParameterValue(newP1value)),
-//      cobridge_base::Parameter(PARAM_2_NAME, cobridge_base::ParameterValue(newP2value)),
-//    };
-//
-//    client_->set_parameters(parameters);
-//    const std::string requestId = "req-testSetParameters";
-//    auto future = cobridge_base::wait_for_parameters(client_, requestId);
-//    client_->get_parameters({PARAM_1_NAME, PARAM_2_NAME}, requestId);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_EQ(2UL, params.size());
-//    auto p1Iter = std::find_if(params.begin(), params.end(), [](const auto& param) {
-//      return param.get_name() == PARAM_1_NAME;
-//    });
-//    auto p2Iter = std::find_if(params.begin(), params.end(), [](const auto& param) {
-//      return param.get_name() == PARAM_2_NAME;
-//    });
-//    ASSERT_NE(p1Iter, params.end());
-//    EXPECT_EQ(newP1value, p1Iter->get_value().getValue<PARAM_1_TYPE>());
-//    ASSERT_NE(p2Iter, params.end());
-//
-//    std::vector<double> double_array_val;
-//    const auto array_params =
-//      p2Iter->get_value().getValue<std::vector<cobridge_base::ParameterValue>>();
-//    for (const auto& paramValue : array_params) {
-//      double_array_val.push_back(paramValue.getValue<double>());
-//    }
-//    const std::vector<double> expected_value = {4.1, 5.5, 6.6};
-//    EXPECT_EQ(double_array_val, expected_value);
-//  }
-//
-//  TEST_F(ParameterTest, testSetParametersWithReqId) {
-//    const PARAM_1_TYPE newP1value = "world";
-//    const std::vector<cobridge_base::Parameter> parameters = {
-//      cobridge_base::Parameter(PARAM_1_NAME, cobridge_base::ParameterValue(newP1value)),
-//    };
-//
-//    const std::string request_id = "req-testSetParameters";
-//    auto future = cobridge_base::wait_for_parameters(client_, request_id);
-//    client_->set_parameters(parameters, request_id);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_EQ(1UL, params.size());
-//  }
-//
-//  TEST_F(ParameterTest, testUnsetParameter) {
-//    const std::vector<cobridge_base::Parameter> parameters = {
-//      cobridge_base::Parameter(PARAM_1_NAME),
-//    };
-//
-//    const std::string request_id = "req-testUnsetParameter";
-//    auto future = cobridge_base::wait_for_parameters(client_, request_id);
-//    client_->set_parameters(parameters, request_id);
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    EXPECT_EQ(0UL, params.size());
-//  }
-//
-//  TEST_F(ParameterTest, testParameterSubscription) {
-//    auto future = cobridge_base::wait_for_parameters(client_);
-//
-//    client_->subscribe_parameter_updates({PARAM_1_NAME});
-//    client_->set_parameters({cobridge_base::Parameter(PARAM_1_NAME,
-//                                                      cobridge_base::ParameterValue("foo"))});
-//    ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
-//    std::vector<cobridge_base::Parameter> params = future.get();
-//
-//    ASSERT_EQ(1UL, params.size());
-//    EXPECT_EQ(params.front().get_name(), PARAM_1_NAME);
-//
-//    client_->unsubscribe_parameter_updates({PARAM_1_NAME});
-//    client_->set_parameters({cobridge_base::Parameter(PARAM_1_NAME,
-//                                                       cobridge_base::ParameterValue("bar"))});
-//
-//    future = cobridge_base::wait_for_parameters(client_);
-//    ASSERT_EQ(std::future_status::timeout, future.wait_for(THREE_SECOND));
-//  }
+TEST_F(ParameterTest, testGetAllParams) {
+  const std::string requestId = "req-testGetAllParams";
+  auto future = cobridge_base::wait_for_parameters(client_, requestId);
+  client_->get_parameters({}, requestId);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
 
+  EXPECT_GE(params.size(), 2UL);
+}
+
+TEST_F(ParameterTest, testGetNonExistingParameters) {
+  const std::string request_id = "req-testGetNonExistingParameters";
+  auto future = cobridge_base::wait_for_parameters(client_, request_id);
+  client_->get_parameters(
+    {"/foo_1/non_existing_parameter", "/foo_2/non_existing/nested_parameter"}, request_id);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  EXPECT_TRUE(params.empty());
+}
+
+TEST_F(ParameterTest, testGetParameters) {
+  const std::string requestId = "req-testGetParameters";
+  auto future = cobridge_base::wait_for_parameters(client_, requestId);
+  client_->get_parameters({PARAM_1_NAME, PARAM_2_NAME}, requestId);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  EXPECT_EQ(2UL, params.size());
+  auto p1Iter = std::find_if(
+    params.begin(), params.end(), [](const auto & param) {
+      return param.get_name() == PARAM_1_NAME;
+    });
+  auto p2Iter = std::find_if(
+    params.begin(), params.end(), [](const auto & param) {
+      return param.get_name() == PARAM_2_NAME;
+    });
+  ASSERT_NE(p1Iter, params.end());
+  EXPECT_EQ(PARAM_1_DEFAULT_VALUE, p1Iter->get_value().getValue<PARAM_1_TYPE>());
+  ASSERT_NE(p2Iter, params.end());
+
+  std::vector<double> double_array_val;
+  const auto array_params =
+    p2Iter->get_value().getValue<std::vector<cobridge_base::ParameterValue>>();
+  for (const auto & paramValue : array_params) {
+    double_array_val.push_back(paramValue.getValue<double>());
+  }
+  EXPECT_EQ(double_array_val, PARAM_2_DEFAULT_VALUE);
+}
+
+TEST_F(ParameterTest, testSetParameters) {
+  const PARAM_1_TYPE newP1value = "world";
+  const std::vector<cobridge_base::ParameterValue> newP2value = {
+    cobridge_base::ParameterValue(4.1), cobridge_base::ParameterValue(5.5),
+    cobridge_base::ParameterValue(6.6)};
+
+  const std::vector<cobridge_base::Parameter> parameters = {
+    cobridge_base::Parameter(PARAM_1_NAME, cobridge_base::ParameterValue(newP1value)),
+    cobridge_base::Parameter(PARAM_2_NAME, cobridge_base::ParameterValue(newP2value)),
+  };
+
+  client_->set_parameters(parameters);
+  const std::string requestId = "req-testSetParameters";
+  auto future = cobridge_base::wait_for_parameters(client_, requestId);
+  client_->get_parameters({PARAM_1_NAME, PARAM_2_NAME}, requestId);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  EXPECT_EQ(2UL, params.size());
+  auto p1Iter = std::find_if(
+    params.begin(), params.end(), [](const auto & param) {
+      return param.get_name() == PARAM_1_NAME;
+    });
+  auto p2Iter = std::find_if(
+    params.begin(), params.end(), [](const auto & param) {
+      return param.get_name() == PARAM_2_NAME;
+    });
+  ASSERT_NE(p1Iter, params.end());
+  EXPECT_EQ(newP1value, p1Iter->get_value().getValue<PARAM_1_TYPE>());
+  ASSERT_NE(p2Iter, params.end());
+
+  std::vector<double> double_array_val;
+  const auto array_params =
+    p2Iter->get_value().getValue<std::vector<cobridge_base::ParameterValue>>();
+  for (const auto & paramValue : array_params) {
+    double_array_val.push_back(paramValue.getValue<double>());
+  }
+  const std::vector<double> expected_value = {4.1, 5.5, 6.6};
+  EXPECT_EQ(double_array_val, expected_value);
+}
+
+TEST_F(ParameterTest, testSetParametersWithReqId) {
+  const PARAM_1_TYPE newP1value = "world";
+  const std::vector<cobridge_base::Parameter> parameters = {
+    cobridge_base::Parameter(PARAM_1_NAME, cobridge_base::ParameterValue(newP1value)),
+  };
+
+  const std::string request_id = "req-testSetParameters";
+  auto future = cobridge_base::wait_for_parameters(client_, request_id);
+  client_->set_parameters(parameters, request_id);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  EXPECT_EQ(1UL, params.size());
+}
+
+TEST_F(ParameterTest, testUnsetParameter) {
+  const std::vector<cobridge_base::Parameter> parameters = {
+    cobridge_base::Parameter(PARAM_1_NAME),
+  };
+
+  const std::string request_id = "req-testUnsetParameter";
+  auto future = cobridge_base::wait_for_parameters(client_, request_id);
+  client_->set_parameters(parameters, request_id);
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  EXPECT_EQ(0UL, params.size());
+}
+
+TEST_F(ParameterTest, testParameterSubscription) {
+  auto future = cobridge_base::wait_for_parameters(client_);
+
+  client_->subscribe_parameter_updates({PARAM_1_NAME});
+  client_->set_parameters(
+    {cobridge_base::Parameter(
+        PARAM_1_NAME,
+        cobridge_base::ParameterValue("foo"))});
+  ASSERT_EQ(std::future_status::ready, future.wait_for(DEFAULT_TIMEOUT));
+  std::vector<cobridge_base::Parameter> params = future.get();
+
+  ASSERT_EQ(1UL, params.size());
+  EXPECT_EQ(params.front().get_name(), PARAM_1_NAME);
+
+  client_->unsubscribe_parameter_updates({PARAM_1_NAME});
+  client_->set_parameters(
+    {cobridge_base::Parameter(
+        PARAM_1_NAME,
+        cobridge_base::ParameterValue("bar"))});
+
+  future = cobridge_base::wait_for_parameters(client_);
+  ASSERT_EQ(std::future_status::timeout, future.wait_for(THREE_SECOND));
+}
 
 TEST_F(ServiceTest, testCallService) {
   // Connect a few clients (in parallel) and make sure that they can all call the service
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
 
-  auto serviceFuture = cobridge_base::wait_for_service(client, SERVICE_NAME);
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
-  ASSERT_EQ(std::future_status::ready, serviceFuture.wait_for(THREE_SECOND));
+  auto serviceFuture = cobridge_base::wait_for_service(client, SERVICE_NAME);
+  ASSERT_EQ(std::future_status::ready, serviceFuture.wait_for(DEFAULT_TIMEOUT));
   const cobridge_base::Service service = serviceFuture.get();
 
   cobridge_base::ServiceRequest request;

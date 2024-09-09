@@ -119,18 +119,18 @@ CoBridge::CoBridge(const rclcpp::NodeOptions & options)
   handlers.subscribe_connection_graph_handler =
     std::bind(&CoBridge::subscribe_connection_graph, this, _1);
 
-//  if (has_capability(cobridge_base::CAPABILITY_PARAMETERS) ||
-//    has_capability(cobridge_base::CAPABILITY_PARAMETERS_SUBSCRIBE))
-//  {
-//    handlers.parameter_request_handler = std::bind(&CoBridge::get_parameters, this, _1, _2, _3);
-//    handlers.parameter_change_handler = std::bind(&CoBridge::set_parameters, this, _1, _2, _3);
-//    handlers.parameter_subscription_handler =
-//      std::bind(&CoBridge::subscribe_parameters, this, _1, _2, _3);
-//
-//    _param_interface = std::make_shared<ParameterInterface>(this, param_whitelist_patterns);
-//    _param_interface->set_param_update_callback(
-//      std::bind(&CoBridge::parameter_updates, this, _1));
-//  }
+  if (has_capability(cobridge_base::CAPABILITY_PARAMETERS) ||
+    has_capability(cobridge_base::CAPABILITY_PARAMETERS_SUBSCRIBE))
+  {
+    handlers.parameter_request_handler = std::bind(&CoBridge::get_parameters, this, _1, _2, _3);
+    handlers.parameter_change_handler = std::bind(&CoBridge::set_parameters, this, _1, _2, _3);
+    handlers.parameter_subscription_handler =
+      std::bind(&CoBridge::subscribe_parameters, this, _1, _2, _3);
+
+    _param_interface = std::make_shared<ParameterInterface>(this, param_whitelist_patterns);
+    _param_interface->set_param_update_callback(
+      std::bind(&CoBridge::parameter_updates, this, _1));
+  }
 
   if (has_capability(cobridge_base::CAPABILITY_ASSETS)) {
     handlers.fetch_asset_handler = [this](

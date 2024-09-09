@@ -262,7 +262,7 @@ public:
     const std::vector<std::string> & parameter_names,
     const std::optional<std::string> & request_id = std::nullopt) override
   {
-    nlohmann::json jsonPayload{{"op", "get_parameters"},
+    nlohmann::json jsonPayload{{"op", "getParameters"},
       {"parameterNames", parameter_names}};
     if (request_id) {
       jsonPayload["id"] = request_id.value();
@@ -274,7 +274,7 @@ public:
     const std::vector<Parameter> & parameters,
     const std::optional<std::string> & request_id = std::nullopt) override
   {
-    nlohmann::json jsonPayload{{"op", "set_parameters"},
+    nlohmann::json jsonPayload{{"op", "setParameters"},
       {"parameters", parameters}};
     if (request_id) {
       jsonPayload["id"] = request_id.value();
@@ -298,7 +298,7 @@ public:
 
   void fetch_asset(const std::string & uri, uint32_t request_id) override
   {
-    nlohmann::json jsonPayload{{"op", "fetch_asset"},
+    nlohmann::json jsonPayload{{"op", "fetchAsset"},
       {"uri", uri},
       {"requestId", request_id}};
     send_text(jsonPayload.dump());

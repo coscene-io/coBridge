@@ -149,8 +149,6 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
         find_package(rclcpp REQUIRED)
         find_package(rclcpp_components REQUIRED)
         find_package(resource_retriever REQUIRED)
-        find_package(cv_bridge REQUIRED)
-        find_package(OpenCV REQUIRED)
 
         add_library(cobridge_component SHARED
                 ros2_bridge/src/message_definition_cache.cpp
@@ -169,7 +167,6 @@ elseif("$ENV{ROS_VERSION}" STREQUAL "2")
                 $<INSTALL_INTERFACE:include>
         )
 
-        #ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs sensor_msgs cv_bridge)
         ament_target_dependencies(cobridge_component rclcpp rclcpp_components resource_retriever rosgraph_msgs)
         target_link_libraries(cobridge_component cobridge_base)
         rclcpp_components_register_nodes(cobridge_component "cobridge::CoBridge")

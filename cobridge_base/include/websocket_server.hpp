@@ -76,13 +76,13 @@ constexpr auto SUBSCRIBE = string_hash("subscribe");
 constexpr auto UNSUBSCRIBE = string_hash("unsubscribe");
 constexpr auto ADVERTISE = string_hash("advertise");
 constexpr auto UNADVERTISE = string_hash("unadvertise");
-constexpr auto GET_PARAMETERS = string_hash("get_parameters");
-constexpr auto SET_PARAMETERS = string_hash("set_parameters");
+constexpr auto GET_PARAMETERS = string_hash("getParameters");
+constexpr auto SET_PARAMETERS = string_hash("setParameters");
 constexpr auto SUBSCRIBE_PARAMETER_UPDATES = string_hash("subscribeParameterUpdates");
 constexpr auto UNSUBSCRIBE_PARAMETER_UPDATES = string_hash("unsubscribeParameterUpdates");
 constexpr auto SUBSCRIBE_CONNECTION_GRAPH = string_hash("subscribeConnectionGraph");
 constexpr auto UNSUBSCRIBE_CONNECTION_GRAPH = string_hash("unsubscribeConnectionGraph");
-constexpr auto FETCH_ASSET = string_hash("fetch_asset");
+constexpr auto FETCH_ASSET = string_hash("fetchAsset");
 }  // namespace
 
 namespace cobridge_base
@@ -101,13 +101,13 @@ const std::unordered_map<std::string, std::string> CAPABILITY_BY_CLIENT_OPERATIO
   // {"unsubscribe", }, // No required capability.
   {"advertise", CAPABILITY_CLIENT_PUBLISH},
   {"unadvertise", CAPABILITY_CLIENT_PUBLISH},
-  {"get_parameters", CAPABILITY_PARAMETERS},
-  {"set_parameters", CAPABILITY_PARAMETERS},
+  {"getParameters", CAPABILITY_PARAMETERS},
+  {"setParameters", CAPABILITY_PARAMETERS},
   {"subscribeParameterUpdates", CAPABILITY_PARAMETERS_SUBSCRIBE},
   {"unsubscribeParameterUpdates", CAPABILITY_PARAMETERS_SUBSCRIBE},
   {"subscribeConnectionGraph", CAPABILITY_CONNECTION_GRAPH},
   {"unsubscribeConnectionGraph", CAPABILITY_CONNECTION_GRAPH},
-  {"fetch_asset", CAPABILITY_ASSETS},
+  {"fetchAsset", CAPABILITY_ASSETS},
 };
 
 /// Map of required capability by client operation (binary).
