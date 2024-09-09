@@ -1,0 +1,23 @@
+name: lint
+on:
+  push:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: ros:foxy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: src/cobridge
+
+      - name: Run lint
+        run: |
+          cd ./src/cobridge
+          make lint

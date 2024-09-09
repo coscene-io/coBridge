@@ -1,4 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////
 // Copyright 2024 coScene
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef ROS2_WS_CREATE_GENERIC_SUBSCRIPTION_HPP
-#define ROS2_WS_CREATE_GENERIC_SUBSCRIPTION_HPP
+#ifndef CREATE_GENERIC_SUBSCRIPTION_HPP_
+#define CREATE_GENERIC_SUBSCRIPTION_HPP_
 
 #include <functional>
 #include <memory>
@@ -31,35 +29,37 @@
 #include "generic_subscription.hpp"
 #include "typesupport_helpers.hpp"
 
-namespace cobridge {
-    std::shared_ptr<GenericSubscription> create_generic_subscription(
-            rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
-            const std::string &topic,
-            const std::string &type,
-            const rclcpp::QoS &qos,
-            std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> callback) {
-        auto library_generic_subscriber = cobridge::get_typesupport_library(
-                type, "rosidl_typesupport_cpp");
-        auto type_support = cobridge::get_typesupport_handle(
-                type, "rosidl_typesupport_cpp", library_generic_subscriber);
-        auto subscription = std::shared_ptr<GenericSubscription>();
+namespace cobridge
+{
+std::shared_ptr<GenericSubscription> create_generic_subscription(
+  rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
+  const std::string & topic,
+  const std::string & type,
+  const rclcpp::QoS & qos,
+  std::function<void(std::shared_ptr<rclcpp::SerializedMessage>, uint64_t timestamp)> callback)
+{
+  auto library_generic_subscriber = cobridge::get_typesupport_library(
+    type, "rosidl_typesupport_cpp");
+  auto type_support = cobridge::get_typesupport_handle(
+    type, "rosidl_typesupport_cpp", library_generic_subscriber);
+  auto subscription = std::shared_ptr<GenericSubscription>();
 
-        try {
-            subscription = std::make_shared<GenericSubscription>(
-                    topics_interface->get_node_base_interface(),
-                    *type_support,
-                    topic,
-                    type,
-                    qos,
-                    callback);
+  try {
+    subscription = std::make_shared<GenericSubscription>(
+      topics_interface->get_node_base_interface(),
+      *type_support,
+      topic,
+      type,
+      qos,
+      callback);
 
-            topics_interface->add_subscription(subscription, nullptr);
-        } catch (const std::runtime_error &ex) {
-            std::runtime_error("Error subscribing to topic '" + topic + "'. Error: " + ex.what());
-        }
+    topics_interface->add_subscription(subscription, nullptr);
+  } catch (const std::runtime_error & ex) {
+    std::runtime_error("Error subscribing to topic '" + topic + "'. Error: " + ex.what());
+  }
 
-        return subscription;
-    }
+  return subscription;
 }
+}  // namespace cobridge
 
-#endif //ROS2_WS_CREATE_GENERIC_SUBSCRIPTION_HPP
+#endif  // CREATE_GENERIC_SUBSCRIPTION_HPP_

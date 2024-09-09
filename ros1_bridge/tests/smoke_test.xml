@@ -1,0 +1,8 @@
+<launch>
+    <node name="cobridge" pkg="cobridge" type="cobridge" output="screen">
+        <param name="port" value="9876" />
+        <rosparam param="asset_uri_allowlist" subst_value="True">['file://.*']</rosparam>
+    </node>
+
+    <test test-name="smoke_test" pkg="cobridge" type="smoke_test" />
+</launch>

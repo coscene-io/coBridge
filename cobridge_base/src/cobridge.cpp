@@ -1,4 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////
 // Copyright 2024 coScene
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////////////////////
 
 #include "cobridge.hpp"
 #include "websocketpp/version.hpp"
 
-namespace cobridge_base {
-    const char *websocket_user_agent() {
-        return websocketpp::user_agent;
-    }
+namespace cobridge_base
+{
+const char * websocket_user_agent()
+{
+  return websocketpp::user_agent;
+}
 }

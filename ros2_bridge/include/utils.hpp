@@ -1,4 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////
 // Copyright 2024 coScene
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////////////////////
-
-#pragma once
+#ifndef UTILS_HPP_
+#define UTILS_HPP_
 
 #include <algorithm>
 #include <regex>
@@ -23,14 +21,18 @@
 #include <utility>
 #include <vector>
 
-namespace cobridge {
+namespace cobridge
+{
 
-    inline std::pair<std::string, std::string> get_node_and_node_namespace(const std::string &fqn_node_name) {
-        const std::size_t found = fqn_node_name.find_last_of('/');
-        if (found == std::string::npos) {
-            throw std::runtime_error("Invalid fully qualified node name: " + fqn_node_name);
-        }
-        return std::make_pair(fqn_node_name.substr(0, found), fqn_node_name.substr(found + 1));
-    }
-
+inline std::pair<std::string, std::string> get_node_and_node_namespace(
+  const std::string & fqn_node_name)
+{
+  const std::size_t found = fqn_node_name.find_last_of('/');
+  if (found == std::string::npos) {
+    throw std::runtime_error("Invalid fully qualified node name: " + fqn_node_name);
+  }
+  return std::make_pair(fqn_node_name.substr(0, found), fqn_node_name.substr(found + 1));
 }
+
+}  // namespace cobridge
+#endif  // UTILS_HPP_

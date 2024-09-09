@@ -1,4 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////
 // Copyright 2024 coScene
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef COBRIDGE_COBRIDGE_HPP
-#define COBRIDGE_COBRIDGE_HPP
+#ifndef COBRIDGE_HPP_
+#define COBRIDGE_HPP_
 
-namespace cobridge_base {
-    const char *websocket_user_agent();
+namespace cobridge_base
+{
+const char * websocket_user_agent();
 
-    extern const char COBRIDGE_VERSION[];
-    extern const char COBRIDGE_GIT_HASH[];
+extern const char COBRIDGE_VERSION[];
+extern const char COBRIDGE_GIT_HASH[];
 }
 
-#endif //COBRIDGE_COBRIDGE_HPP
+#endif  // COBRIDGE_HPP_
