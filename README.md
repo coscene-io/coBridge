@@ -24,6 +24,7 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
   ```
 
 * ROS1
+
   ``` bash
     # copy this project into {your_ros_ws}/src/
     cp -r {this_repo} {your_ros_ws}/src/.
@@ -33,12 +34,11 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
  
     # Enter into your ros workspace 
     cd {your_ros_ws}
-    catkin_make
+    catkin_make install
   ```
 
 
 * ROS2
-  *  Modify the CMakeLists.txt file, line 19 - 20, according to the ROS2 version, and select the add_compile_definitions parameter according to the ROS2 distro.
 
   ``` bash 
      # Init Env variables
@@ -61,7 +61,7 @@ After cobridge establishes a link with the cloud, it can subscribe to ros topic 
   ```
 
 ## Cloud Visualization 
-The cloud visualisation needs to be coupled with the carve line `virmesh` component to visualise the state of the robot side in real time via the web side.
+The cloud visualisation needs to be coupled with the carve line `coLink` component to visualise the state of the robot side in real time via the web side.
 
 ## Credits
 originally from foxglove, thanks for their wonderful work. 
