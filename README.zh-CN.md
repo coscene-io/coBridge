@@ -6,34 +6,41 @@ cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket �
 ## 编译
 
 * 安装依赖库
-    ``` bash
-  apt install -y nlohmann-json3-dev
-  apt install -y libasio-dev 
-  apt install -y libboost-all-dev
-  apt install -y libssl-dev 
-  apt install -y libwebsocketpp-dev
-  apt install -y ros-${ROS_DISTRO}-cv-bridge
-  apt install -y ros-${ROS_DISTRO}-resource-retriever
-    ```
+
+  ``` bash
+  # for ROS 1 distribution
+  sudo apt install -y nlohmann-json3-dev  \
+    libasio-dev \
+    libwebsocketpp-dev \
+    ros-${ROS_DISTRO}-resource-retriever \
+    ros-${ROS_DISTRO}-ros-babel-fish
+  
+  # for ROS 2 distribution
+  sudo apt install -y nlohmann-json3-dev \
+      libasio-dev \
+      libwebsocketpp-dev \
+      ros-${ROS_DISTRO}-resource-retriever
+  ```
 
 * ROS1
+
   ``` bash 
-  将工程复制到 {your_ros_ws}/src/ 文件夹内
-  cp {this_repo} {your_ros_ws}/src/
+  # 将工程复制到 {your_ros_ws}/src/ 文件夹内
+  cp -r {this_repo} {your_ros_ws}/src/
   
   cd {your_ros2_ws} 
   
   source /opt/ros/{ros_distro}/setup.bash 
   
-  catkin_make
+  catkin_make install
   ```
 
 
 * ROS2
-  *  根据ROS2 版本，修改CMakeLists.txt文件，line 19 - 20，依据ROS2 distro选择 add_compile_definitions 参数
+
   ``` bash 
    # 将工程复制到 {your_ros2_ws}/src/ 文件夹内
-   cp {this_repo} {your_ros_ws}/src/ 
+   cp -r {this_repo} {your_ros_ws}/src/ 
   
    source /opt/ros/{ros_distro}/setup.bash
   
@@ -52,7 +59,7 @@ cobridge 会以 ros node 的方式运行在机器人端，并通过 websocket �
   ```
 
 ## 云端可视化
-云端可视化需配合刻行 `virmesh` 组件，通过网页端实时可视化机器人端状态。
+云端可视化需配合刻行 `coLink` 组件，通过网页端实时可视化机器人端状态。
 
 ## 荣誉
 最初来自 foxglove，感谢他们的出色工作。
