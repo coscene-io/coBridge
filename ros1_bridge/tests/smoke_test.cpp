@@ -18,6 +18,7 @@
 #include <std_srvs/SetBool.h>
 #include <websocketpp/config/asio_client.hpp>
 
+#include <nlohmann/json.hpp>
 #include <test/test_client.hpp>
 #include <websocket_client.hpp>
 
@@ -36,6 +37,21 @@ constexpr uint8_t HELLO_WORLD_BINARY[] = {11, 0, 0, 0, 104, 101, 108, 108,
 constexpr auto THREE_SECOND = std::chrono::seconds(3);
 constexpr auto DEFAULT_TIMEOUT = std::chrono::seconds(8);
 
+using json = nlohmann::json;
+
+void CompareJsonExceptSessionId(const std::string & jsonStr1, const std::string & jsonStr2)
+{
+  json obj1 = json::parse(jsonStr1);
+  json obj2 = json::parse(jsonStr2);
+
+  obj1.erase("sessionId");
+  obj2.erase("sessionId");
+
+  obj1.erase("metadata");
+  obj2.erase("metadata");
+
+  EXPECT_EQ(obj1, obj2);
+}
 
 class ParameterTest : public ::testing::Test
 {
@@ -86,9 +102,36 @@ private:
   ros::ServiceServer _service;
 };
 
-TEST(SmokeTest, testConnection) {
-  cobridge_base::Client<websocketpp::config::asio_client> client;
-  EXPECT_EQ(std::future_status::ready, client.connect(URI).wait_for(DEFAULT_TIMEOUT));
+TEST(SmokeTest, testMultiConnection) {
+  auto client_0 = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  auto client0_login_future = cobridge_base::wait_for_login(client_0, "login");
+  EXPECT_EQ(std::future_status::ready, client_0->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  EXPECT_EQ(std::future_status::ready, client0_login_future.wait_for(THREE_SECOND));
+  EXPECT_EQ("{\"op\":\"login\",\"user_id\":null,\"user_name\":null}", client0_login_future.get());
+  client_0->login("user_0", "test-user-id-0000");
+
+  auto client_1 = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  auto client1_login_future = cobridge_base::wait_for_login(client_1, "login");
+  EXPECT_EQ(std::future_status::ready, client_1->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  EXPECT_EQ(std::future_status::ready, client1_login_future.wait_for(THREE_SECOND));
+  EXPECT_EQ(
+    "{\"op\":\"login\",\"user_ids\":[\"test-user-id-0000\"],"
+    "\"user_names\":[\"user_0\"]}", client1_login_future.get());
+
+  auto client0_kicked_future = cobridge_base::wait_for_kicked(client_0);
+  auto server_info_future = cobridge_base::wait_for_login(client_1, "serverInfo");
+  client_1->login("user_1", "test-user-id-0001");
+  EXPECT_EQ(std::future_status::ready, client0_kicked_future.wait_for(THREE_SECOND));
+  EXPECT_EQ(std::future_status::ready, server_info_future.wait_for(THREE_SECOND));
+  EXPECT_EQ(
+    "{\"kickedBy\":\"test-user-id-0001\",\"message\":\"The client was forcibly "
+    "disconnected by the server.\",\"op\":\"kicked\"}", client0_kicked_future.get());
+  CompareJsonExceptSessionId(
+    "{\"capabilities\":[\"clientPublish\",\"connectionGraph\","
+    "\"parametersSubscribe\",\"parameters\",\"services\",\"assets\"],"
+    "\"metadata\":{\"ROS_DISTRO\":\"foxy\"},\"name\":\"cobridge\","
+    "\"op\":\"serverInfo\",\"sessionId\":\"1727148359\","
+    "\"supportedEncodings\":[\"cdr\"]}", server_info_future.get());
 }
 
 TEST(SmokeTest, testSubscription) {

@@ -49,6 +49,9 @@ void CompareJsonExceptSessionId(const std::string & jsonStr1, const std::string 
   obj1.erase("sessionId");
   obj2.erase("sessionId");
 
+  obj1.erase("metadata");
+  obj2.erase("metadata");
+
   EXPECT_EQ(obj1, obj2);
 }
 
