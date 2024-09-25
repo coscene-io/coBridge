@@ -107,7 +107,7 @@ TEST(SmokeTest, testMultiConnection) {
   auto client0_login_future = cobridge_base::wait_for_login(client_0, "login");
   EXPECT_EQ(std::future_status::ready, client_0->connect(URI).wait_for(DEFAULT_TIMEOUT));
   EXPECT_EQ(std::future_status::ready, client0_login_future.wait_for(THREE_SECOND));
-  EXPECT_EQ("{\"op\":\"login\",\"user_id\":null,\"user_name\":null}", client0_login_future.get());
+  EXPECT_EQ("{\"op\":\"login\",\"userId\":\"\",\"username\":\"\"}", client0_login_future.get());
   client_0->login("user_0", "test-user-id-0000");
 
   auto client_1 = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
@@ -115,8 +115,8 @@ TEST(SmokeTest, testMultiConnection) {
   EXPECT_EQ(std::future_status::ready, client_1->connect(URI).wait_for(DEFAULT_TIMEOUT));
   EXPECT_EQ(std::future_status::ready, client1_login_future.wait_for(THREE_SECOND));
   EXPECT_EQ(
-    "{\"op\":\"login\",\"user_ids\":[\"test-user-id-0000\"],"
-    "\"user_names\":[\"user_0\"]}", client1_login_future.get());
+    "{\"op\":\"login\",\"userId\":\"test-user-id-0000\","
+    "\"username\":\"user_0\"}", client1_login_future.get());
 
   auto client0_kicked_future = cobridge_base::wait_for_kicked(client_0);
   auto server_info_future = cobridge_base::wait_for_login(client_1, "serverInfo");
@@ -124,8 +124,8 @@ TEST(SmokeTest, testMultiConnection) {
   EXPECT_EQ(std::future_status::ready, client0_kicked_future.wait_for(THREE_SECOND));
   EXPECT_EQ(std::future_status::ready, server_info_future.wait_for(THREE_SECOND));
   EXPECT_EQ(
-    "{\"kickedBy\":\"test-user-id-0001\",\"message\":\"The client was forcibly "
-    "disconnected by the server.\",\"op\":\"kicked\"}", client0_kicked_future.get());
+    "{\"message\":\"The client was forcibly disconnected by the server.\",\"op\":\"kicked\","
+    "\"userId\":\"test-user-id-0001\",\"username\":\"user_1\"}", client0_kicked_future.get());
   CompareJsonExceptSessionId(
     "{\"capabilities\":[\"clientPublish\",\"connectionGraph\","
     "\"parametersSubscribe\",\"parameters\",\"services\",\"assets\"],"

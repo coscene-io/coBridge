@@ -959,25 +959,25 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
     con->get_resource());
 
   if (_clients.size() != 0) {
-    std::vector<std::string> login_user_ids;
-    std::vector<std::string> login_user_names;
+    std::string login_user_id;
+    std::string login_user_name;
     for (auto it = _clients.begin(); it != _clients.end(); ) {
-      login_user_ids.emplace_back(it->second.user_id);
-      login_user_names.emplace_back(it->second.user_name);
+      login_user_id = it->second.user_id;
+      login_user_name = it->second.user_name;
       it++;
     }
     send_json(
       hdl, {
         {"op", "login"},
-        {"user_ids", login_user_ids},
-        {"user_names", login_user_names},
+        {"userId", login_user_id},
+        {"username", login_user_name},
       });
   } else {
     send_json(
       hdl, {
         {"op", "login"},
-        {"user_id", nullptr},
-        {"user_name", nullptr}
+        {"userId", ""},
+        {"username", ""}
       });
   }
 }
@@ -1202,7 +1202,8 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
           {
             {"op", "kicked"},
             {"message", "The client was forcibly disconnected by the server."},
-            {"kickedBy", user_id}
+            {"userId", user_id},
+            {"username", user_name}
           })
           .dump());
         con->close(
