@@ -19,6 +19,7 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <websocketpp/config/asio_client.hpp>
 
+#include <nlohmann/json.hpp>
 #include <test/test_client.hpp>
 #include <websocket_client.hpp>
 
@@ -37,6 +38,18 @@ constexpr uint8_t HELLO_WORLD_BINARY[] = {0, 1, 0, 0, 12, 0, 0, 0, 104, 101,
 
 constexpr auto THREE_SECOND = std::chrono::seconds(3);
 constexpr auto DEFAULT_TIMEOUT = std::chrono::seconds(10);
+
+using json = nlohmann::json;
+
+void CompareJsonExceptSessionId(const std::string& jsonStr1, const std::string& jsonStr2) {
+  json obj1 = json::parse(jsonStr1);
+  json obj2 = json::parse(jsonStr2);
+
+  obj1.erase("sessionId");
+  obj2.erase("sessionId");
+
+  EXPECT_EQ(obj1, obj2);
+}
 
 class ParameterTest : public ::testing::Test
 {
@@ -91,6 +104,8 @@ protected:
 
     _wsClient = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
     ASSERT_EQ(std::future_status::ready, _wsClient->connect(URI).wait_for(DEFAULT_TIMEOUT));
+
+    _wsClient->login("test user", "test-user-id-0000");
   }
 
   void TearDown() override
@@ -176,9 +191,9 @@ template<class T>
 std::shared_ptr<rclcpp::SerializedMessage> serializeMsg(const T * msg)
 {
   using rosidl_typesupport_cpp::get_message_type_support_handle;
-  auto typeSupportHdl = get_message_type_support_handle<T>();
+  auto type_support_hdl = get_message_type_support_handle<T>();
   auto result = std::make_shared<rclcpp::SerializedMessage>();
-  rmw_ret_t ret = rmw_serialize(msg, typeSupportHdl, &result->get_rcl_serialized_message());
+  rmw_ret_t ret = rmw_serialize(msg, type_support_hdl, &result->get_rcl_serialized_message());
   EXPECT_EQ(ret, RMW_RET_OK);
   return result;
 }
@@ -187,16 +202,40 @@ template<class T>
 std::shared_ptr<T> deserializeMsg(const rcl_serialized_message_t * msg)
 {
   using rosidl_typesupport_cpp::get_message_type_support_handle;
-  auto typeSupportHdl = get_message_type_support_handle<T>();
+  auto type_support_hdl = get_message_type_support_handle<T>();
   auto result = std::make_shared<T>();
-  rmw_ret_t ret = rmw_deserialize(msg, typeSupportHdl, result.get());
+  rmw_ret_t ret = rmw_deserialize(msg, type_support_hdl, result.get());
   EXPECT_EQ(ret, RMW_RET_OK);
   return result;
 }
 
-TEST(SmokeTest, testConnection) {
-  cobridge_base::Client<websocketpp::config::asio_client> wsClient;
-  EXPECT_EQ(std::future_status::ready, wsClient.connect(URI).wait_for(DEFAULT_TIMEOUT));
+TEST(SmokeTest, testMultiConnection) {
+  auto client_0 = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  auto client0_login_future = cobridge_base::wait_for_login(client_0, "login");
+  EXPECT_EQ(std::future_status::ready, client_0->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  EXPECT_EQ(std::future_status::ready, client0_login_future.wait_for(THREE_SECOND));
+  EXPECT_EQ("{\"op\":\"login\",\"user_id\":null,\"user_name\":null}", client0_login_future.get());
+  client_0->login("user_0", "test-user-id-0000");
+
+  auto client_1 = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
+  auto client1_login_future = cobridge_base::wait_for_login(client_1, "login");
+  EXPECT_EQ(std::future_status::ready, client_1->connect(URI).wait_for(DEFAULT_TIMEOUT));
+  EXPECT_EQ(std::future_status::ready, client1_login_future.wait_for(THREE_SECOND));
+  EXPECT_EQ("{\"op\":\"login\",\"user_ids\":[\"test-user-id-0000\"],"
+            "\"user_names\":[\"user_0\"]}", client1_login_future.get());
+
+  auto client0_kicked_future = cobridge_base::wait_for_kicked(client_0);
+  auto server_info_future = cobridge_base::wait_for_login(client_1, "serverInfo");
+  client_1->login("user_1", "test-user-id-0001");
+  EXPECT_EQ(std::future_status::ready, client0_kicked_future.wait_for(THREE_SECOND));
+  EXPECT_EQ(std::future_status::ready, server_info_future.wait_for(THREE_SECOND));
+  EXPECT_EQ("{\"kickedBy\":\"test-user-id-0001\",\"message\":\"The client was forcibly "
+            "disconnected by the server.\",\"op\":\"kicked\"}", client0_kicked_future.get());
+  CompareJsonExceptSessionId("{\"capabilities\":[\"clientPublish\",\"connectionGraph\","
+                             "\"parametersSubscribe\",\"parameters\",\"services\",\"assets\"],"
+                             "\"metadata\":{\"ROS_DISTRO\":\"foxy\"},\"name\":\"cobridge\","
+                             "\"op\":\"serverInfo\",\"sessionId\":\"1727148359\","
+                             "\"supportedEncodings\":[\"cdr\"]}", server_info_future.get());
 }
 
 TEST(SmokeTest, testSubscription) {
@@ -219,9 +258,11 @@ TEST(SmokeTest, testSubscription) {
     auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
     auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
     ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+    client->login("test user", "test-user-id-0000");
     ASSERT_EQ(std::future_status::ready, channel_future.wait_for(THREE_SECOND));
     const cobridge_base::Channel channel = channel_future.get();
     const cobridge_base::SubscriptionId subscription_id = 1;
+
 
     // Subscribe to the channel and confirm that the promise resolves
     auto msg_future = cobridge_base::wait_for_channel_msg(client.get(), subscription_id);
@@ -260,6 +301,8 @@ TEST(SmokeTest, testPublishing) {
 
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+
+  client->login("test user", "test-user-id-0000");
   client->advertise({advertisement});
 
   // Wait until the advertisement got advertised as channel by the server
@@ -303,6 +346,8 @@ TEST_F(ExistingPublisherTest, testPublishingWithExistingPublisher) {
   // Set up the client, advertise and publish the binary message
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+
+  client->login("test user", "test-user-id-0000");
   client->advertise({advertisement});
 
   // Wait until the advertisement got advertised as channel by the server
@@ -527,6 +572,8 @@ TEST_F(ServiceTest, testCallService) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
 
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+
+  client->login("test user", "test-user-id-0000");
   auto service_future = cobridge_base::wait_for_service(client, SERVICE_NAME);
   ASSERT_EQ(std::future_status::ready, service_future.wait_for(DEFAULT_TIMEOUT));
 
@@ -589,6 +636,7 @@ TEST(SmokeTest, receiveMessagesOfMultipleTransientLocalPublishers) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   auto channel_future = cobridge_base::wait_for_channel(client, topic_name);
   ASSERT_EQ(std::future_status::ready, client->connect(URI).wait_for(THREE_SECOND));
+  client->login("test user", "test-user-id-0000");
   ASSERT_EQ(std::future_status::ready, channel_future.wait_for(THREE_SECOND));
   const cobridge_base::Channel channel = channel_future.get();
   const cobridge_base::SubscriptionId subscription_id = 1;
@@ -619,6 +667,8 @@ TEST(FetchAssetTest, fetchExistingAsset) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   EXPECT_EQ(std::future_status::ready, client->connect(URI).wait_for(DEFAULT_TIMEOUT));
 
+  client->login("test user", "test-user-id-0000");
+
   const auto millis_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::system_clock::now().time_since_epoch());
   const auto tmp_file_path =
@@ -648,6 +698,8 @@ TEST(FetchAssetTest, fetchNonExistingAsset) {
   auto client = std::make_shared<cobridge_base::Client<websocketpp::config::asio_client>>();
   EXPECT_EQ(std::future_status::ready, client->connect(URI).wait_for(DEFAULT_TIMEOUT));
 
+  client->login("test user", "test-user-id-0000");
+
   const std::string asset_id = "file:///foo/bar";
   const uint32_t request_id = 456;
 
@@ -666,6 +718,7 @@ int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
+  RCLCPP_INFO(rclcpp::get_logger("smoke-test"), "RCLCPP init function was called");
 
   const size_t numThreads = 2;
   auto executor =
@@ -695,6 +748,8 @@ int main(int argc, char ** argv)
   const auto testResult = RUN_ALL_TESTS();
   executor->cancel();
   spinnerThread.join();
+
+  RCLCPP_INFO(rclcpp::get_logger("smoke-test"), "RCLCPP shutdown function was called");
   rclcpp::shutdown();
 
   return testResult;
