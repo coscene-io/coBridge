@@ -28,8 +28,9 @@ namespace cobridge_base
 {
 std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client);
 
-std::future<std::string> wait_for_login(std::shared_ptr<ClientInterface> client,
-                                        std::string operate);
+std::future<std::string> wait_for_login(
+  std::shared_ptr<ClientInterface> client,
+  std::string operate);
 
 std::future<std::vector<uint8_t>> wait_for_channel_msg(
   ClientInterface * client,

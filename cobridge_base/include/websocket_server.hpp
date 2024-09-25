@@ -270,8 +270,9 @@ private:
     std::unordered_set<ClientChannelId> advertised_channels;
     bool subscribed_to_connection_graph = false;
 
-    explicit ClientInfo(std::string endpoint_name, std::string user_name, std::string user_id,
-    ConnHandle handle)
+    explicit ClientInfo(
+      std::string endpoint_name, std::string user_name, std::string user_id,
+      ConnHandle handle)
     : endpoint_name(std::move(endpoint_name)),
       user_name(std::move(user_name)),
       user_id(std::move(user_id)),
@@ -953,13 +954,14 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
 {
   auto con = _server.get_con_from_hdl(hdl);
   const auto endpoint = remote_endpoint_string(hdl);
-  _server.get_alog().write(APP, "websocket connection  " + endpoint + " connected via " +
-  con->get_resource());
+  _server.get_alog().write(
+    APP, "websocket connection  " + endpoint + " connected via " +
+    con->get_resource());
 
   if (_clients.size() != 0) {
     std::vector<std::string> login_user_ids;
     std::vector<std::string> login_user_names;
-    for (auto it = _clients.begin(); it != _clients.end();) {
+    for (auto it = _clients.begin(); it != _clients.end(); ) {
       login_user_ids.emplace_back(it->second.user_id);
       login_user_names.emplace_back(it->second.user_name);
       it++;
@@ -967,8 +969,8 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
     send_json(
       hdl, {
         {"op", "login"},
-          {"user_ids", login_user_ids},
-          {"user_names", login_user_names},
+        {"user_ids", login_user_ids},
+        {"user_names", login_user_names},
       });
   } else {
     send_json(
@@ -1188,72 +1190,73 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
   const auto user_name = payload.at("userName").get<std::string>();
   const auto user_id = payload.at("userId").get<std::string>();
   const auto endpoint = remote_endpoint_string(hdl);
-  _server.get_alog().write(APP, user_name + " (" + user_id + ") is logging in." );
+  _server.get_alog().write(APP, user_name + " (" + user_id + ") is logging in.");
 
   {
     std::unique_lock<std::shared_mutex> clients_lock(_clients_mutex);
     if (_clients.size() != 0) {
-      for (auto it = _clients.begin(); it != _clients.end();) {
+      for (auto it = _clients.begin(); it != _clients.end(); ) {
         auto con = _server.get_con_from_hdl(it->first);
         con->send(
           Json(
-            {
-              {"op", "kicked"},
-              {"message", "The client was forcibly disconnected by the server."},
-              {"kickedBy", user_id}
-            })
-            .dump());
+          {
+            {"op", "kicked"},
+            {"message", "The client was forcibly disconnected by the server."},
+            {"kickedBy", user_id}
+          })
+          .dump());
         con->close(
           websocketpp::close::status::normal,
           "The client was forcibly disconnected by the server.");
 
-        _server.get_alog().write(APP, it->second.user_name + "(" + it->second.user_id +
-        ") was kicked by " + user_name + "(" + user_id + ")");
+        _server.get_alog().write(
+          APP, it->second.user_name + "(" + it->second.user_id +
+          ") was kicked by " + user_name + "(" + user_id + ")");
         ++it;
       }
     }
     _clients.emplace(hdl, ClientInfo(endpoint, user_name, user_id, hdl));
   }
   const auto con = _server.get_con_from_hdl(hdl);
-    con->send(
-      Json(
-        {
-          {"op", "serverInfo"},
-          {"name", _name},
-          {"capabilities", _options.capabilities},
-          {"supportedEncodings", _options.supported_encodings},
-          {"metadata", _options.metadata},
-          {"sessionId", _options.session_id},
-        })
-        .dump());
-
-    std::vector<Channel> channels;
+  con->send(
+    Json(
     {
-      std::shared_lock<std::shared_mutex> lock(_channels_mutex);
-      for (const auto & [id, channel] : _channels) {
-        (void) id;
-        channels.push_back(channel);
-      }
-    }
+      {"op", "serverInfo"},
+      {"name", _name},
+      {"capabilities", _options.capabilities},
+      {"supportedEncodings", _options.supported_encodings},
+      {"metadata", _options.metadata},
+      {"sessionId", _options.session_id},
+    })
+    .dump());
 
-    send_json(
-      hdl, {
-        {"op", "advertise"},
-        {"channels", std::move(channels)},
-      });
-
-    std::vector<Service> services;
-    {
-      std::shared_lock<std::shared_mutex> lock(_services_mutex);
-      for (const auto & [id, service] : _services) {
-        services.emplace_back(service, id);
-      }
+  std::vector<Channel> channels;
+  {
+    std::shared_lock<std::shared_mutex> lock(_channels_mutex);
+    for (const auto & [id, channel] : _channels) {
+      (void) id;
+      channels.push_back(channel);
     }
-    send_json(
-      hdl, {
-        {"op", "advertiseServices"},
-        {"services", std::move(services)},
-      });
+  }
+
+  send_json(
+    hdl, {
+      {"op", "advertise"},
+      {"channels", std::move(channels)},
+    });
+
+  std::vector<Service> services;
+  {
+    std::shared_lock<std::shared_mutex> lock(_services_mutex);
+    for (const auto & [id, service] : _services) {
+      services.emplace_back(service, id);
+    }
+  }
+  send_json(
+    hdl, {
+      {"op", "advertiseServices"},
+      {"services", std::move(services)},
+    });
 }
 
 template<typename ServerConfiguration>

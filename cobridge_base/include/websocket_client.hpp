@@ -205,9 +205,9 @@ public:
   {
     const std::string payload =
       nlohmann::json{
-        {"op", "login"},
-        {"userName", user_name},
-        {"userId", user_id}}.dump();
+      {"op", "login"},
+      {"userName", user_name},
+      {"userId", user_id}}.dump();
     send_text(payload);
   }
 

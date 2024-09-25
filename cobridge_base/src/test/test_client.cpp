@@ -27,7 +27,8 @@
 namespace cobridge_base
 {
 
-std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client){
+std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client)
+{
   auto promise = std::make_shared<std::promise<std::string>>();
   auto future = promise->get_future();
 
@@ -44,8 +45,10 @@ std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client
   return future;
 }
 
-std::future<std::string> wait_for_login(std::shared_ptr<ClientInterface> client,
-                                        std::string operate){
+std::future<std::string> wait_for_login(
+  std::shared_ptr<ClientInterface> client,
+  std::string operate)
+{
   auto promise = std::make_shared<std::promise<std::string>>();
   auto future = promise->get_future();
 
