@@ -232,18 +232,21 @@ TEST(SmokeTest, testMultiConnection) {
   auto client0_kicked_future = cobridge_base::wait_for_kicked(client_0);
   auto server_info_future = cobridge_base::wait_for_login(client_1, "serverInfo");
   client_1->login("user_1", "test-user-id-0001");
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
   EXPECT_EQ(std::future_status::ready, client0_kicked_future.wait_for(THREE_SECOND));
   EXPECT_EQ(std::future_status::ready, server_info_future.wait_for(THREE_SECOND));
   EXPECT_EQ(
     "{\"message\":\"The client was forcibly disconnected by the server.\",\"op\":\"kicked\","
     "\"userId\":\"test-user-id-0001\",\"username\":\"user_1\"}", client0_kicked_future.get());
+  client_0->close();
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
   CompareJsonExceptSessionId(
     "{\"capabilities\":[\"clientPublish\",\"connectionGraph\","
     "\"parametersSubscribe\",\"parameters\",\"services\",\"assets\"],"
     "\"metadata\":{\"ROS_DISTRO\":\"foxy\"},\"name\":\"cobridge\","
     "\"op\":\"serverInfo\",\"sessionId\":\"1727148359\","
     "\"supportedEncodings\":[\"cdr\"]}", server_info_future.get());
-}
+;}
 
 TEST(SmokeTest, testSubscription) {
   // Publish a string message on a latched ros topic

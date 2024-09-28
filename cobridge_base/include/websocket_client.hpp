@@ -121,6 +121,8 @@ public:
   virtual ~Client()
   {
     close();
+
+    _con.reset();
     _endpoint.stop_perpetual();
     _thread->join();
   }
@@ -170,9 +172,7 @@ public:
     if (_con->get_state() != websocketpp::session::state::open) {
       return;  // Already disconnected
     }
-
     _endpoint.close(_con, websocketpp::close::status::going_away, "");
-    _con.reset();
   }
 
   void message_handler(websocketpp::connection_hdl hdl, MessagePtr msg)
@@ -206,7 +206,7 @@ public:
     const std::string payload =
       nlohmann::json{
       {"op", "login"},
-      {"userName", user_name},
+      {"username", user_name},
       {"userId", user_id}}.dump();
     send_text(payload);
   }
