@@ -288,7 +288,8 @@ private:
 
     ClientInfo & operator=(ClientInfo &&) = default;
 
-    std::string get_user_info() const {
+    std::string get_user_info() const
+    {
       return "'" + this->user_name + " (" + this->user_id + ")' ";
     }
   };
@@ -969,13 +970,13 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
         auto con = _server.get_con_from_hdl(it->first);
         con->send(
           Json(
-            {
-              {"op", "kicked"},
-              {"message", "The client was forcibly disconnected by the server."},
-              {"userId", user_id},
-              {"username", user_name}
-            })
-            .dump());
+          {
+            {"op", "kicked"},
+            {"message", "The client was forcibly disconnected by the server."},
+            {"userId", user_id},
+            {"username", user_name}
+          })
+          .dump());
         it->second.login = false;
 
         _server.get_alog().write(
@@ -988,15 +989,15 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
   const auto con = _server.get_con_from_hdl(hdl);
   con->send(
     Json(
-      {
-        {"op", "serverInfo"},
-        {"name", _name},
-        {"capabilities", _options.capabilities},
-        {"supportedEncodings", _options.supported_encodings},
-        {"metadata", _options.metadata},
-        {"sessionId", _options.session_id},
-      })
-      .dump());
+    {
+      {"op", "serverInfo"},
+      {"name", _name},
+      {"capabilities", _options.capabilities},
+      {"supportedEncodings", _options.supported_encodings},
+      {"metadata", _options.metadata},
+      {"sessionId", _options.session_id},
+    })
+    .dump());
 
   std::vector<Channel> channels;
   {
