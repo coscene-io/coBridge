@@ -33,7 +33,9 @@ using ServiceId = uint32_t;
 
 // coBridge Websocket SubProtocol
 // ./cobridge subprotocol/coBridge Websocket SubProtocol.md
-constexpr char SUPPORTED_SUB_PROTOCOL[] = "foxglove.websocket.v1";
+constexpr char SUPPORTED_SUB_PROTOCOL[] = "coBridge.websocket.v1";
+// and of course, we also support foxglove subprotocol
+constexpr char FOXGLOVE_SUB_PROTOCOL[] = "foxglove.websocket.v1";
 constexpr char CAPABILITY_CLIENT_PUBLISH[] = "clientPublish";
 constexpr char CAPABILITY_TIME[] = "time";
 constexpr char CAPABILITY_PARAMETERS[] = "parameters";

@@ -942,17 +942,22 @@ inline bool Server<ServerConfiguration>::validate_connection(ConnHandle hdl)
   auto con = _server.get_con_from_hdl(hdl);
 
   const auto & sub_protocols = con->get_requested_subprotocols();
-  if (std::find(sub_protocols.begin(), sub_protocols.end(), SUPPORTED_SUB_PROTOCOL) !=
-    sub_protocols.end())
-  {
+
+  auto it = std::find(sub_protocols.begin(), sub_protocols.end(), SUPPORTED_SUB_PROTOCOL);
+  if (it != sub_protocols.end()) {
     con->select_subprotocol(SUPPORTED_SUB_PROTOCOL);
+    return true;
+  }
+
+  it = std::find(sub_protocols.begin(), sub_protocols.end(), FOXGLOVE_SUB_PROTOCOL);
+  if (it != sub_protocols.end()) {
+    con->select_subprotocol(FOXGLOVE_SUB_PROTOCOL);
     return true;
   }
   _server.get_alog().write(
     APP, "Rejecting client " + remote_endpoint_string(hdl) +
     " which did not declare support for subprotocol " +
     SUPPORTED_SUB_PROTOCOL);
-  return false;
 }
 
 template<typename ServerConfiguration>
