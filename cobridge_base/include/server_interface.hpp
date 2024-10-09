@@ -82,6 +82,7 @@ struct ServerOptions
 template<typename ConnectionHandle>
 struct ServerHandlers
 {
+//  std::function<void(ConnectionHandle)> connection_status_handler;
   std::function<void(ChannelId, ConnectionHandle)> subscribe_handler;
   std::function<void(ChannelId, ConnectionHandle)> unsubscribe_handler;
   std::function<void(const ClientAdvertisement &, ConnectionHandle)> client_advertise_handler;

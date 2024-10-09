@@ -27,6 +27,44 @@
 namespace cobridge_base
 {
 
+std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client)
+{
+  auto promise = std::make_shared<std::promise<std::string>>();
+  auto future = promise->get_future();
+
+  client->set_text_message_handler(
+    [promise = std::move(promise)](const std::string & payload) {
+      const auto msg = nlohmann::json::parse(payload);
+      const auto & op = msg["op"].get<std::string>();
+
+      if (op == "kicked") {
+        promise->set_value(msg.dump());
+      }
+    });
+
+  return future;
+}
+
+std::future<std::string> wait_for_login(
+  std::shared_ptr<ClientInterface> client,
+  std::string operate)
+{
+  auto promise = std::make_shared<std::promise<std::string>>();
+  auto future = promise->get_future();
+
+  client->set_text_message_handler(
+    [promise = std::move(promise), operate](const std::string & payload) {
+      const auto msg = nlohmann::json::parse(payload);
+      std::string op = msg["op"].get<std::string>();
+
+      if (op == operate) {
+        promise->set_value(msg.dump());
+      }
+    });
+
+  return future;
+}
+
 std::future<std::vector<uint8_t>> wait_for_channel_msg(
   ClientInterface * client,
   SubscriptionId subscription_id)
