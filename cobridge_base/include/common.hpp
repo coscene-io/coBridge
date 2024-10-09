@@ -31,8 +31,8 @@ using ClientChannelId = uint32_t;
 using SubscriptionId = uint32_t;
 using ServiceId = uint32_t;
 
-// coBridge Websocket Protocol
-// https://coscene0.feishu.cn/wiki/T8Enwstxni9Cq7k760FcFiU7n7f
+// coBridge Websocket SubProtocol
+// ./cobridge subprotocol/coBridge Websocket SubProtocol.md
 constexpr char SUPPORTED_SUB_PROTOCOL[] = "foxglove.websocket.v1";
 constexpr char CAPABILITY_CLIENT_PUBLISH[] = "clientPublish";
 constexpr char CAPABILITY_TIME[] = "time";
