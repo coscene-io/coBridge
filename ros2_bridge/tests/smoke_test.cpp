@@ -246,7 +246,7 @@ TEST(SmokeTest, testMultiConnection) {
     "\"metadata\":{\"ROS_DISTRO\":\"foxy\"},\"name\":\"cobridge\","
     "\"op\":\"serverInfo\",\"sessionId\":\"1727148359\","
     "\"supportedEncodings\":[\"cdr\"]}", server_info_future.get());
-;}
+}
 
 TEST(SmokeTest, testSubscription) {
   // Publish a string message on a latched ros topic
