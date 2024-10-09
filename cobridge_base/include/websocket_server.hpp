@@ -958,6 +958,7 @@ inline bool Server<ServerConfiguration>::validate_connection(ConnHandle hdl)
     APP, "Rejecting client " + remote_endpoint_string(hdl) +
     " which did not declare support for subprotocol " +
     SUPPORTED_SUB_PROTOCOL);
+  return false;
 }
 
 template<typename ServerConfiguration>
