@@ -32,7 +32,7 @@ using SubscriptionId = uint32_t;
 using ServiceId = uint32_t;
 
 // coBridge Websocket SubProtocol
-// ./cobridge subprotocol/coBridge Websocket SubProtocol.md
+// for more information, see `coBridge Websocket SubProtocol.md` file
 constexpr char SUPPORTED_SUB_PROTOCOL[] = "coBridge.websocket.v1";
 // and of course, we also support foxglove subprotocol
 constexpr char FOXGLOVE_SUB_PROTOCOL[] = "foxglove.websocket.v1";
