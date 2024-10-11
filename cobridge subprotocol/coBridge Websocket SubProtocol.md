@@ -6,13 +6,14 @@
 
 * **login**
     
-  当websocket建立连接后，客户端向服务端发送的第一条请求。该请求调用成功之后，才会从服务端获取对应的serverInfo、channels等信息。
+  login is the first message after websocket connected, 
+  server will send `serverInfo`,`channels` and other messages to client after received `login` from client.
 
   | Fileds      | Type   | Description | e.g.                                                   |
   |-------------|--------|-------------|--------------------------------------------------------|
-  | op          | string | 请求类型        | "op": "login"                                          |
-  | userId      | string | 当前请求登录的用户id | "userId": "users/08628df5-f156-491d-8779-00bb1db6aa5d" |
-  | displayName | string | 当前请求登录的用户名称 | "userName":  "fei.gao"                                 |
+  | op          | string |             | "op": "login"                                          |
+  | userId      | string |             | "userId": "users/08628df5-f156-491d-8779-00bb1db6aa5d" |
+  | displayName | string |             | "userName":  "fei.gao"                                 |
 
   ```JSON
   {
@@ -23,15 +24,16 @@
   ```
 
 * **subscribe**
-  
-  请求服务器开始将给定主题（或多个主题）的信息流发送到客户端。对于每一个 channel，一个客户端只能订阅一次（Unsubscribe后可以重新进行Subscribe）。
-  
-  | Fileds        | Type   | Description                                                                                                   | e.g.                                                                                        |
-  |---------------|--------|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-  | op            | string | 请求类型                                                                                                          | "op": "subscribe"                                                                           |
-  | subscriptions | array  | 订阅信息                                                                                                          | "subscriptions": [<br/>{ "id": 0, "channelId": 3 }, <br/>{ "id": 1, "channelId": 5 }<br/>]  |
-  | id            | int    | 客户端选择的编号，由客户端自行管理 。<br/>客户端不得在多个活跃的订阅中使用重复的 id。 <br/>服务器会忽略试图重复使用 id 的订阅（并发送错误状态消息）。<br/>取消订阅后，客户端可以重新使用该 ID。 |
-  | channelId     | int    | 需要订阅的channel id，与下文中的 advertise 信息相对应                                                                         |
+
+  Requests that the server start streaming messages on a given topic (or topics) to the client.
+  A client may only have one subscription for each channel at a time.
+
+  | Fileds        | Type   | Description                                                                                                                                                                                                                                                          | e.g.                                                                                        |
+  |---------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+  | op            | string |                                                                                                                                                                                                                                                                      | "op": "subscribe"                                                                           |
+  | subscriptions | array  |                                                                                                                                                                                                                                                                      | "subscriptions": [<br/>{ "id": 0, "channelId": 3 }, <br/>{ "id": 1, "channelId": 5 }<br/>]  |
+  | id            | int    | number chosen by the client. <br/>The client may not reuse ids across multiple active subscriptions. <br/>The server may ignore subscriptions that attempt to reuse an id (and send an error status message). <br/>After unsubscribing, the client may reuse the id. |
+  | channelId     | int    | number, corresponding to previous Advertise message(s)                                                                                                                                                                                                               |
   ```JSON
   {
     "op": "subscribe",
@@ -44,12 +46,12 @@
 
 * **unsubscribe**
 
-  请求服务器停止流式传输客户端之前订阅的信息。
+  Requests that the server stop streaming messages to which the client previously subscribed.
 
-  | Fileds          | Type   | Description             | e.g.                       |
-  |-----------------|--------|-------------------------|----------------------------|
-  | op              | string | 请求类型                    | "op": "unsubscribe"        |
-  | subscriptionIds | array  | 取消订阅的 id 列表，对应上一条订阅信息   | "subscriptionIds": [0, 1]  |
+  | Fileds          | Type   | Description                                                     | e.g.                       |
+  |-----------------|--------|-----------------------------------------------------------------|----------------------------|
+  | op              | string |                                                                 | "op": "unsubscribe"        |
+  | subscriptionIds | array  | array of number, corresponding to previous Subscribe message(s) | "subscriptionIds": [0, 1]  |
   
   ```JSON
   {
@@ -60,16 +62,16 @@
   
 * **advertise**
 
-  通知服务器可用的客户端 channel。只有当服务器先前声明它具有 clientPublish 功能时，客户端才可以向channel发布信息。
+  Informs the server about available client channels. Note that the client is only allowed to advertise channels if the server previously declared that it has the clientPublish capability.
 
-  | Fileds     | Type                  | Description                                                            | e.g.                                                                                                                      |
-  |------------|-----------------------|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-  | op         | string                | 请求类型                                                                   | "op": "advertise"                                                                                                         |
-  | channels   | array                 | 订阅的 id 列表                                                              | "channels": [{<br/>"id": 2,<br/>"topic": "/tf",<br/>"encoding": "cdr",<br/>"schemaName": "tf2_msgs/msg/TFMessage"<br/>}]  |
-  | id         | int                   | 由客户端定义的号码<br/>客户端可以重复使用被unadvertised的ID                                |
-  | topic      | string                | topic 名称                                                               |
-  | encoding   | string                | 服务器支持的信息编码之一，源自 serverInfo (serverInfo是客户端login后，server主动向client发送的信息) |
-  | schemaName | string<br/>(Optional) | topic 数据类型名                                                            |
+  | Fileds     | Type                  | Description                                                                                   | e.g.                                                                                                                      |
+  |------------|-----------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+  | op         | string                |                                                                                               | "op": "advertise"                                                                                                         |
+  | channels   | array                 |                                                                                               | "channels": [{<br/>"id": 2,<br/>"topic": "/tf",<br/>"encoding": "cdr",<br/>"schemaName": "tf2_msgs/msg/TFMessage"<br/>}]  |
+  | id         | int                   | number chosen by the client. The client may reuse ids that have previously been unadvertised. |
+  | topic      | string                | topic name                                                                                    |
+  | encoding   | string                | one of the message encodings, supported by the server, from serverInfo                        |
+  | schemaName | string<br/>(Optional) | name of message type                                                                          |
 
   ```JSON
   {
@@ -87,7 +89,7 @@
   
 * **unadvertise**
 
-  通知服务器客户端channel不再可用，只有当服务器先前声明它具有 clientPublish 功能时，客户端才可以向channel发布信息。
+  Informs the server that client channels are no longer available. Note that the client is only allowed to unadvertise channels if the server previously declared that it has the `clientPublish` capability.
 
   | Fileds     | Type   | Description | e.g.                  |
   |------------|--------|-------------|-----------------------|
@@ -102,26 +104,26 @@
   ```
 
 * **client message data**
-  
-  向服务器发送包含原始消息payload的二进制websocket消息。
 
-  只有当服务器先前声明它具有 clientPublish 功能时，客户端才可以向channel发布信息。
+  Sends a binary websocket message containing the raw messsage payload to the server.
 
-  | Bytes | Type    | Description      | 
-  |-------|---------|------------------|
-  | 1     | byte    | 0x01             |
-  | 4     | uint32  | channel id       |
-  | 剩余字节  | uint8[] | message payloads |
+  Note that the client is only allowed to publish messages if the server previously declared that it has the `clientPublish` capability
+
+  | Bytes            | Type    | Description      | 
+  |------------------|---------|------------------|
+  | 1                | byte    | 0x01             |
+  | 4                | uint32  | channel id       |
+  | remaining bytes  | uint8[] | message payloads |
 
 * **getParameters**
 
-  请求一个或多个参数。 仅在服务器先前声明具备 parameters 功能时才支持。
+  Request one or more parameters. Only supported if the server previously declared that it has the `parameters` capability.
 
-  | Fileds         | Type         | Description                 | e.g.                                                |
-  |----------------|--------------|-----------------------------|-----------------------------------------------------|
-  | op             | string       | 请求类型                        | "op": "getParameters"                               |
-  | parameterNames | string array | 需要获取的参数列表，如果为空，则检索当前设置的所有参数 | "parameterNames": [<br/>"/tf",<br/>"/costmap"<br/>] |
-  | id             | request id   |                             | "id": "******"                                      |
+  | Fileds         | Type         | Description                                                                        | e.g.                                                |
+  |----------------|--------------|------------------------------------------------------------------------------------|-----------------------------------------------------|
+  | op             | string       |                                                                                    | "op": "getParameters"                               |
+  | parameterNames | string array | param list that you needs, leave empty to retrieve all currently set parameters    | "parameterNames": [<br/>"/tf",<br/>"/costmap"<br/>] |
+  | id             | request id   | undefined, arbitrary string used for identifying the corresponding server response | "id": "******"                                      |
 
   ```JSON
   {
@@ -136,16 +138,16 @@
 
 * **setParameters**
 
-  设置一个或多个参数。 仅在服务器先前声明具备 parameters 功能时才支持。
+  Set one or more parameters. Only supported if the server previously declared that it has the `parameters` capability.
 
-  | Fileds     | Type                                                                          | Description            | e.g.                                                 |
-  |------------|-------------------------------------------------------------------------------|------------------------|------------------------------------------------------|
-  | op         | string                                                                        | 请求类型                   | "op": "setParameters"                                |
-  | id         | string                                                                        | request id             | "id": "******"                                       |
-  | parameters | array                                                                         | 需要设置的参数数组              | "parameterNames": [<br/>"/tf",<br/>"/costmap"<br/>]  |
-  | name       | string                                                                        | 参数名                    |
-  | value      | int<br/>Boolean<br/>String<br/>int[]<br/>boolean[]<br/>string[]<br/>undefined | 如果没有 value 字段，则该参数会被移除 |
-  | type       | byte_array<br/>float64<br/>float64_array<br/>undefined                        |
+  | Fileds     | Type                                                                          | Description                                                                                                                                                                                                                                                                        | e.g.                                                 |
+  |------------|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------|
+  | op         | string                                                                        |                                                                                                                                                                                                                                                                                    | "op": "setParameters"                                |
+  | id         | string or undefined                                                           | arbitrary string used for identifying the corresponding server response. If this field is not set, the server may not send a response to the client.                                                                                                                               | "id": "******"                                       |
+  | parameters | array                                                                         |                                                                                                                                                                                                                                                                                    | "parameterNames": [<br/>"/tf",<br/>"/costmap"<br/>]  |
+  | name       | string                                                                        | parameter name                                                                                                                                                                                                                                                                     |
+  | value      | int<br/>Boolean<br/>String<br/>int[]<br/>boolean[]<br/>string[]<br/>undefined | undefined. If the value is not set (undefined), the parameter shall be unset (removed).                                                                                                                                                                                            |
+  | type       | byte_array<br/>float64<br/>float64_array<br/>undefined                        | If the type is byte_array, value shall be a base64 encoded string. <br/>If the type is float64, value must be a valid decimal or integer value that can be represented by a float64. <br/>If the type is float64_array, value must be an array of valid decimal or integer values. |
   
   ```JSON
   {
@@ -167,18 +169,16 @@
 
 * **subscribeParameterUpdates**
 
-  订阅参数更新。仅在服务器先前声明具有 parametersSubscribe 功能时才受支持。
+  Subscribe to parameter updates. Only supported if the server previously declared that it has the parametersSubscribe capability.
 
-  多次发送 subscribeParameterUpdates 会追加参数订阅列表，而不是替换它们.
+  Sending subscribeParameterUpdates multiple times will append the list of parameter subscriptions, not replace them. 
 
-  请注意，参数最多只能订阅一次。因此，此操作将忽略已订阅的参数。
+  Note that parameters can be subscribed at most once. Hence, this operation will ignore parameters that are already subscribed. Use unsubscribeParameterUpdates to unsubscribe from existing parameter subscriptions.
 
-  使用 unsubscribeParameterUpdates 可取消订阅现有参数。
-
-  | Fileds         | Type         | Description                 | e.g.                                                   |
-  |----------------|--------------|-----------------------------|--------------------------------------------------------|
-  | op             | string       | 请求类型                        | "op": "subscribeParameterUpdates"                      |
-  | parameterNames | string array | 需要订阅的参数列表，如果为空，则订阅当前设置的所有参数 | "parameterNames": ["/video_bitrate","/encoded_device"] |
+  | Fileds         | Type         | Description                                                                     | e.g.                                                   |
+  |----------------|--------------|---------------------------------------------------------------------------------|--------------------------------------------------------|
+  | op             | string       |                                                                                 | "op": "subscribeParameterUpdates"                      |
+  | parameterNames | string array | list of parameters, leave empty to subscribe to all currently known parameters  | "parameterNames": ["/video_bitrate","/encoded_device"] |
 
   ```JSON
   {
@@ -192,12 +192,14 @@
 
 * **unsubscribeParameterUpdates**
 
-  取消订阅参数更新。 仅在服务器先前声明具有 parametersSubscribe 功能时才受支持。
+  Unsubscribe from parameter updates. 
+ 
+  Only supported if the server previously declared that it has the `parametersSubscribe` capability.
 
-  | Fileds          | Type         | Description                     | e.g.                                                   |
-  |-----------------|--------------|---------------------------------|--------------------------------------------------------|
-  | op              | string       | 请求类型                            | "op": "unsubscribeParameterUpdates"                    |
-  | parameterNames  | string array | 需要取消订阅的参数列表，如果为空，则取消订阅当前设置的所有参数 | "parameterNames": ["/video_bitrate","/encoded_device"] |
+  | Fileds          | Type         | Description                                                               | e.g.                                                   |
+  |-----------------|--------------|---------------------------------------------------------------------------|--------------------------------------------------------|
+  | op              | string       |                                                                           | "op": "unsubscribeParameterUpdates"                    |
+  | parameterNames  | string array | list of parameters, leave empty to unsubscribe from all parameter updates | "parameterNames": ["/video_bitrate","/encoded_device"] |
 
   ```JSON
   {
@@ -211,24 +213,28 @@
 
 * **service call request**
 
-  请求调用一个已经被服务器发布的ROS服务，只有当服务器先前声明了services 能力时才支持。
+  Request to call a service that has been advertised by the server.
+  
+  Only supported if the server previously declared the `services` capability.
 
-  | Bytes           | Type    | Description    | 
-  |-----------------|---------|----------------|
-  | 1               | opcode  | 0x02           |
-  | 4               | uint32  | service id     |
-  | 4               | uint32  | call id，用于区分不同 |
-  | 4               | uint32  | encoding 字段长度  |
-  | Encoding length | char[]  | encoding 字段信息  |
-  | Remaining bytes | uint8[] | 请求信息           |
+  | Bytes           | Type    | Description                                                             | 
+  |-----------------|---------|-------------------------------------------------------------------------|
+  | 1               | opcode  | 0x02                                                                    |
+  | 4               | uint32  | service id                                                              |
+  | 4               | uint32  | call id， a unique number to identify the corresponding service response |
+  | 4               | uint32  | encoding length                                                         |
+  | Encoding length | char[]  | encoding, one of the encodings supported by the server                  |
+  | Remaining bytes | uint8[] | request payload                                                         |
 
 * **subscribeConnectionGraph**
 
-  订阅 connection graph 更新
+  Subscribe to connection graph updates. 
+
+  Only supported if the server previously declared that it has the `connectionGraph` capability.
 
   | Fileds     | Type   | Description | e.g.                             |
   |------------|--------|-------------|----------------------------------|
-  | op         | string | 请求类型        | "op": "subscribeConnectionGraph" |
+  | op         | string |             | "op": "subscribeConnectionGraph" |
 
   ```JSON
   {
@@ -238,11 +244,13 @@
 
 * **unsubscribeConnectionGraph**
 
-  取消订阅 connection graph 更新
+  Unsubscribe from connection graph updates. 
+
+  Only supported if the server previously declared that it has the `connectionGraph` capability.
 
   | Fileds     | Type   | Description | e.g.                                |
   |------------|--------|-------------|-------------------------------------|
-  | op         | string | 请求类型        | "op": "unsubscribeConnectionGraph"  |
+  | op         | string |             | "op": "unsubscribeConnectionGraph"  |
 
   ```JSON
   {
@@ -252,13 +260,15 @@
 
 * **fetchAsset**
 
-  从服务器获取数据。 仅在服务器先前声明具有 assets 功能时才支持。
+  Fetch an asset from the server. 
 
-  | Fileds    | Type   | Description    | e.g.                                  |
-  |-----------|--------|----------------|---------------------------------------|
-  | op        | string | 请求类型           | "op": "fetchAsset"                    |
-  | uri       | string | 用于定位数据的统一资源标识符 | "uri": "package://coscene/robot.urdf" |
-  | requestId | int    | Request 统一标识符  | "requestId": 123                      |
+  Only supported if the server previously declared that it has the `assets` capability.
+
+  | Fileds    | Type   | Description                                                            | e.g.                                  |
+  |-----------|--------|------------------------------------------------------------------------|---------------------------------------|
+  | op        | string |                                                                        | "op": "fetchAsset"                    |
+  | uri       | string | uniform resource identifier to locate a single asset                   | "uri": "package://coscene/robot.urdf" |
+  | requestId | int    | unique 32-bit unsigned integer which is to be included in the response | "requestId": 123                      |
 
   ```JSON
   {
