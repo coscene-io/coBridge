@@ -1,8 +1,9 @@
 # coBridge Websocket SubProtocol
 
 ## SubProtocol name
-    coBridge.websocket.v1
+  coBridge.websocket.v1
 
+## Messages
 
 * **login**
     
