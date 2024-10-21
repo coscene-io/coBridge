@@ -132,6 +132,8 @@ status_level_to_log_level(StatusLevel level)
       return APP;
     case StatusLevel::Warning:
       return WARNING;
+    case StatusLevel::Error:
+      return RECOVERABLE;
     default:
       return RECOVERABLE;
   }

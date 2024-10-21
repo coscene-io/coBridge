@@ -898,8 +898,6 @@ void CoBridge::ros_message_handler(
 {
   // NOTE: Do not call any RCLCPP_* logging functions from this function. Otherwise, subscribing
   // to `/rosout` will cause a feedback loop
-  // const auto timestamp = this->now().nanoseconds();
-
   const auto rcl_serialized_msg = msg->get_rcl_serialized_message();
   _server->send_message(
     client_handle, channel_id, timestamp != 0 ? timestamp : this->now().nanoseconds(),
