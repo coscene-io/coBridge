@@ -49,11 +49,6 @@ namespace cobridge
 
 using ConnectionHandle = websocketpp::connection_hdl;
 using LogLevel = cobridge_base::WebSocketLogLevel;
-// using Subscription = cobridge::GenericSubscription::SharedPtr;
-// using SubscriptionsByClient = std::map<ConnectionHandle, Subscription, std::owner_less<>>;
-// using Publication = cobridge::GenericPublisher::SharedPtr;
-// using ClientPublications = std::unordered_map<cobridge_base::ClientChannelId, Publication>;
-// using PublicationsByClient = std::map<ConnectionHandle, ClientPublications, std::owner_less<>>;
 
 #ifdef ROS2_VERSION_FOXY
 using SubscriptionsByClient =

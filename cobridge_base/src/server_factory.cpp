@@ -25,8 +25,8 @@ namespace cobridge_base
 
 template<>
 std::unique_ptr<ServerInterface<websocketpp::connection_hdl>> ServerFactory::create_server(
-  const std::string & name, const std::function<void(WebSocketLogLevel,
-  char const *)> & log_handler,
+  const std::string & name,
+  const std::function<void(WebSocketLogLevel, char const *)> & log_handler,
   const ServerOptions & options)
 {
   if (options.use_tls) {

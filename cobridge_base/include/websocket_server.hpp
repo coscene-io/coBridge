@@ -72,6 +72,7 @@ string_hash(const std::string_view str)
   return result;
 }
 
+constexpr auto LOGIN = string_hash("login");
 constexpr auto SUBSCRIBE = string_hash("subscribe");
 constexpr auto UNSUBSCRIBE = string_hash("unsubscribe");
 constexpr auto ADVERTISE = string_hash("advertise");
@@ -131,8 +132,8 @@ status_level_to_log_level(StatusLevel level)
       return APP;
     case StatusLevel::Warning:
       return WARNING;
-//            case StatusLevel::Error:
-//                return RECOVERABLE;
+    case StatusLevel::Error:
+      return RECOVERABLE;
     default:
       return RECOVERABLE;
   }
@@ -236,6 +237,8 @@ private:
 
   bool has_handler(uint32_t op) const;
 
+  void handle_login(const Json & payload, ConnHandle hdl);
+
   void handle_subscribe(const Json & payload, ConnHandle hdl);
 
   void handle_unsubscribe(const Json & payload, ConnHandle hdl);
@@ -261,14 +264,22 @@ private:
 private:
   struct ClientInfo
   {
-    std::string name;
+    std::string endpoint_name;
+    std::string user_name;
+    std::string user_id;
     ConnHandle handle;
     std::unordered_map<ChannelId, SubscriptionId> subscriptions_by_channel;
     std::unordered_set<ClientChannelId> advertised_channels;
     bool subscribed_to_connection_graph = false;
+    bool login = true;
 
-    explicit ClientInfo(std::string name, ConnHandle handle)
-    : name(std::move(name)), handle(std::move(handle))
+    explicit ClientInfo(
+      std::string endpoint_name, std::string user_name, std::string user_id,
+      ConnHandle handle)
+    : endpoint_name(std::move(endpoint_name)),
+      user_name(std::move(user_name)),
+      user_id(std::move(user_id)),
+      handle(std::move(handle))
     {}
 
     ClientInfo(const ClientInfo &) = delete;
@@ -278,6 +289,11 @@ private:
     ClientInfo(ClientInfo &&) = default;
 
     ClientInfo & operator=(ClientInfo &&) = default;
+
+    std::string get_user_info() const
+    {
+      return "'" + this->user_name + " (" + this->user_id + ")' ";
+    }
   };
 
   struct Message
@@ -928,10 +944,16 @@ inline bool Server<ServerConfiguration>::validate_connection(ConnHandle hdl)
   auto con = _server.get_con_from_hdl(hdl);
 
   const auto & sub_protocols = con->get_requested_subprotocols();
-  if (std::find(sub_protocols.begin(), sub_protocols.end(), SUPPORTED_SUB_PROTOCOL) !=
-    sub_protocols.end())
-  {
+
+  auto it = std::find(sub_protocols.begin(), sub_protocols.end(), SUPPORTED_SUB_PROTOCOL);
+  if (it != sub_protocols.end()) {
     con->select_subprotocol(SUPPORTED_SUB_PROTOCOL);
+    return true;
+  }
+
+  it = std::find(sub_protocols.begin(), sub_protocols.end(), FOXGLOVE_SUB_PROTOCOL);
+  if (it != sub_protocols.end()) {
+    con->select_subprotocol(FOXGLOVE_SUB_PROTOCOL);
     return true;
   }
   _server.get_alog().write(
@@ -942,26 +964,37 @@ inline bool Server<ServerConfiguration>::validate_connection(ConnHandle hdl)
 }
 
 template<typename ServerConfiguration>
-inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base::ConnHandle hdl)
+void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle hdl)
 {
-  auto con = _server.get_con_from_hdl(hdl);
+  const auto user_name = payload.at("username").get<std::string>();
+  const auto user_id = payload.at("userId").get<std::string>();
   const auto endpoint = remote_endpoint_string(hdl);
-  {
-    std::unique_lock<std::shared_mutex> lock(_clients_mutex);
-    _clients.emplace(hdl, ClientInfo(endpoint, hdl));
-    if (_clients.size() > MAX_CLIENT_COUNT) {
-      _server.get_alog().write(
-        APP, "Client " + endpoint +
-        " will be disconnected, because there is more than 1 client has been connected. ");
-      // TODO(fei): check connection closed
-      con->close(
-        websocketpp::close::status::normal,
-        "there is more than 1 client has been connected to the server");
-      return;
-    }
-  }
-  _server.get_alog().write(APP, "Client " + endpoint + " connected via " + con->get_resource());
+  _server.get_alog().write(APP, "'" + user_name + " (" + user_id + ")' is logging in.");
 
+  {
+    std::unique_lock<std::shared_mutex> clients_lock(_clients_mutex);
+    if (_clients.size() != 0) {
+      for (auto it = _clients.begin(); it != _clients.end(); ) {
+        auto con = _server.get_con_from_hdl(it->first);
+        con->send(
+          Json(
+          {
+            {"op", "kicked"},
+            {"message", "The client was forcibly disconnected by the server."},
+            {"userId", user_id},
+            {"username", user_name}
+          })
+          .dump());
+        it->second.login = false;
+
+        _server.get_alog().write(
+          APP, it->second.get_user_info() + "was kicked by '" + user_name + " (" + user_id + ")'");
+        ++it;
+      }
+    }
+    _clients.emplace(hdl, ClientInfo(endpoint, user_name, user_id, hdl));
+  }
+  const auto con = _server.get_con_from_hdl(hdl);
   con->send(
     Json(
     {
@@ -982,6 +1015,7 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
       channels.push_back(channel);
     }
   }
+
   send_json(
     hdl, {
       {"op", "advertise"},
@@ -1002,10 +1036,46 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
     });
 }
 
+template<typename ServerConfiguration>
+inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base::ConnHandle hdl)
+{
+  auto con = _server.get_con_from_hdl(hdl);
+  const auto endpoint = remote_endpoint_string(hdl);
+  _server.get_alog().write(
+    APP, "websocket connection  " + endpoint + " connected via " +
+    con->get_resource());
+
+  if (_clients.size() != 0) {
+    std::string login_user_id;
+    std::string login_user_name;
+    for (auto it = _clients.begin(); it != _clients.end(); ) {
+      if (it->second.login) {
+        login_user_id = it->second.user_id;
+        login_user_name = it->second.user_name;
+        break;
+      }
+      it++;
+    }
+    send_json(
+      hdl, {
+        {"op", "login"},
+        {"userId", login_user_id},
+        {"username", login_user_name},
+      });
+  } else {
+    send_json(
+      hdl, {
+        {"op", "login"},
+        {"userId", ""},
+        {"username", ""}
+      });
+  }
+}
 
 template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::handle_connection_closed(ConnHandle hdl)
 {
+  const auto endpoint = remote_endpoint_string(hdl);
   std::unordered_map<ChannelId, SubscriptionId> old_subscriptions_by_channel;
   std::unordered_set<ClientChannelId> old_advertised_channels;
   std::string client_name;
@@ -1016,17 +1086,17 @@ inline void Server<ServerConfiguration>::handle_connection_closed(ConnHandle hdl
     if (client_iter == _clients.end()) {
       _server.get_elog().write(
         RECOVERABLE, "Client " + remote_endpoint_string(hdl) +
-        " disconnected but not found in _clients");
+        " disconnected without login");
       return;
     }
 
     const auto & client = client_iter->second;
-    client_name = client.name;
-    _server.get_alog().write(APP, "Client " + client_name + " disconnected");
+    client_name = client.get_user_info();
 
     old_subscriptions_by_channel = std::move(client.subscriptions_by_channel);
     old_advertised_channels = std::move(client.advertised_channels);
     was_subscribed_to_connection_graph = client.subscribed_to_connection_graph;
+    _server.get_alog().write(APP, client_name + " was logged out");
     _clients.erase(client_iter);
   }
 
@@ -1091,6 +1161,7 @@ inline void Server<ServerConfiguration>::handle_connection_closed(ConnHandle hdl
       }
     }
   }
+  _server.get_alog().write(APP, "Client " + client_name + " disconnected");
 }
 
 template<typename ServerConfiguration>
@@ -1172,6 +1243,10 @@ inline bool Server<ServerConfiguration>::has_handler(
   op) const
 {
   switch (op) {
+    case LOGIN:
+      // `login` must be the first request after websocket connected,
+      // so, here return true forever
+      return true;
     case SUBSCRIBE:
       return static_cast<bool>(_handlers.subscribe_handler);
     case UNSUBSCRIBE:
@@ -1196,7 +1271,6 @@ inline bool Server<ServerConfiguration>::has_handler(
       throw std::runtime_error("Unknown operation: " + std::to_string(op));
   }
 }
-
 
 template<typename ServerConfiguration>
 void Server<ServerConfiguration>::handle_subscribe(const Json & payload, ConnHandle hdl)
@@ -1539,6 +1613,9 @@ inline void Server<ServerConfiguration>::handle_text_message(ConnHandle hdl, Mes
 
   try {
     switch (string_hash(op)) {
+      case LOGIN:
+        handle_login(payload, hdl);
+        break;
       case SUBSCRIBE:
         handle_subscribe(payload, hdl);
         break;

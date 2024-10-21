@@ -62,6 +62,8 @@ public:
 
   virtual void close() = 0;
 
+  virtual void login(std::string user_name, std::string user_id) = 0;
+
   virtual void subscribe(
     const std::vector<std::pair<SubscriptionId, ChannelId>> & subscriptions) = 0;
 
@@ -119,6 +121,8 @@ public:
   virtual ~Client()
   {
     close();
+
+    _con.reset();
     _endpoint.stop_perpetual();
     _thread->join();
   }
@@ -165,12 +169,10 @@ public:
   void close() override
   {
     std::unique_lock<std::shared_mutex> lock(_mutex);
-    if (!_con) {
+    if (_con->get_state() != websocketpp::session::state::open) {
       return;  // Already disconnected
     }
-
     _endpoint.close(_con, websocketpp::close::status::going_away, "");
-    _con.reset();
   }
 
   void message_handler(websocketpp::connection_hdl hdl, MessagePtr msg)
@@ -197,6 +199,16 @@ public:
         break;
       default: break;
     }
+  }
+
+  void login(std::string user_name, std::string user_id) override
+  {
+    const std::string payload =
+      nlohmann::json{
+      {"op", "login"},
+      {"username", user_name},
+      {"userId", user_id}}.dump();
+    send_text(payload);
   }
 
   void subscribe(const std::vector<std::pair<SubscriptionId, ChannelId>> & subscriptions) override
