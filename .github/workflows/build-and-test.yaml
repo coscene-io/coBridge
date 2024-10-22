@@ -32,6 +32,7 @@ jobs:
         run: zip -r ${{ matrix.ros_distribution }}-install.zip install
         
       - name: Upload build artifact to GitHub Release
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ matrix.ros_distribution }}-install.zip
