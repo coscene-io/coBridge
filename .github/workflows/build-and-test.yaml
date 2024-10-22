@@ -30,17 +30,26 @@ jobs:
 
       - name: zip-artifact
         run: zip -r ${{ matrix.ros_distribution }}-install.zip install
-        
-      - name: Upload build artifact to GitHub Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ matrix.ros_distribution }}-install.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.ros_distribution }}-cobridge
-          path: install.zip
+          path: ${{ matrix.ros_distribution }}-install.zip
+
+  release:
+    needs: build-and-test
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Upload build artifact to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
