@@ -3,6 +3,10 @@ on:
   pull_request:
   release:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-and-test:
     strategy:
