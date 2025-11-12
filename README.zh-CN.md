@@ -103,6 +103,67 @@ roslaunch cobridge cobridge.launch
 ros2 launch cobridge cobridge_launch.xml
 ```
 
+## 延迟和性能报告
+
+### 测试环境
+
+| 项目     | 配置                                                 |
+|--------|----------------------------------------------------|
+| ROS 版本 | ROS2 Humble                                        |
+| 操作系统   | Ubuntu 22.04                                       |
+| CPU    | 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz * 8 |
+| 内存     | 16 GB                                              |
+
+### 延迟测试
+
+#### 端到端延迟（Topic 订阅）
+
+| 消息类型                    | 消息大小                           | 发布频率 (Hz) | 平均延迟 - colink (ms) | 平均延迟 - 局域网 (ms) |
+|-------------------------|--------------------------------|-----------|--------------------|-----------------|
+| sensor_msgs/Image       | 640*480, 16UC1, 约 600 KB/frame | 10        | 100                | 20              |
+| sensor_msgs/PointCloud2 | 约 500 KB/frame                 | 10        | 100                | 15              |
+| nav_msgs/Odometry       | 713 Bytes/frame                | 100       | 20                 | 20              |
+
+#### Service 调用延迟
+
+| Service 类型     | 请求大小     | 响应大小     | 平均延迟 (ms) |
+|----------------|----------|----------|-----------|
+| std_srvs/Empty | 0        | 0        | 20        |
+| 自定义消息(定义如下)    | 56 Bytes | 73 Bytes | 55        |
+```text
+string data
+---
+bool success
+string data
+```
+
+### 性能测试
+
+#### 资源使用
+* 场景 01:
+  ```text
+  1路 sensor_msg/Image, 1280 * 720, 8UC3, 30 fps
+  1路 sensor_msg/CompressedImage, 1280 * 720, JPEG, 30 fps
+  1路 /tf, 200Hz
+  ```
+  
+  | 场景     | CPU 使用率 (%) | 内存使用 (MB) | 网络带宽 (Mbps) | 消息丢失率 (%) |
+  |--------|-------------|-----------|-------------|-----------|
+  | colink | 5%          | 120+      | 80+         | 90        | 
+  | 局域网    | 5%          | 120+      | 240+        | 65        |
+
+* 场景 02:
+  ```text
+  8路 foxglove_msg/CompressedVideo, 2000000 bitrate
+  1路 /tf
+  1路 sensor_msg/PointCloud2, 900*96, 24 point step
+  ```
+  | 场景     | CPU 使用率 (%) | 内存使用 (MB) | 网络带宽 (Mbps) | 消息丢失率 (%) |
+  |--------|-------------|-----------|-------------|-----------|
+  | colink | 5%          | 120+      | 80+         | 50        | 
+  | 局域网    | 5%          | 120+      | 160+        | 0         |
+
+
 ## 云端可视化
 
 云端可视化需配合刻行 `coLink` 组件，通过网页端实时可视化机器人端状态。

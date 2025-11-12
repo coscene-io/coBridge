@@ -94,7 +94,7 @@ constexpr auto PRE_FETCH_ASSET = string_hash("preFetchAsset");
 
 namespace cobridge_base
 {
-using Json = nlohmann::json;
+using Json = nlohmann::ordered_json;
 using ConnHandle = websocketpp::connection_hdl;
 using OpCode = websocketpp::frame::opcode::value;
 
@@ -1172,9 +1172,9 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
           4001, Json(
           {
             {"op", "kicked"},
-            {"message", "The client was forcibly disconnected by the server."},
+            {"username", user_name},
             {"userId", user_id},
-            {"username", user_name}
+            {"message", "kiecked by server."}
           })
           .dump());
 
