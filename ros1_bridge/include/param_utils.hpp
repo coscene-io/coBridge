@@ -20,18 +20,20 @@
 #include <xmlrpcpp/XmlRpc.h>
 #endif
 
+#include <parameter.hpp>
+
 #include <regex>
 #include <string>
 #include <vector>
 
-#include <parameter.hpp>
-
 namespace cobridge
 {
+
 cobridge_base::Parameter from_ros_param(
   const std::string & name,
   const XmlRpc::XmlRpcValue & value);
 XmlRpc::XmlRpcValue to_ros_param(const cobridge_base::ParameterValue & param);
 std::vector<std::regex> parse_regex_patterns(const std::vector<std::string> & strings);
+
 }
 #endif  // PARAM_UTILS_HPP_

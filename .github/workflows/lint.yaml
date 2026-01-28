@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
     container:
-      image: ros:jazzy
+      image: ros:foxy
 
     steps:
       - name: Checkout code
@@ -18,8 +18,6 @@ jobs:
           path: src/cobridge
 
       - name: Run lint
-        env:
-          AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: 1
         run: |
           cd ./src/cobridge
           make lint

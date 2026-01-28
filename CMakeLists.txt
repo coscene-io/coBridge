@@ -26,7 +26,7 @@ else()
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
-set(AMENT_LINT_FILTERS "-build/include_order,-runtime/indentation_namespace")
+set(AMENT_LINT_FILTERS "-build/include_order")
 
 macro(enable_strict_compiler_warnings target)
     if(MSVC)
@@ -123,7 +123,7 @@ message(STATUS "ROS_DISTRO: " $ENV{ROS_DISTRO})
 message(STATUS "ROS_ROOT: " $ENV{ROS_ROOT})
 
 set(ROS1_DISTROS "indigo" "melodic" "noetic")
-set(ROS2_DISTROS "foxy" "humble" "jazzy" "rolling")
+set(ROS2_DISTROS "foxy" "humble" "jazzy")
 
 if("$ENV{ROS_DISTRO}" STREQUAL "indigo")
     add_definitions(-DROS1_VERSION_INDIGO)
@@ -143,9 +143,6 @@ elseif("$ENV{ROS_DISTRO}" STREQUAL "humble")
 elseif("$ENV{ROS_DISTRO}" STREQUAL "jazzy")
     add_definitions(-DROS2_VERSION_JAZZY)
     set(ROS_DISTRIBUTION "jazzy")
-elseif("$ENV{ROS_DISTRO}" STREQUAL "rolling")
-    add_definitions(-DROS2_VERSION_ROLLING)
-    set(ROS_DISTRIBUTION "rolling")
 endif()
 
 
@@ -352,24 +349,6 @@ elseif(ROS_BUILD_TYPE STREQUAL "ament_cmake")
     install(FILES ros2_bridge/include/utils.hpp
             DESTINATION include/${PROJECT_NAME}/
     )
-
-    # Create AMENT_IGNORE files to exclude build artifacts from linting
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/AMENT_IGNORE
-      "# This file tells ament tools to ignore this directory and all subdirectories\n")
-
-    # Install AMENT_IGNORE to install directory
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMENT_IGNORE
-            DESTINATION ../
-    )
-
-    # Create AMENT_IGNORE in build directory (direct write, not installed)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/../build/AMENT_IGNORE
-      "# This file tells ament tools to ignore this directory and all subdirectories\n")
-
-    # Create AMENT_IGNORE in vendor directory (ensure it exists)
-    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/AMENT_IGNORE
-      "# This file tells ament tools to ignore this directory and all subdirectories\n")
-
     ament_export_libraries(cobridge_base cobridge_component http_server)
     ament_package()
 endif()

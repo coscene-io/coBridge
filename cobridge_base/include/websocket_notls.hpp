@@ -23,6 +23,7 @@
 
 namespace cobridge_base
 {
+
 struct WebSocketNoTls : public websocketpp::config::core
 {
   typedef WebSocketNoTls type;
@@ -61,6 +62,7 @@ struct WebSocketNoTls : public websocketpp::config::core
   typedef websocketpp::extensions::permessage_deflate::enabled<permessage_deflate_config>
     permessage_deflate_type;
 };
+
 }  // namespace cobridge_base
 
 #endif  // WEBSOCKET_NOTLS_HPP_

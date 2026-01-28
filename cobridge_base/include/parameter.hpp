@@ -57,7 +57,7 @@ public:
 
   explicit ParameterValue(const std::string & value);
 
-  explicit ParameterValue(const char *value);
+  explicit ParameterValue(const char * value);
 
   explicit ParameterValue(const std::vector<unsigned char> & value);
 

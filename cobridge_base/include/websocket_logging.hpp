@@ -14,16 +14,16 @@
 #ifndef WEBSOCKET_LOGGING_HPP_
 #define WEBSOCKET_LOGGING_HPP_
 
-#include <functional>
-#include <string>
-
 #include <websocketpp/common/asio.hpp>
 #include <websocketpp/logger/levels.hpp>
 
+#include <string>
+#include <functional>
 #include "common.hpp"
 
 namespace cobridge_base
 {
+
 using LogCallback = std::function<void (WebSocketLogLevel, char const *)>;
 
 inline std::string ip_address_to_string(const websocketpp::lib::asio::ip::address & addr)
@@ -35,8 +35,7 @@ inline std::string ip_address_to_string(const websocketpp::lib::asio::ip::addres
 }
 
 inline void no_op_log_callback(WebSocketLogLevel, char const *)
-{
-}
+{}
 
 class CallbackLogger
 {
@@ -46,16 +45,15 @@ public:
   explicit CallbackLogger(channel_type_hint::value hint = channel_type_hint::access)
   : _static_channels(0xffffffff), _dynamic_channels(0), _channel_type_hint(hint),
     _callback(no_op_log_callback)
-  {
-  }
+  {}
 
   explicit CallbackLogger(
     websocketpp::log::level channels,
     channel_type_hint::value hint = channel_type_hint::access)
   : _static_channels(channels), _dynamic_channels(0), _channel_type_hint(hint),
     _callback(no_op_log_callback)
-  {
-  }
+  {}
+
 
   void set_callback(LogCallback callback)
   {
@@ -82,7 +80,7 @@ public:
     write(channel, msg.c_str());
   }
 
-  void write(websocketpp::log::level channel, char const *msg)
+  void write(websocketpp::log::level channel, char const * msg)
   {
     if (!this->dynamic_test(channel)) {
       return;

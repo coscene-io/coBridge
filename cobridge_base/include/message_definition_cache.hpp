@@ -67,8 +67,7 @@ private:
 public:
   explicit DefinitionNotFoundError(std::string name)
   : _name(std::move(name))
-  {
-  }
+  {}
 
   const char * what() const noexcept override
   {
@@ -119,5 +118,6 @@ private:
 std::set<std::string> parse_dependencies(
   MessageDefinitionFormat format, const std::string & text,
   const std::string & package_context);
+
 }  // namespace cobridge_base
 #endif  // MESSAGE_DEFINITION_CACHE_HPP_

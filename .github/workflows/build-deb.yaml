@@ -50,14 +50,6 @@ jobs:
             arch: arm64
             distro: noble
             label: [ linux-arm-64-8c-32g-300gb ]
-          - ros_distribution: rolling
-            arch: amd64
-            distro: noble
-            label: ubuntu-latest
-          - ros_distribution: rolling
-            arch: arm64
-            distro: noble
-            label: [ linux-arm-64-8c-32g-300gb ]
           - ros_distribution: indigo
             arch: amd64
             distro: trusty

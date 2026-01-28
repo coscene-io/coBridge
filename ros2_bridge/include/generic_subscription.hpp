@@ -26,6 +26,7 @@
 
 namespace cobridge
 {
+
 /**
  * This class is an implementation of an rclcpp::Subscription for serialized messages whose topic
  * is not known at compile time (hence templating does not work).
@@ -47,7 +48,7 @@ public:
    * \param callback Callback for new messages of serialized form
    */
   GenericSubscription(
-    rclcpp::node_interfaces::NodeBaseInterface *node_base,
+    rclcpp::node_interfaces::NodeBaseInterface * node_base,
     const rosidl_message_type_support_t & ts,
     std::string topic_name,
     std::string topic_type,
@@ -67,7 +68,7 @@ public:
     std::shared_ptr<void> & message, const rclcpp::MessageInfo & message_info) override;
 
   void handle_loaned_message(
-    void *loaned_message, const rclcpp::MessageInfo & message_info) override;
+    void * loaned_message, const rclcpp::MessageInfo & message_info) override;
 
   // Same as return_serialized_message() as the subscription is to serialized_messages only
   void return_message(std::shared_ptr<void> & message) override;

@@ -12,31 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rclcpp/client.hpp>
+#include <rclcpp/serialized_message.hpp>
+#include <typesupport_helpers.hpp>
+#include <rosidl_typesupport_introspection_cpp/field_types.hpp>
+#include <rosidl_typesupport_introspection_cpp/service_introspection.hpp>
+
+#include <generic_client.hpp>
+
 #include <future>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include <rclcpp/client.hpp>
-#include <rclcpp/serialized_message.hpp>
-#include <rosidl_typesupport_introspection_cpp/field_types.hpp>
-#include <rosidl_typesupport_introspection_cpp/service_introspection.hpp>
-
-#include <generic_client.hpp>
-#include <typesupport_helpers.hpp>
-
 namespace cobridge
 {
+
 constexpr char TYPESUPPORT_INTROSPECTION_LIB_NAME[] = "rosidl_typesupport_introspection_cpp";
 constexpr char TYPESUPPORT_LIB_NAME[] = "rosidl_typesupport_cpp";
 using rosidl_typesupport_introspection_cpp::MessageMembers;
 using rosidl_typesupport_introspection_cpp::ServiceMembers;
 
-std::shared_ptr<void> allocate_message(const MessageMembers *members)
+std::shared_ptr<void> allocate_message(const MessageMembers * members)
 {
-  void *buffer = malloc(members->size_of_);
-
+  void * buffer = malloc(members->size_of_);
   if (buffer == nullptr) {
     throw std::runtime_error("Failed to allocate memory");
   }
@@ -87,7 +87,7 @@ std::string get_service_type_support_handle_symbol_name(const std::string & serv
 }
 
 GenericClient::GenericClient(
-  rclcpp::node_interfaces::NodeBaseInterface *node_base,
+  rclcpp::node_interfaces::NodeBaseInterface * node_base,
   rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph,
   std::string service_name, std::string service_type,
   rcl_client_options_t & client_options)
@@ -145,7 +145,6 @@ GenericClient::GenericClient(
 std::shared_ptr<void> GenericClient::create_response()
 {
   auto srv_members = static_cast<const ServiceMembers *>(_type_introspection_handle->data);
-
   return allocate_message(srv_members->response_members_);
 }
 
@@ -165,7 +164,6 @@ void GenericClient::handle_response(
   rmw_ret_t r = rmw_serialize(
     response.get(), _response_type_support_handle,
     &ser_response->get_rcl_serialized_message());
-
   if (r != RMW_RET_OK) {
     RCUTILS_LOG_ERROR_NAMED("cobridge", "Failed to serialize service response. Ignoring...");
     return;
@@ -190,8 +188,7 @@ void GenericClient::handle_response(
 
 GenericClient::SharedFuture GenericClient::async_send_request(SharedRequest request)
 {
-  return async_send_request(request, [](SharedFuture) {
-    });
+  return async_send_request(request, [](SharedFuture) {});
 }
 
 GenericClient::SharedFuture GenericClient::async_send_request(
@@ -204,8 +201,7 @@ GenericClient::SharedFuture GenericClient::async_send_request(
   auto srv_members = static_cast<const ServiceMembers *>(_type_introspection_handle->data);
   auto buf = allocate_message(srv_members->request_members_);
 
-  const rmw_serialized_message_t *sm = &request->get_rcl_serialized_message();
-
+  const rmw_serialized_message_t * sm = &request->get_rcl_serialized_message();
   if (const auto ret = rmw_deserialize(sm, _request_type_support_handle, buf.get()) != RCL_RET_OK) {
     rclcpp::exceptions::throw_from_rcl_error(ret, "failed to desirialize request");
   }
@@ -220,4 +216,5 @@ GenericClient::SharedFuture GenericClient::async_send_request(
     std::make_tuple(call_promise, std::forward<CallbackType>(cb), f);
   return f;
 }
+
 }  // namespace cobridge

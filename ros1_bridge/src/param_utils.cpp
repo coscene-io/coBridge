@@ -14,21 +14,20 @@
 
 #include <param_utils.hpp>
 
-#include <ros/ros.h>
-
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
+#include <utility>
+#include <ros/ros.h>
 
 namespace cobridge
 {
+
 cobridge_base::ParameterValue fromRosParam(const XmlRpc::XmlRpcValue & value)
 {
   XmlRpc::XmlRpcValue non_const_value = value;
-
   switch (non_const_value.getType()) {
     case XmlRpc::XmlRpcValue::TypeBoolean:
       {
@@ -86,7 +85,6 @@ cobridge_base::Parameter from_ros_param(const std::string & name, const XmlRpc::
 XmlRpc::XmlRpcValue to_ros_param(const cobridge_base::ParameterValue & param)
 {
   const auto param_type = param.getType();
-
   if (param_type == cobridge_base::ParameterType::PARAMETER_BOOL) {
     return param.getValue<bool>();
   } else if (param_type == cobridge_base::ParameterType::PARAMETER_INTEGER) {
@@ -120,7 +118,6 @@ XmlRpc::XmlRpcValue to_ros_param(const cobridge_base::ParameterValue & param)
 std::vector<std::regex> parse_regex_patterns(const std::vector<std::string> & patterns)
 {
   std::vector<std::regex> result;
-
   result.reserve(patterns.size());
 
   for (const auto & pattern : patterns) {
@@ -145,4 +142,5 @@ std::vector<std::regex> parse_regex_patterns(const std::vector<std::string> & pa
 
   return result;
 }
+
 }  // namespace cobridge

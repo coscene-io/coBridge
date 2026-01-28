@@ -23,15 +23,16 @@
 
 namespace cobridge
 {
+
 inline std::pair<std::string, std::string> get_node_and_node_namespace(
   const std::string & fqn_node_name)
 {
   const std::size_t found = fqn_node_name.find_last_of('/');
-
   if (found == std::string::npos) {
     throw std::runtime_error("Invalid fully qualified node name: " + fqn_node_name);
   }
   return std::make_pair(fqn_node_name.substr(0, found), fqn_node_name.substr(found + 1));
 }
+
 }  // namespace cobridge
 #endif  // UTILS_HPP_

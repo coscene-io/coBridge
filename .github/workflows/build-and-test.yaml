@@ -1,46 +1,60 @@
 name: Build and Test
 on:
   pull_request:
-  push:
-    branches: [main, master]
   release:
     types: [ published ]
-  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
-  industrial_ci:
-    name: ROS ${{ matrix.ROS_DISTRO }}
-    runs-on: ubuntu-latest
+  build-and-test:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [melodic, noetic, foxy, humble, jazzy, rolling]
-        include:
-          - ROS_DISTRO: indigo
-    env:
-      CCACHE_DIR: "${{ github.workspace }}/.ccache"
-      TARGET_WORKSPACE: ${{ github.workspace }}/target_ws/src
-      
+        ros_distribution: [indigo, melodic, noetic, foxy, humble, jazzy]
+
+    name: Build-And-Test (ROS ${{ matrix.ros_distribution }})
+    runs-on: ubuntu-latest
+    container:
+      image: cobridge/ros-${{ matrix.ros_distribution }}:latest
     steps:
       - name: Checkout code
+        if: matrix.ros_distribution != 'indigo' && matrix.ros_distribution != 'melodic'
         uses: actions/checkout@v4
         with:
-          path: ${{ github.workspace }}/target_ws/src/${{ github.event.repository.name }}
-      
-      - name: Apply patches
+          path: src/cobridge
+
+      - name: Checkout code (indigo/melodic)
+        if: matrix.ros_distribution == 'indigo' || matrix.ros_distribution == 'melodic'
+        shell: bash
         run: |
-          cd ${{ github.workspace }}/target_ws/src/${{ github.event.repository.name }}
-          ./patch_apply.sh
-        
-      - name: Setup ccache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.ROS_DISTRO }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ matrix.ROS_DISTRO }}-
-            
-      - name: Run industrial_ci
-        uses: 'ros-industrial/industrial_ci@master'
-        env:
-          ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
+          mkdir -p src/cobridge
+          cd src/cobridge
+          echo "current sha: ${{ github.sha}}, current ref: ${{ github.ref }}"
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global --add safe.directory /__w/cobridge/cobridge
+          
+          git clone https://github.com/${{ github.repository }}.git .
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PR number: ${{ github.event.pull_request.number }}"
+            git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+            git checkout pr-branch
+          else
+            git checkout ${{ github.sha }}
+          fi
+
+      - name: Apply patches
+        run: |          
+          cd src/cobridge
+          ./patch_apply.sh  
+
+      - name: Build
+        run: |
+          make -f ./src/cobridge/Makefile build
+
+      - name: Test
+        run: |
+          make -f ./src/cobridge/Makefile test

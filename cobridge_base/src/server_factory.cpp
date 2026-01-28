@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <string>
-
 #include <websocketpp/common/connection_hdl.hpp>
-
 #include <server_factory.hpp>
+#include <websocket_tls.hpp>
 #include <websocket_notls.hpp>
 #include <websocket_server.hpp>
-#include <websocket_tls.hpp>
+
+#include <memory>
+#include <string>
 namespace cobridge_base
 {
+
 template<>
 std::unique_ptr<ServerInterface<websocketpp::connection_hdl>> ServerFactory::create_server(
   const std::string & name,
@@ -49,7 +49,7 @@ inline void Server<WebSocketTls>::setup_tls_handler()
 {
   _server.set_tls_init_handler(
     [this](ConnHandle hdl) {
-      (void)hdl;
+      (void) hdl;
 
       namespace asio = websocketpp::lib::asio;
       auto ctx = websocketpp::lib::make_shared<asio::ssl::context>(asio::ssl::context::sslv23);

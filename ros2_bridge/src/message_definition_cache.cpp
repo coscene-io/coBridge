@@ -14,6 +14,9 @@
 
 #include "message_definition_cache.hpp"
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_resource.hpp>
+#include <ament_index_cpp/get_resources.hpp>
 #include <rcutils/logging_macros.h>
 
 #include <filesystem>
@@ -28,10 +31,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <ament_index_cpp/get_resource.hpp>
-#include <ament_index_cpp/get_resources.hpp>
 
 namespace cobridge_base
 {
@@ -96,10 +95,8 @@ std::set<std::string> parse_dependencies(
     case MessageDefinitionFormat::SRV_RESP:
     case MessageDefinitionFormat::SRV_REQ:
       return parse_msg_dependencies(text, package_context);
-
     case MessageDefinitionFormat::IDL:
       return parse_idl_dependencies(text);
-
     default:
       throw std::runtime_error("switch is not exhaustive");
   }
@@ -112,10 +109,8 @@ static const char * extension_for_format(MessageDefinitionFormat format)
     case MessageDefinitionFormat::SRV_RESP:
     case MessageDefinitionFormat::SRV_REQ:
       return ".msg";
-
     case MessageDefinitionFormat::IDL:
       return ".idl";
-
     default:
       throw std::runtime_error("switch is not exhaustive");
   }
@@ -125,7 +120,6 @@ static std::string delimiter(const DefinitionIdentifier & definition_identifier)
 {
   std::string result =
     "================================================================================\n";
-
   switch (definition_identifier.format) {
     case MessageDefinitionFormat::MSG:
     case MessageDefinitionFormat::SRV_RESP:
@@ -171,7 +165,6 @@ static std::tuple<std::string, std::string, std::string> split_action_msg_defini
   constexpr char SEP[] = "\n---\n";
 
   const auto definitions = split_string(action_definition, SEP);
-
   if (definitions.size() != 3) {
     throw std::invalid_argument("Invalid action definition:\n" + action_definition);
   }
@@ -186,7 +179,6 @@ static std::pair<std::string, std::string> split_service_definition(
   std::string normalized_definition = service_definition;
   // Replace \r\n with \n
   size_t pos = 0;
-
   while ((pos = normalized_definition.find("\r\n", pos)) != std::string::npos) {
     normalized_definition.replace(pos, 2, "\n");
   }
@@ -248,8 +240,7 @@ MessageSpec::MessageSpec(
   const std::string & package_context)
 : dependencies(parse_dependencies(format, text, package_context)), text(std::move(text)), format(
     format)
-{
-}
+{}
 
 const MessageSpec & MessageDefinitionCache::load_service_spec(
   const DefinitionIdentifier & definition_identifier)
@@ -257,7 +248,6 @@ const MessageSpec & MessageDefinitionCache::load_service_spec(
   DefinitionIdentifier cache{
     definition_identifier.format, definition_identifier.package_resource_name
   };
-
   if (auto it = msg_specs_by_definition_identifier_.find(cache);
     it != msg_specs_by_definition_identifier_.end())
   {
@@ -266,8 +256,8 @@ const MessageSpec & MessageDefinitionCache::load_service_spec(
 
   std::smatch match;
   if (!std::regex_match(
-        definition_identifier.package_resource_name, match,
-        PACKAGE_TYPENAME_REGEX))
+      definition_identifier.package_resource_name, match,
+      PACKAGE_TYPENAME_REGEX))
   {
     throw std::invalid_argument(
             "Invalid package resource name: " + definition_identifier.package_resource_name);
@@ -325,8 +315,8 @@ const MessageSpec & MessageDefinitionCache::load_service_spec(
   const MessageSpec & spec =
     msg_specs_by_definition_identifier_
     .emplace(
-      definition_identifier,
-      MessageSpec(definition_identifier.format, return_val, package))
+    definition_identifier,
+    MessageSpec(definition_identifier.format, return_val, package))
     .first->second;
   return spec;
 }
@@ -341,8 +331,8 @@ const MessageSpec & MessageDefinitionCache::load_message_spec(
   }
   std::smatch match;
   if (!std::regex_match(
-        definition_identifier.package_resource_name, match,
-        PACKAGE_TYPENAME_REGEX))
+      definition_identifier.package_resource_name, match,
+      PACKAGE_TYPENAME_REGEX))
   {
     throw std::invalid_argument(
             "Invalid package resource name: " +
@@ -443,8 +433,8 @@ const MessageSpec & MessageDefinitionCache::load_message_spec(
     const MessageSpec & spec =
       msg_specs_by_definition_identifier_
       .emplace(
-        definition_identifier,
-        MessageSpec(definition_identifier.format, std::move(contents), package))
+      definition_identifier,
+      MessageSpec(definition_identifier.format, std::move(contents), package))
       .first->second;
 
     // "References and pointers to data stored in the container are only invalidated by erasing that
@@ -475,7 +465,6 @@ MessageDefinitionCache::get_full_srv_text(const std::string & service_name)
       return result;
     };
   std::string request, response;
-
   try {
     request = append_recursive(
       DefinitionIdentifier{
@@ -521,7 +510,6 @@ std::pair<MessageDefinitionFormat, std::string> MessageDefinitionCache::get_full
 
   std::string result;
   auto format = MessageDefinitionFormat::MSG;
-
   try {
     result = append_recursive(DefinitionIdentifier{format, root_package_resource_name});
   } catch (const DefinitionNotFoundError & err) {

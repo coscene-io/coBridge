@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef HTTP_SERVER_H_
-#define HTTP_SERVER_H_
+#ifndef HTTP_SERVER_HPP_
+#define HTTP_SERVER_HPP_
 
 #include <atomic>
 #include <string>
@@ -23,44 +23,46 @@
 
 namespace http_server
 {
-  enum class LogLevel
-  {
-    Debug,
-    Info,
-    Warn,
-    Error,
-    Fatal
-  };
 
-  using LogHandler = std::function < void(LogLevel, const char *) >;
+enum class LogLevel
+{
+  Debug,
+  Info,
+  Warn,
+  Error,
+  Fatal
+};
 
-  class HttpServer  // NOLINT(runtime/indentation_namespace)
-  {
+using LogHandler = std::function<void(LogLevel, const char*)>;
+
+class HttpServer
+{
 public:
-    HttpServer(int port,
-               const std::string & mac_addresses,
-               const std::vector < std::string > &ip_addresses,
-               LogHandler log_handler = nullptr);
-    ~HttpServer();
+  HttpServer(int port, 
+             const std::string & mac_addresses, 
+             const std::vector<std::string> & ip_addresses,
+             LogHandler log_handler = nullptr);
+  ~HttpServer();
 
-    void start();
-    void stop();
+  void start();
+  void stop();
 
 private:
-    void run_server();
-    void log(LogLevel level, const char *message);
-    void log(LogLevel level, const std::string & message);
+  void run_server();
+  void log(LogLevel level, const char* message);
+  void log(LogLevel level, const std::string& message);
 
-    int _port;
-    std::string _mac_addresses;
-    std::vector < std::string > _ip_addresses;
-    std::thread _server_thread;
-    std::atomic < bool > _running;
-    LogHandler _log_handler;
-  };
+  int _port;
+  std::string _mac_addresses;
+  std::vector<std::string> _ip_addresses;
+  std::thread _server_thread;
+  std::atomic<bool> _running;
+  LogHandler _log_handler;
+};
 
-  bool get_dev_mac_addr(std::string & mac_addresses);
+bool get_dev_mac_addr(std::string& mac_addresses);
 
-  bool get_dev_ip_addrs(std::vector < std::string > &ip_addresses, std::string & colink_ip);
+bool get_dev_ip_addrs(std::vector<std::string>& ip_addresses, std::string& colink_ip);
+
 }  // namespace http_server
-#endif  // HTTP_SERVER_H_
+#endif  // HTTP_SERVER_HPP_

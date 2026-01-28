@@ -19,6 +19,20 @@
 #include <create_generic_publisher.hpp>
 #endif
 
+
+#include <rclcpp/rclcpp.hpp>
+#include <rosgraph_msgs/msg/clock.hpp>
+#include <cobridge.hpp>
+#include <generic_client.hpp>
+#include <callback_queue.hpp>
+#include <websocketpp/common/connection_hdl.hpp>
+#include <message_definition_cache.hpp>
+#include <param_utils.hpp>
+#include <parameter_interface.hpp>
+#include <regex_utils.hpp>
+#include <server_factory.hpp>
+#include <utils.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <map>
@@ -30,21 +44,8 @@
 #include <utility>
 #include <vector>
 
-#include <rclcpp/rclcpp.hpp>
-#include <rosgraph_msgs/msg/clock.hpp>
-#include <websocketpp/common/connection_hdl.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
-
-#include <callback_queue.hpp>
-#include <cobridge.hpp>
-#include <generic_client.hpp>
-#include <message_definition_cache.hpp>
-#include <param_utils.hpp>
-#include <parameter_interface.hpp>
-#include <regex_utils.hpp>
-#include <server_factory.hpp>
-#include <utils.hpp>
 
 namespace http_server
 {
@@ -53,6 +54,7 @@ class HttpServer;
 
 namespace cobridge
 {
+
 using ConnectionHandle = websocketpp::connection_hdl;
 using LogLevel = cobridge_base::WebSocketLogLevel;
 
@@ -159,7 +161,7 @@ private:
 
   void parameter_updates(const std::vector<cobridge_base::Parameter> & parameters);
 
-  void log_handler(LogLevel level, char const *msg);
+  void log_handler(LogLevel level, char const * msg);
 
   void  ros_message_handler(
     const cobridge_base::ChannelId & channel_id, ConnectionHandle client_handle,

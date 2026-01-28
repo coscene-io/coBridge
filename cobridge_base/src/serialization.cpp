@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include <base64.hpp>
 #include <serialization.hpp>
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 namespace cobridge_base
 {
+
 void to_json(nlohmann::json & json_obj, const Channel & chan)
 {
   json_obj = {
@@ -50,14 +51,13 @@ void from_json(const nlohmann::json & json_obj, Channel & chan)
     json_obj["schema"].get<std::string>(),
     schema_encoding
   };
-
   chan = Channel(json_obj["id"].get<ChannelId>(), channel_without_id);
 }
+
 
 void to_json(nlohmann::json & json_obj, const ParameterValue & param_val)
 {
   const auto paramType = param_val.getType();
-
   if (paramType == ParameterType::PARAMETER_BOOL) {
     json_obj = param_val.getValue<bool>();
   } else if (paramType == ParameterType::PARAMETER_INTEGER) {
@@ -172,7 +172,7 @@ void from_json(const nlohmann::json & json_obj, Service & service)
   service.response_schema = json_obj["responseSchema"].get<std::string>();
 }
 
-void ServiceResponse::read(const uint8_t *data, size_t data_length)
+void ServiceResponse::read(const uint8_t * data, size_t data_length)
 {
   // Validate minimum message size
   if (data_length < 12) {  // 4 + 4 + 4 = service_id + call_id + encoding_length
@@ -219,10 +219,9 @@ void ServiceResponse::read(const uint8_t *data, size_t data_length)
   std::memcpy(this->serv_data.data(), data + offset, payload_length);
 }
 
-void ServiceResponse::write(uint8_t *data) const
+void ServiceResponse::write(uint8_t * data) const
 {
   size_t offset = 0;
-
   write_uint32_LE(data + offset, this->service_id);
   offset += 4;
   write_uint32_LE(data + offset, this->call_id);

@@ -15,34 +15,34 @@
 #ifndef WEBSOCKET_SERVER_HPP_
 #define WEBSOCKET_SERVER_HPP_
 
+#include <json.hpp>
+#include <websocketpp/config/asio.hpp>
+#include <websocketpp/server.hpp>
+
 // #include <optional>
 // #include <shared_mutex>
 // #include <string_view>
 #include <mutex>
 
+#include <string>
+#include <queue>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
-#include <queue>
-#include <string>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include <json.hpp>
-#include <websocketpp/config/asio.hpp>
-#include <websocketpp/server.hpp>
-
-#include "callback_queue.hpp"
 #include "common.hpp"
+#include "callback_queue.hpp"
 #include "parameter.hpp"
-#include "regex_utils.hpp"
 #include "serialization.hpp"
+#include "regex_utils.hpp"
 #include "server_interface.hpp"
 #include "websocket_logging.hpp"
 
@@ -61,8 +61,9 @@
 
 namespace cobridge_base
 {
+
 constexpr uint32_t
-string_hash_impl(const char *str, std::size_t len, std::size_t i, uint32_t result)
+string_hash_impl(const char * str, std::size_t len, std::size_t i, uint32_t result)
 {
   return i >= len ? result :
          string_hash_impl(str, len, i + 1, (static_cast<uint32_t>(str[i]) ^ result) * 0x01000193);
@@ -179,7 +180,7 @@ public:
 
   void send_message(
     ConnHandle client_handle, ChannelId chan_id, uint64_t timestamp,
-    const uint8_t *payload, size_t payload_size) override;
+    const uint8_t * payload, size_t payload_size) override;
 
   void broadcast_time(uint64_t timestamp) override;
 
@@ -218,7 +219,7 @@ private:
   void send_raw_json(ConnHandle hdl, const std::string & payload, bool reliable = true);
 
   void send_binary(
-    ConnHandle hdl, const uint8_t *payload, size_t payload_size, bool reliable = true);
+    ConnHandle hdl, const uint8_t * payload, size_t payload_size, bool reliable = true);
 
   void send_status_and_log_msg(
     ConnHandle client_handle, const StatusLevel level,
@@ -277,8 +278,7 @@ private:
       user_name(std::move(user_name)),
       user_id(std::move(user_id)),
       handle(std::move(handle))
-    {
-    }
+    {}
 
     ClientInfo(const ClientInfo &) = delete;
 
@@ -361,14 +361,14 @@ inline Server<ServerConfiguration>::Server(
       _handler_callback_queue->add_callback(
         [this, hdl]() {
           this->handle_connection_closed(hdl);
-      });
+        });
     });
   _server.set_message_handler(
     [this](ConnHandle hdl, MessagePtr msg) {
       _handler_callback_queue->add_callback(
         [this, hdl, msg]() {
           this->handle_message(hdl, msg);
-      });
+        });
     });
   _server.set_reuse_addr(true);
   _server.set_listen_backlog(128);
@@ -409,7 +409,7 @@ inline void Server<ServerConfiguration>::start(const std::string & host, uint16_
         _server.get_alog().write(APP, "WebSocket server run loop started");
         _server.run();
         _server.get_alog().write(APP, "WebSocket server run loop stopped");
-    }));
+      }));
 
   if (!_server.is_listening()) {
     throw std::runtime_error("WebSocket server failed to listen on port " + std::to_string(port));
@@ -578,7 +578,6 @@ inline void Server<ServerConfiguration>::publish_parameter_values(
 {
   // Filter out parameters which are not set.
   std::vector<Parameter> non_empty_parameters;
-
   std::copy_if(
     parameters.begin(), parameters.end(), std::back_inserter(non_empty_parameters),
     [](const Parameter & p) {
@@ -598,7 +597,6 @@ inline void Server<ServerConfiguration>::update_parameter_values(
   const std::vector<Parameter> & parameters)
 {
   std::lock_guard<std::mutex> lock(_client_param_subscriptions_mutex);
-
   for (const auto & client_param_subscriptions : _client_param_subscriptions) {
     std::vector<Parameter> params_to_send_to_client;
 
@@ -607,7 +605,7 @@ inline void Server<ServerConfiguration>::update_parameter_values(
       parameters.begin(), parameters.end(), std::back_inserter(params_to_send_to_client),
       [client_param_subscriptions](const Parameter & param) {
         return client_param_subscriptions.second.find(param.get_name()) !=
-               client_param_subscriptions.second.end();
+        client_param_subscriptions.second.end();
       });
 
     if (!params_to_send_to_client.empty()) {
@@ -650,7 +648,6 @@ inline void Server<ServerConfiguration>::remove_services(const std::vector<Servi
 {
   std::lock_guard<std::mutex> lock(_services_mutex);
   std::vector<ServiceId> removed_services;
-
   for (const auto & service_id : service_ids) {
     const auto iter = _services.find(service_id);
     if (iter != _services.end()) {
@@ -682,12 +679,11 @@ inline void Server<ServerConfiguration>::set_handlers(ServerHandlers<ConnHandle>
 template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::send_message(
   ConnHandle client_handle, ChannelId chan_id,
-  uint64_t timestamp, const uint8_t *payload,
+  uint64_t timestamp, const uint8_t * payload,
   size_t payload_size)
 {
   websocketpp::lib::error_code ec;
   const auto con = _server.get_con_from_hdl(client_handle, ec);
-
   if (ec || !con) {
     return;
   }
@@ -726,7 +722,6 @@ template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::broadcast_time(uint64_t timestamp)
 {
   std::array<uint8_t, 1 + 8> message;
-
   message[0] = uint8_t(BinaryOpcode::TIME_DATA);
   write_uint64_LE(message.data() + 1, timestamp);
 
@@ -741,7 +736,6 @@ inline void Server<ServerConfiguration>::send_service_response(
   ConnHandle client_handle, const ServiceResponse & response)
 {
   std::vector<uint8_t> payload(1 + response.size());
-
   payload[0] = uint8_t(BinaryOpcode::SERVICE_CALL_RESPONSE);
   response.write(payload.data() + 1);
   send_binary(client_handle, payload.data(), payload.size());
@@ -810,7 +804,6 @@ inline void Server<ServerConfiguration>::update_connection_graph(
   }
 
   std::vector<std::string> removed_topics, removed_services;
-
   std::copy_if(
     known_topic_names.begin(), known_topic_names.end(), std::back_inserter(removed_topics),
     [&topic_names](const std::string & topic) {
@@ -853,7 +846,6 @@ inline void Server<ServerConfiguration>::send_fetch_asset_response(
 {
   websocketpp::lib::error_code ec;
   const auto con = _server.get_con_from_hdl(client_handle, ec);
-
   if (ec || !con) {
     return;
   }
@@ -890,7 +882,6 @@ inline uint16_t Server<ServerConfiguration>::get_port()
 {
   websocketpp::lib::asio::error_code ec;
   auto endpoint = _server.get_local_endpoint(ec);
-
   if (ec) {
     throw std::runtime_error("Server not listening on any port. Has it been started before?");
   }
@@ -903,9 +894,9 @@ Server<ServerConfiguration>::remote_endpoint_string(cobridge_base::ConnHandle cl
 {
   websocketpp::lib::error_code ec;
   const auto con = _server.get_con_from_hdl(client_handle, ec);
-
   return con ? con->get_remote_endpoint() : "(unknown)";
 }
+
 
 //-----------------------------------------------------------------------------------------------------------------
 // private functions
@@ -913,7 +904,6 @@ template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::socket_init(ConnHandle hdl)
 {
   websocketpp::lib::asio::error_code ec;
-
   _server.get_con_from_hdl(hdl)->get_raw_socket().set_option(Tcp::no_delay(true), ec);
   if (ec) {
     _server.get_elog().write(RECOVERABLE, "Failed to set TCP_NODELAY: " + ec.message());
@@ -928,7 +918,6 @@ inline bool Server<ServerConfiguration>::validate_connection(ConnHandle hdl)
   const auto & sub_protocols = con->get_requested_subprotocols();
 
   auto it = std::find(sub_protocols.begin(), sub_protocols.end(), SUPPORTED_SUB_PROTOCOL);
-
   if (it != sub_protocols.end()) {
     con->select_subprotocol(SUPPORTED_SUB_PROTOCOL);
     return true;
@@ -952,7 +941,6 @@ void Server<ServerConfiguration>::handle_login(const Json & payload, ConnHandle 
   const auto user_name = payload.at("username").get<std::string>();
   const auto user_id = payload.at("userId").get<std::string>();
   const auto endpoint = remote_endpoint_string(hdl);
-
   _server.get_alog().write(APP, "'" + user_name + " (" + user_id + ")' is logging in.");
 
   {
@@ -1024,7 +1012,6 @@ inline void Server<ServerConfiguration>::handle_connection_opened(cobridge_base:
 {
   auto con = _server.get_con_from_hdl(hdl);
   const auto endpoint = remote_endpoint_string(hdl);
-
   _server.get_alog().write(
     APP, "websocket connection  " + endpoint + " connected via " +
     con->get_resource());
@@ -1205,7 +1192,7 @@ inline bool Server<ServerConfiguration>::is_parameter_subscribed(
     [param_name](const std::pair<ConnHandle,
     std::unordered_set<std::string>> & param_subscriptions) {
       return param_subscriptions.second.find(param_name) !=
-             param_subscriptions.second.end();
+      param_subscriptions.second.end();
     }) != _client_param_subscriptions.end();
 }
 
@@ -1213,7 +1200,6 @@ template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::handle_message(ConnHandle hdl, MessagePtr msg)
 {
   const OpCode op = msg->get_opcode();
-
   try {
     if (op == OpCode::TEXT) {
       handle_text_message(hdl, msg);
@@ -1245,36 +1231,26 @@ inline bool Server<ServerConfiguration>::has_handler(uint32_t op) const
       // `login` must be the first request after websocket connected,
       // so, here return true forever
       return true;
-
     case SUBSCRIBE:
       return static_cast<bool>(_handlers.subscribe_handler);
-
     case UNSUBSCRIBE:
       return static_cast<bool>(_handlers.unsubscribe_handler);
-
     case ADVERTISE:
       return static_cast<bool>(_handlers.client_advertise_handler);
-
     case UNADVERTISE:
       return static_cast<bool>(_handlers.client_unadvertise_handler);
-
     case GET_PARAMETERS:
       return static_cast<bool>(_handlers.parameter_request_handler);
-
     case SET_PARAMETERS:
       return static_cast<bool>(_handlers.parameter_change_handler);
-
     case SUBSCRIBE_PARAMETER_UPDATES:
     case UNSUBSCRIBE_PARAMETER_UPDATES:
       return static_cast<bool>(_handlers.parameter_subscription_handler);
-
     case SUBSCRIBE_CONNECTION_GRAPH:
     case UNSUBSCRIBE_CONNECTION_GRAPH:
       return static_cast<bool>(_handlers.subscribe_connection_graph_handler);
-
     case FETCH_ASSET:
       return static_cast<bool>(_handlers.fetch_asset_handler);
-
     default:
       throw std::runtime_error("Unknown operation: " + std::to_string(op));
   }
@@ -1291,12 +1267,10 @@ void Server<ServerConfiguration>::handle_subscribe(const Json & payload, ConnHan
 
   const auto find_subscription_by_sub_id =
     [](const std::unordered_map<ChannelId, SubscriptionId> & subscriptions_by_channel,
-    SubscriptionId sub_id) {
+      SubscriptionId sub_id) {
       return std::find_if(
         subscriptions_by_channel.begin(), subscriptions_by_channel.end(),
-        [&sub_id](const std::pair<ChannelId, SubscriptionId> & mo) {
-          return mo.second == sub_id;
-      });
+        [&sub_id](const std::pair<ChannelId, SubscriptionId> & mo) {return mo.second == sub_id;});
     };
 
   for (const auto & sub : payload.at("subscriptions")) {
@@ -1335,13 +1309,11 @@ void Server<ServerConfiguration>::handle_unsubscribe(const Json & payload, ConnH
 
   const auto find_subscription_by_sub_id =
     [](const std::unordered_map<ChannelId, SubscriptionId>
-    & subscriptions_by_channel,
-    SubscriptionId sub_id) {
+      & subscriptions_by_channel,
+      SubscriptionId sub_id) {
       return std::find_if(
         subscriptions_by_channel.begin(), subscriptions_by_channel.end(),
-        [&sub_id](const std::pair<ChannelId, SubscriptionId> & mo) {
-          return mo.second == sub_id;
-      });
+        [&sub_id](const std::pair<ChannelId, SubscriptionId> & mo) {return mo.second == sub_id;});
     };
 
   for (const auto & sub_id_json : payload.at("subscriptionIds")) {
@@ -1411,7 +1383,6 @@ void Server<ServerConfiguration>::handle_unadvertise(const Json & payload, ConnH
 {
   std::lock_guard<std::mutex> clientChannelsLock(_client_channels_mutex);
   auto client_publications_iter = _client_channels.find(hdl);
-
   if (client_publications_iter == _client_channels.end()) {
     send_status_and_log_msg(
       hdl, StatusLevel::Error, "Client has no advertised channels");
@@ -1443,7 +1414,6 @@ void Server<ServerConfiguration>::handle_get_parameters(const Json & payload, Co
   const auto param_names = payload.at("parameterNames").get<std::vector<std::string>>();
   const auto request_id = payload.find("id") == payload.end() ?
     optional<std::string>(nullopt) : optional<std::string>(payload["id"].get<std::string>());
-
   _handlers.parameter_request_handler(param_names, request_id, std::move(hdl));
 }
 
@@ -1453,7 +1423,6 @@ void Server<ServerConfiguration>::handle_set_parameters(const Json & payload, Co
   const auto parameters = payload.at("parameters").get<std::vector<Parameter>>();
   const auto request_id = payload.find("id") == payload.end() ?
     optional<std::string>(nullopt) : optional<std::string>(payload["id"].get<std::string>());
-
   _handlers.parameter_change_handler(parameters, request_id, std::move(hdl));
 }
 
@@ -1584,7 +1553,6 @@ void Server<ServerConfiguration>::handle_fetch_asset(const Json & payload, ConnH
 {
   const auto uri = payload.at("uri").get<std::string>();
   const auto request_id = payload.at("requestId").get<uint32_t>();
-
   _handlers.fetch_asset_handler(uri, request_id, hdl);
 }
 
@@ -1595,7 +1563,6 @@ inline void Server<ServerConfiguration>::handle_text_message(ConnHandle hdl, Mes
   const std::string & op = payload.at("op").get<std::string>();
 
   const auto required_capability_iter = CAPABILITY_BY_CLIENT_OPERATION.find(op);
-
   if (required_capability_iter != CAPABILITY_BY_CLIENT_OPERATION.end() &&
     !has_capability(required_capability_iter->second))
   {
@@ -1673,7 +1640,7 @@ template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, MessagePtr msg)
 {
   const auto & payload = msg->get_payload();
-  const auto *data = reinterpret_cast<const uint8_t *>(payload.data());
+  const auto * data = reinterpret_cast<const uint8_t *>(payload.data());
   const size_t length = payload.size();
 
   if (length < 1) {
@@ -1703,12 +1670,12 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
 
         if (length < 5) {
           send_status_and_log_msg(
-          hdl, StatusLevel::Error,
-          "Invalid message length " + std::to_string(length));
+            hdl, StatusLevel::Error,
+            "Invalid message length " + std::to_string(length));
           return;
         }
         const auto timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
-        std::chrono::high_resolution_clock::now().time_since_epoch())
+          std::chrono::high_resolution_clock::now().time_since_epoch())
           .count();
         const ClientChannelId channel_id = *reinterpret_cast<const ClientChannelId *>(data + 1);
         std::lock_guard<std::mutex> lock(_client_channels_mutex);
@@ -1723,8 +1690,8 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
         const auto & channel_iter = client_publications.find(channel_id);
         if (channel_iter == client_publications.end()) {
           send_status_and_log_msg(
-          hdl, StatusLevel::Error,
-          "Channel " + std::to_string(channel_id) + " is not advertised");
+            hdl, StatusLevel::Error,
+            "Channel " + std::to_string(channel_id) + " is not advertised");
           return;
         }
 
@@ -1742,8 +1709,8 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
           send_status_and_log_msg(hdl, StatusLevel::Error, e.what());
         } catch (...) {
           send_status_and_log_msg(
-          hdl, StatusLevel::Error,
-          "callService: Failed to execute handler");
+            hdl, StatusLevel::Error,
+            "callService: Failed to execute handler");
         }
       }
       break;
@@ -1751,8 +1718,8 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
         ServiceRequest request;
         if (length < request.size()) {
           send_status_and_log_msg(
-          hdl, StatusLevel::Error,
-          "Invalid service call request length " + std::to_string(length));
+            hdl, StatusLevel::Error,
+            "Invalid service call request length " + std::to_string(length));
           return;
         }
 
@@ -1762,8 +1729,8 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
           std::lock_guard<std::mutex> lock(_services_mutex);
           if (_services.find(request.service_id) == _services.end()) {
             send_status_and_log_msg(
-            hdl, StatusLevel::Error,
-            "Service " + std::to_string(request.service_id) + " is not advertised");
+              hdl, StatusLevel::Error,
+              "Service " + std::to_string(request.service_id) + " is not advertised");
             return;
           }
         }
@@ -1775,8 +1742,8 @@ inline void Server<ServerConfiguration>::handle_binary_message(ConnHandle hdl, M
       break;
     default: {
         send_status_and_log_msg(
-        hdl, StatusLevel::Error,
-        "Unrecognized client opcode " + std::to_string(uint8_t(op)));
+          hdl, StatusLevel::Error,
+          "Unrecognized client opcode " + std::to_string(uint8_t(op)));
       }
       break;
   }
@@ -1792,7 +1759,6 @@ inline void Server<ServerConfiguration>::send_status_and_log_msg(
   const std::string logMessage = endpoint + ": " + message;
   const auto logLevel = status_level_to_log_level(level);
   auto logger = level == StatusLevel::Info ? _server.get_alog() : _server.get_elog();
-
   logger.write(logLevel, logMessage);
 
   send_json(
@@ -1829,7 +1795,7 @@ inline void Server<ServerConfiguration>::send_raw_json(
 
 template<typename ServerConfiguration>
 inline void Server<ServerConfiguration>::send_binary(
-  ConnHandle hdl, const uint8_t *payload,
+  ConnHandle hdl, const uint8_t * payload,
   size_t payload_size, bool reliable)
 {
   try {

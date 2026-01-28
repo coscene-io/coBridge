@@ -20,8 +20,10 @@
 #include <string>
 #include <vector>
 
+
 namespace cobridge
 {
+
 struct GenericService
 {
   std::string type;
@@ -75,8 +77,10 @@ struct DataType<cobridge::GenericService>
 };
 }  // namespace service_traits
 
+
 namespace serialization
 {
+
 template<>
 struct Serializer<cobridge::GenericService>
 {
@@ -98,6 +102,7 @@ struct Serializer<cobridge::GenericService>
   }
 };
 }  // namespace serialization
+
 }  // namespace ros
 
 #endif  // GENERIC_SERVICE_HPP_
