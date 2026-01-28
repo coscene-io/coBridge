@@ -12,36 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unordered_set>
+
 #ifdef ROS2_VERSION_FOXY
 #include <resource_retriever/retriever.h>
 #else
 #include <resource_retriever/retriever.hpp>
 #endif
 
-#include <arpa/inet.h>
+#include <rmw/types.h>
+#include <ros2_bridge.hpp>
+#include <http_server.h>
+
+#include <algorithm>
+#include <string>
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
+#include <json.hpp>
+
+// Include for HTTP server
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
 #include <ifaddrs.h>
-#include <net/if.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
-#include <http_server.h>
-#include <rmw/types.h>
-
-#include <algorithm>
-#include <map>
-#include <memory>
 #include <sstream>
-#include <string>
-#include <unordered_set>
-#include <utility>
-#include <vector>
-
-#include <json.hpp>
-#include <ros2_bridge.hpp>
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
 
 namespace cobridge
 {
@@ -54,6 +55,7 @@ inline bool is_hidden_topic_or_service(const std::string & name)
   }
   return name.front() == '_' || name.find("/_") != std::string::npos;
 }
+
 }      // namespace
 
 using namespace std::chrono_literals;
@@ -63,8 +65,7 @@ using cobridge_base::is_whitelisted;
 CoBridge::CoBridge(const rclcpp::NodeOptions & options)
 : Node("cobridge", options)
 {
-  const char *ros_distro = std::getenv("ROS_DISTRO");
-
+  const char * ros_distro = std::getenv("ROS_DISTRO");
   RCLCPP_INFO(
     this->get_logger(), "Starting cobridge (%s, %s@%s) with %s", ros_distro,
     cobridge_base::COBRIDGE_VERSION, cobridge_base::COBRIDGE_GIT_HASH,
@@ -108,7 +109,7 @@ CoBridge::CoBridge(const rclcpp::NodeOptions & options)
   http_server::get_dev_mac_addr(mac_addresses);
   http_server::get_dev_ip_addrs(ip_addresses, colink_ip);
 
-  auto http_log_handler = [this](http_server::LogLevel level, const char *msg) {
+  auto http_log_handler = [this](http_server::LogLevel level, const char * msg) {
       switch (level) {
         case http_server::LogLevel::Debug:
           RCLCPP_DEBUG(this->get_logger(), "[HTTP_SERVER] %s", msg);
@@ -183,8 +184,7 @@ CoBridge::CoBridge(const rclcpp::NodeOptions & options)
       ConnectionHandle hdl)
       {
         _fetch_asset_queue->add_callback(
-                                       std::bind(&CoBridge::fetch_asset, this, uri, requestId,
-          hdl));
+          std::bind(&CoBridge::fetch_asset, this, uri, requestId, hdl));
       };
   }
 
@@ -324,13 +324,13 @@ void CoBridge::update_advertised_topics(
   std::vector<cobridge_base::ChannelWithoutId> channels_to_add;
   for (const auto & topic_and_datatype : latest_topics) {
     if (std::find_if(
-          _advertised_topics.begin(), _advertised_topics.end(),
+        _advertised_topics.begin(), _advertised_topics.end(),
         [topic_and_datatype](const auto & channel_id_and_channel)
         {
           const auto & channel = channel_id_and_channel.second;
           return channel.topic == topic_and_datatype.first &&
-                 channel.schema_name == topic_and_datatype.second;
-      }) != _advertised_topics.end())
+          channel.schema_name == topic_and_datatype.second;
+        }) != _advertised_topics.end())
     {
       continue;            // Topic already advertised
     }
@@ -423,11 +423,11 @@ void CoBridge::update_advertised_services()
 
     // Ignore the service if it's already advertised
     if (std::find_if(
-          _advertised_services.begin(), _advertised_services.end(),
+        _advertised_services.begin(), _advertised_services.end(),
         [service_name](const auto & idWithService)
         {
           return idWithService.second.name == service_name;
-      }) != _advertised_services.end())
+        }) != _advertised_services.end())
     {
       continue;
     }
@@ -517,7 +517,7 @@ void CoBridge::update_connection_graph(
       node_namespace);
 
     for (const auto & [service_name, service_types] : service_names_and_types) {
-      (void)service_types;
+      (void) service_types;
       if (is_whitelisted(service_name, _service_whitelist_patterns)) {
         services[service_name].insert(fqn_node_name);
       }
@@ -538,7 +538,6 @@ void CoBridge::subscribe(cobridge_base::ChannelId channel_id, ConnectionHandle c
 {
   std::lock_guard<std::mutex> lock(_subscriptions_mutex);
   auto it = _advertised_topics.find(channel_id);
-
   if (it == _advertised_topics.end()) {
     throw cobridge_base::ChannelError(
             channel_id,
@@ -565,9 +564,8 @@ void CoBridge::subscribe(cobridge_base::ChannelId channel_id, ConnectionHandle c
   event_callbacks.incompatible_qos_callback = [&](const rclcpp::QOSRequestedIncompatibleQoSInfo &)
     {
       RCLCPP_ERROR(
-                                                  this->get_logger(),
-        "Incompatible subscriber QoS settings for topic \"%s\" (%s)",
-                                                  topic.c_str(), datatype.c_str());
+        this->get_logger(), "Incompatible subscriber QoS settings for topic \"%s\" (%s)",
+        topic.c_str(), datatype.c_str());
     };
 
   rclcpp::SubscriptionOptions subscription_options;
@@ -673,7 +671,6 @@ void CoBridge::unsubscribe(cobridge_base::ChannelId channel_id, ConnectionHandle
   std::lock_guard<std::mutex> lock(_subscriptions_mutex);
 
   const auto channel_iter = _advertised_topics.find(channel_id);
-
   if (channel_iter == _advertised_topics.end()) {
     throw cobridge_base::ChannelError(
             channel_id,
@@ -743,11 +740,11 @@ void CoBridge::client_advertise(
     const auto other_publishers = get_publishers_info_by_topic(topic_name);
     const auto other_publisher_iter =
       std::find_if(
-        other_publishers.begin(), other_publishers.end(),
+      other_publishers.begin(), other_publishers.end(),
       [this](const rclcpp::TopicEndpointInfo & endpoint)
       {
         return endpoint.node_name() != this->get_name() ||
-               endpoint.node_namespace() != this->get_namespace();
+        endpoint.node_namespace() != this->get_namespace();
       });
     rclcpp::QoS qos = other_publisher_iter == other_publishers.end() ? rclcpp::SystemDefaultsQoS() :
       other_publisher_iter->qos_profile();
@@ -787,7 +784,6 @@ void CoBridge::client_unadvertise(cobridge_base::ChannelId channel_id, Connectio
   std::lock_guard<std::mutex> lock(_client_advertisements_mutex);
 
   auto it = _client_advertised_topics.find(hdl);
-
   if (it == _client_advertised_topics.end()) {
     throw cobridge_base::ClientChannelError(
             channel_id,
@@ -823,8 +819,7 @@ void CoBridge::client_unadvertise(cobridge_base::ChannelId channel_id, Connectio
   // https://github.com/ros2/rclcpp/issues/2146
   this->create_wall_timer(
     1s, []()
-    {
-    });
+    {});
 }
 
 void CoBridge::client_message(const cobridge_base::ClientMessage & message, ConnectionHandle hdl)
@@ -834,6 +829,7 @@ void CoBridge::client_message(const cobridge_base::ClientMessage & message, Conn
 #else
   rclcpp::GenericPublisher::SharedPtr publisher;
 #endif
+
 
   {
     const auto channel_id = message.advertisement.channel_id;
@@ -896,7 +892,6 @@ void CoBridge::get_parameters(
   const optional<std::string> & request_id, cobridge::ConnectionHandle hdl)
 {
   const auto params = _param_interface->get_params(parameters, std::chrono::seconds(5));
-
   _server->publish_parameter_values(hdl, params, request_id);
 }
 
@@ -917,7 +912,7 @@ void CoBridge::parameter_updates(const std::vector<cobridge_base::Parameter> & p
   _server->update_parameter_values(parameters);
 }
 
-void CoBridge::log_handler(LogLevel level, char const *msg)
+void CoBridge::log_handler(LogLevel level, char const * msg)
 {
   switch (level) {
     case LogLevel::Debug:
@@ -947,7 +942,6 @@ void CoBridge::ros_message_handler(
   // NOTE: Do not call any RCLCPP_* logging functions from this function. Otherwise, subscribing
   // to `/rosout` will cause a feedback loop
   const auto rcl_serialized_msg = msg->get_rcl_serialized_message();
-
   _server->send_message(
     client_handle, channel_id, timestamp != 0 ? timestamp : this->now().nanoseconds(),
     rcl_serialized_msg.buffer, rcl_serialized_msg.buffer_length);
@@ -1020,29 +1014,26 @@ void CoBridge::service_request(
       client_handle](GenericClient::SharedFuture future)
     {
       RCLCPP_DEBUG(
-                                        this->get_logger(),
-                                        "Received response from service '%s' "
-                                        "(service_id=%d, call_id=%d)",
-                                        service_name.c_str(), request.service_id,
-                                        request.call_id);
+        this->get_logger(),
+        "Received response from service '%s' (service_id=%d, call_id=%d)",
+        service_name.c_str(), request.service_id, request.call_id);
 
       const auto serialized_response_msg = future.get()->get_rcl_serialized_message();
       RCLCPP_DEBUG(
-                                        this->get_logger(), "Response size: %zu bytes",
-                                        serialized_response_msg.buffer_length);
+        this->get_logger(), "Response size: %zu bytes",
+        serialized_response_msg.buffer_length);
 
       cobridge_base::ServiceRequest response{
         request.service_id, request.call_id, request.encoding,
         std::vector<uint8_t>(serialized_response_msg.buffer_length)};
       std::memcpy(
-                                        response.serv_data.data(), serialized_response_msg.buffer,
-                                        serialized_response_msg.buffer_length);
+        response.serv_data.data(), serialized_response_msg.buffer,
+        serialized_response_msg.buffer_length);
 
       RCLCPP_DEBUG(
-                                        this->get_logger(),
-                                        "Sending service response back to client "
-                                        "(service_id=%d, call_id=%d)",
-                                        request.service_id, request.call_id);
+        this->get_logger(),
+        "Sending service response back to client (service_id=%d, call_id=%d)",
+        request.service_id, request.call_id);
       _server->send_service_response(client_handle, response);
     };
   client->async_send_request(req_message, response_received_callback);
@@ -1053,7 +1044,6 @@ void CoBridge::fetch_asset(
   ConnectionHandle client_handle)
 {
   cobridge_base::FetchAssetResponse response;
-
   response.request_id = request_id;
 
   try {
@@ -1069,24 +1059,11 @@ void CoBridge::fetch_asset(
     }
 
     resource_retriever::Retriever resource_retriever;
-#ifdef ROS2_VERSION_ROLLING
-    // Rolling changed API: get() -> get_shared(), returns ResourceSharedPtr
-    // Resource struct has std::vector<unsigned char> data (not pointer)
-    auto resource = resource_retriever.get_shared(asset_id);
-    if (resource == nullptr) {
-      throw std::runtime_error("Failed to retrieve resource: " + asset_id);
-    }
-    response.status = cobridge_base::FetchAssetStatus::Success;
-    response.error_message = "";
-    response.data = resource->data;  // Direct vector assignment
-#else
-    // Humble/Jazzy: get() returns MemoryResource struct
     const resource_retriever::MemoryResource memory_resource = resource_retriever.get(asset_id);
     response.status = cobridge_base::FetchAssetStatus::Success;
     response.error_message = "";
     response.data.resize(memory_resource.size);
     std::memcpy(response.data.data(), memory_resource.data.get(), memory_resource.size);
-#endif
   } catch (const std::exception & ex) {
     RCLCPP_WARN(
       this->get_logger(), "Failed to retrieve asset '%s': %s", asset_id.c_str(),
@@ -1104,6 +1081,7 @@ bool CoBridge::has_capability(const std::string & capability)
 {
   return std::find(_capabilities.begin(), _capabilities.end(), capability) != _capabilities.end();
 }
+
 }  // namespace cobridge
 
 #include <rclcpp_components/register_node_macro.hpp>

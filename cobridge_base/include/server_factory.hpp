@@ -15,16 +15,15 @@
 #ifndef SERVER_FACTORY_HPP_
 #define SERVER_FACTORY_HPP_
 
+#include <websocketpp/common/connection_hdl.hpp>
 #include <memory>
 #include <string>
-
-#include <websocketpp/common/connection_hdl.hpp>
-
 #include "common.hpp"
 #include "server_interface.hpp"
 
 namespace cobridge_base
 {
+
 class ServerFactory
 {
 public:

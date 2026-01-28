@@ -30,13 +30,13 @@
 
 namespace cobridge
 {
+
 std::string get_typesupport_library_path(
   const std::string & package_name, const std::string & typesupport_identifier)
 {
-  const char *filename_prefix;
-  const char *filename_extension;
-  const char *dynamic_library_folder;
-
+  const char * filename_prefix;
+  const char * filename_extension;
+  const char * dynamic_library_folder;
 #ifdef _WIN32
   filename_prefix = "";
   filename_extension = ".dll";
@@ -79,7 +79,6 @@ extract_type_identifier(const std::string & full_type)
   char type_separator = '/';
   auto sep_position_back = full_type.find_last_of(type_separator);
   auto sep_position_front = full_type.find_first_of(type_separator);
-
   if (sep_position_back == std::string::npos ||
     sep_position_back == 0 ||
     sep_position_back == full_type.length() - 1)
@@ -104,7 +103,6 @@ get_typesupport_library(const std::string & type, const std::string & typesuppor
 {
   auto package_name = std::get<0>(extract_type_identifier(type));
   auto library_path = get_typesupport_library_path(package_name, typesupport_identifier);
-
   return std::make_shared<rcpputils::SharedLibrary>(library_path);
 }
 
@@ -155,4 +153,5 @@ get_typesupport_handle(
     throw std::runtime_error(rcutils_dynamic_loading_error.str() + " Library could not be found.");
   }
 }
+
 }  // namespace cobridge

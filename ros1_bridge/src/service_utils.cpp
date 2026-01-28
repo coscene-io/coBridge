@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 #include <ros/connection.h>
 #include <ros/service_manager.h>
 #include <ros/service_server_link.h>
+
+#include <service_utils.hpp>
 
 #include <chrono>
 #include <future>
 #include <string>
 
-#include <service_utils.hpp>
-
 namespace cobridge
 {
+
 std::string retrieve_service_type(
   const std::string & serviceName,
   std::chrono::milliseconds timeout)
@@ -31,7 +33,6 @@ std::string retrieve_service_type(
   auto link = ros::ServiceManager::instance()->createServiceServerLink(
     serviceName, false, "*", "*",
     {{"probe", "1"}});
-
   if (!link) {
     throw std::runtime_error("Failed to create service link");
   } else if (!link->getConnection()) {
@@ -65,4 +66,5 @@ std::string retrieve_service_type(
 
   return future.get();
 }
+
 }  // namespace cobridge

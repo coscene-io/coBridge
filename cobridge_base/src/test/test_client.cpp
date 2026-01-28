@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include <websocketpp/config/asio_client.hpp>
 
 #include <serialization.hpp>
 #include <test/test_client.hpp>
 #include <websocket_client.hpp>
 
+#include <chrono>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace cobridge_base
 {
+
 std::future<std::string> wait_for_kicked(std::shared_ptr<ClientInterface> client)
 {
   auto promise = std::make_shared<std::promise<std::string>>();
@@ -65,14 +66,14 @@ std::future<std::string> wait_for_login(
 }
 
 std::future<std::vector<uint8_t>> wait_for_channel_msg(
-  ClientInterface *client,
+  ClientInterface * client,
   SubscriptionId subscription_id)
 {
   auto promise = std::make_shared<std::promise<std::vector<uint8_t>>>();
   auto future = promise->get_future();
 
   client->set_binary_message_handler(
-    [promise, subscription_id](const uint8_t *data, size_t dataLength) {
+    [promise, subscription_id](const uint8_t * data, size_t dataLength) {
       if (read_uint32_LE(data + 1) != subscription_id) {
         return;
       }
@@ -113,7 +114,7 @@ std::future<ServiceResponse> wait_for_service_response(std::shared_ptr<ClientInt
   auto future = promise->get_future();
 
   client->set_binary_message_handler(
-    [promise](const uint8_t *data, size_t data_length) mutable {
+    [promise](const uint8_t * data, size_t data_length) mutable {
       if (static_cast<BinaryOpcode>(data[0]) != BinaryOpcode::SERVICE_CALL_RESPONSE) {
         return;
       }
@@ -184,7 +185,7 @@ std::future<FetchAssetResponse> wait_for_fetch_asset_response(
   auto future = promise->get_future();
 
   client->set_binary_message_handler(
-    [promise](const uint8_t *data, size_t data_length) mutable {
+    [promise](const uint8_t * data, size_t data_length) mutable {
       if (static_cast<BinaryOpcode>(data[0]) != BinaryOpcode::FETCH_ASSET_RESPONSE) {
         return;
       }
@@ -209,4 +210,5 @@ std::future<FetchAssetResponse> wait_for_fetch_asset_response(
 }
 
 template class Client<websocketpp::config::asio_client>;
+
 }  // namespace cobridge_base

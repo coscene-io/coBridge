@@ -28,6 +28,7 @@
 
 namespace cobridge_base
 {
+
 constexpr size_t DEFAULT_SEND_BUFFER_LIMIT_BYTES = 10000000UL;  // 10 MB
 
 using MapOfSets = std::unordered_map<std::string, std::unordered_set<std::string>>;
@@ -38,8 +39,7 @@ class ExceptionWithId : public std::runtime_error
 public:
   explicit ExceptionWithId(IdType id, const std::string & what_arg)
   : std::runtime_error(what_arg), _id(id)
-  {
-  }
+  {}
 
   IdType id() const
   {
@@ -129,7 +129,7 @@ public:
 
   virtual void send_message(
     ConnectionHandle client_handle, ChannelId chan_id, uint64_t timestamp,
-    const uint8_t *payload, size_t payload_size) = 0;
+    const uint8_t * payload, size_t payload_size) = 0;
 
   virtual void broadcast_time(uint64_t timestamp) = 0;
 

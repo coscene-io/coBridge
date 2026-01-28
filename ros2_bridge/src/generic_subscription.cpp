@@ -20,12 +20,12 @@
 #include "rclcpp/any_subscription_callback.hpp"
 #include "rclcpp/subscription.hpp"
 
+
 namespace
 {
 rcl_subscription_options_t get_subscription_options(const rclcpp::QoS & qos)
 {
   auto options = rcl_subscription_get_default_options();
-
   options.qos = qos.get_rmw_qos_profile();
   return options;
 }
@@ -34,7 +34,7 @@ rcl_subscription_options_t get_subscription_options(const rclcpp::QoS & qos)
 namespace cobridge
 {
 GenericSubscription::GenericSubscription(
-  rclcpp::node_interfaces::NodeBaseInterface *node_base,
+  rclcpp::node_interfaces::NodeBaseInterface * node_base,
   const rosidl_message_type_support_t & ts,
   std::string topic_name,
   std::string topic_type,
@@ -64,23 +64,21 @@ void GenericSubscription::handle_message(
   std::shared_ptr<void> & message, const rclcpp::MessageInfo & message_info)
 {
   auto typed_message = std::static_pointer_cast<rclcpp::SerializedMessage>(message);
-
   _callback(
     typed_message,
     static_cast<uint64_t>(message_info.get_rmw_message_info().source_timestamp));
 }
 
 void GenericSubscription::handle_loaned_message(
-  void *message, const rclcpp::MessageInfo & message_info)
+  void * message, const rclcpp::MessageInfo & message_info)
 {
-  (void)message;
-  (void)message_info;
+  (void) message;
+  (void) message_info;
 }
 
 void GenericSubscription::return_message(std::shared_ptr<void> & message)
 {
   auto typed_message = std::static_pointer_cast<rclcpp::SerializedMessage>(message);
-
   return_serialized_message(typed_message);
 }
 
@@ -100,5 +98,6 @@ GenericSubscription::borrow_serialized_message(size_t capacity)
 {
   return std::make_shared<rclcpp::SerializedMessage>(capacity);
 }
+
 }  // namespace cobridge
 #endif

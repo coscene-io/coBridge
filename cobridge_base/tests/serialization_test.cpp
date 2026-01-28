@@ -13,19 +13,18 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <serialization.hpp>
+#include <common.hpp>
 
 #include <cstring>
-
 #include <string>
 #include <vector>
 
-#include <common.hpp>
-#include <serialization.hpp>
-
 namespace cobridge_base
 {
+
 // Helper function to write uint32 in little endian
-void write_uint32_le(uint8_t *buffer, uint32_t value)
+void write_uint32_le(uint8_t * buffer, uint32_t value)
 {
   buffer[0] = value & 0xFF;
   buffer[1] = (value >> 8) & 0xFF;
@@ -55,7 +54,6 @@ protected:
     const std::vector<uint8_t> & payload = {0x01, 0x02, 0x03})
   {
     std::vector<uint8_t> message;
-
     message.resize(12 + encoding.size() + payload.size());
 
     size_t offset = 0;
@@ -90,7 +88,6 @@ TEST_F(ServiceResponseReadTest, ValidMessageParsing)
   auto message = createValidMessage(123, 456, "cdr", {0xAA, 0xBB, 0xCC});
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
 
   EXPECT_EQ(response.service_id, 123u);
@@ -108,7 +105,6 @@ TEST_F(ServiceResponseReadTest, EmptyPayload)
   auto message = createValidMessage(1, 2, "cdr", {});
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
 
   EXPECT_EQ(response.service_id, 1u);
@@ -173,7 +169,6 @@ TEST_F(ServiceResponseReadTest, EncodingLengthAtMaxBoundary)
   auto message = createValidMessage(1, 1, long_encoding, {0x01});
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
   EXPECT_EQ(response.encoding.size(), 256u);
 }
@@ -204,7 +199,6 @@ TEST_F(ServiceResponseReadTest, ExactFitNoPayload)
   auto message = createValidMessage(1, 1, "test", {});  // Exactly 12 + 4 = 16 bytes
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
   EXPECT_EQ(response.encoding, "test");
   EXPECT_TRUE(response.serv_data.empty());
@@ -217,7 +211,6 @@ TEST_F(ServiceResponseReadTest, LargePayload)
   auto message = createValidMessage(1, 1, "cdr", large_payload);
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
   EXPECT_EQ(response.serv_data.size(), 10000u);
   EXPECT_EQ(response.serv_data[0], 0xAB);
@@ -230,7 +223,6 @@ TEST_F(ServiceResponseReadTest, ZeroLengthEncoding)
   auto message = createValidMessage(1, 1, "", {0x01, 0x02});
 
   ServiceResponse response;
-
   EXPECT_NO_THROW(response.read(message.data(), message.size()));
   EXPECT_TRUE(response.encoding.empty());
   EXPECT_EQ(response.serv_data.size(), 2u);
@@ -301,9 +293,10 @@ TEST_F(ServiceResponseReadTest, EndiannessButActualCase)
     },
     std::runtime_error);
 }
+
 }  // namespace cobridge_base
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

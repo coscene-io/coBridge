@@ -25,6 +25,7 @@
 
 namespace cobridge_base
 {
+
 using ChannelId = uint32_t;
 using ClientChannelId = uint32_t;
 using SubscriptionId = uint32_t;
@@ -98,8 +99,7 @@ struct Channel : ChannelWithoutId
   Channel() = default;  // requirement for json conversions.
   Channel(ChannelId id, ChannelWithoutId ch)
   : ChannelWithoutId(std::move(ch)), id(id)
-  {
-  }
+  {}
 
   bool operator==(const Channel & other) const
   {
@@ -128,7 +128,7 @@ struct ClientMessage
   ClientMessage(
     uint64_t log_time, uint64_t publish_time, uint32_t sequence,
     const ClientAdvertisement & advertisement, size_t data_length,
-    const uint8_t *raw_data)
+    const uint8_t * raw_data)
   : log_time(log_time), publish_time(publish_time), sequence(sequence),
     advertisement(advertisement),
     data_length(data_length), data(data_length)
@@ -165,8 +165,7 @@ struct Service : ServiceWithoutId
 
   Service(const ServiceWithoutId & s, const ServiceId & id)
   : ServiceWithoutId(s), id(id)
-  {
-  }
+  {}
 };
 
 struct ServiceResponse
@@ -181,9 +180,9 @@ struct ServiceResponse
     return 4 + 4 + 4 + encoding.size() + serv_data.size();
   }
 
-  void read(const uint8_t *data, size_t size);
+  void read(const uint8_t * data, size_t size);
 
-  void write(uint8_t *data) const;
+  void write(uint8_t * data) const;
 
   bool operator==(const ServiceResponse & other) const
   {

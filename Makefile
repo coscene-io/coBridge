@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 ROS1_DISTRO := indigo melodic noetic
-ROS2_DISTRO := foxy humble jazzy rolling
+ROS2_DISTRO := foxy humble jazzy
 
 ROS_WS := $(shell pwd)
 export ROS_WS
@@ -20,8 +20,8 @@ test:
 ifeq ($(findstring $(ROS_DISTRO), $(ROS1_DISTRO)), $(ROS_DISTRO))
 	/ros_entrypoint.sh catkin_make run_tests
 else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
-	src/ros2_entry.sh build/cobridge/version_test
-	src/ros2_entry.sh build/cobridge/smoke_test
+	src/cobridge/ros2_entry.sh build/cobridge/version_test
+	src/cobridge/ros2_entry.sh build/cobridge/smoke_test
 else
 	$(error Unsupported ROS_DISTRO: $(ROS_DISTRO))
 endif
@@ -34,4 +34,3 @@ else ifeq ($(findstring $(ROS_DISTRO), $(ROS2_DISTRO)), $(ROS_DISTRO))
 else
 	$(error Unsupported ROS_DISTRO: $(ROS_DISTRO))
 endif
-

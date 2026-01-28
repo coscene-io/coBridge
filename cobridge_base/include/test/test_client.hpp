@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 #ifndef TEST_CLIENT_HPP_
 #define TEST_CLIENT_HPP_
+#include <websocketpp/config/asio_client.hpp>
 
 #include <future>
-#include <memory>
 #include <string>
 #include <vector>
-
-#include <websocketpp/config/asio_client.hpp>
+#include <memory>
 
 #include "../parameter.hpp"
 #include "../websocket_client.hpp"
@@ -33,7 +33,7 @@ std::future<std::string> wait_for_login(
   std::string operate);
 
 std::future<std::vector<uint8_t>> wait_for_channel_msg(
-  ClientInterface *client,
+  ClientInterface * client,
   SubscriptionId subscription_id);
 
 std::future<std::vector<Parameter>> wait_for_parameters(
@@ -55,6 +55,7 @@ std::future<FetchAssetResponse> wait_for_fetch_asset_response(
   client);
 
 extern template class Client<websocketpp::config::asio_client>;
+
 }  // namespace cobridge_base
 
 #endif  // TEST_CLIENT_HPP_

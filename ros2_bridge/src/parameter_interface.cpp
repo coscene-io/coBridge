@@ -13,20 +13,19 @@
 // limitations under the License.
 
 #include "parameter_interface.hpp"
-
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
-
 #include <json.hpp>
-
 #include <regex_utils.hpp>
 #include <utils.hpp>
 
+#include <string>
+#include <utility>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+
 namespace
 {
+
 constexpr char PARAM_SEP = '.';
 
 std::pair<std::string, std::string> get_node_and_param_name(
@@ -147,19 +146,20 @@ cobridge_base::Parameter from_ros_param(const rclcpp::Parameter & p)
     throw std::runtime_error("Unsupported parameter type");
   }
 }
+
 }  // namespace
 
 namespace cobridge
 {
+
 using cobridge_base::is_whitelisted;
 
 ParameterInterface::ParameterInterface(
-  rclcpp::Node *node,
+  rclcpp::Node * node,
   std::vector<std::regex> param_whitelist_patterns)
 : _node(node), _param_whitelist_patterns(param_whitelist_patterns),
   _callback_group(node->create_callback_group(rclcpp::CallbackGroupType::Reentrant))
-{
-}
+{}
 
 ParameterList ParameterInterface::get_params(
   const std::vector<std::string> & param_names,
@@ -229,17 +229,9 @@ ParameterList ParameterInterface::get_params(
 
     auto client_iter = _param_clients_by_node.find(node_name);
     if (client_iter == _param_clients_by_node.end()) {
-#ifdef ROS2_VERSION_ROLLING
-      const auto inserted_pair = _param_clients_by_node.emplace(
-        node_name, rclcpp::AsyncParametersClient::make_shared(
-          _node, node_name,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_parameters)),
-          _callback_group));
-#else
       const auto inserted_pair = _param_clients_by_node.emplace(
         node_name, rclcpp::AsyncParametersClient::make_shared(
           _node, node_name, rmw_qos_profile_parameters, _callback_group));
-#endif
       client_iter = inserted_pair.first;
     }
 
@@ -269,7 +261,6 @@ void ParameterInterface::set_params(
   std::lock_guard<std::mutex> lock(_mutex);
 
   rclcpp::ParameterMap params_by_node;
-
   for (const auto & param : parameters) {
     if (!is_whitelisted(param.get_name(), _param_whitelist_patterns)) {
       return;
@@ -284,17 +275,9 @@ void ParameterInterface::set_params(
   for (const auto & [node_name, params] : params_by_node) {
     auto param_client_iter = _param_clients_by_node.find(node_name);
     if (param_client_iter == _param_clients_by_node.end()) {
-#ifdef ROS2_VERSION_ROLLING
-      const auto inserted_pair = _param_clients_by_node.emplace(
-        node_name, rclcpp::AsyncParametersClient::make_shared(
-          _node, node_name,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_parameters)),
-          _callback_group));
-#else
       const auto inserted_pair = _param_clients_by_node.emplace(
         node_name, rclcpp::AsyncParametersClient::make_shared(
           _node, node_name, rmw_qos_profile_parameters, _callback_group));
-#endif
       param_client_iter = inserted_pair.first;
     }
 
@@ -319,7 +302,6 @@ void ParameterInterface::subscribe_params(const std::vector<std::string> & param
   std::lock_guard<std::mutex> lock(_mutex);
 
   std::unordered_set<std::string> nodes_to_subscribe;
-
   for (const auto & param_name : param_names) {
     if (!is_whitelisted(param_name, _param_whitelist_patterns)) {
       return;
@@ -341,17 +323,9 @@ void ParameterInterface::subscribe_params(const std::vector<std::string> & param
   for (const auto & node_name : nodes_to_subscribe) {
     auto param_client_iter = _param_clients_by_node.find(node_name);
     if (param_client_iter == _param_clients_by_node.end()) {
-#ifdef ROS2_VERSION_ROLLING
-      const auto inserted_pair = _param_clients_by_node.emplace(
-        node_name, rclcpp::AsyncParametersClient::make_shared(
-          _node, node_name,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_parameters)),
-          _callback_group));
-#else
       const auto inserted_pair = _param_clients_by_node.emplace(
         node_name, rclcpp::AsyncParametersClient::make_shared(
           _node, node_name, rmw_qos_profile_parameters, _callback_group));
-#endif
       param_client_iter = inserted_pair.first;
     }
 
@@ -405,7 +379,6 @@ void ParameterInterface::unsubscribe_params(const std::vector<std::string> & par
 void ParameterInterface::set_param_update_callback(ParamUpdateFunc param_update_func)
 {
   std::lock_guard<std::mutex> lock(_mutex);
-
   _param_update_func = param_update_func;
 }
 
@@ -494,4 +467,5 @@ void ParameterInterface::set_node_parameters(
     }
   }
 }
+
 }  // namespace cobridge

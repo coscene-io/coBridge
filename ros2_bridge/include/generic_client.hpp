@@ -14,6 +14,10 @@
 #ifndef GENERIC_CLIENT_HPP_
 #define GENERIC_CLIENT_HPP_
 
+#include <rclcpp/client.hpp>
+#include <rclcpp/serialized_message.hpp>
+#include <rcpputils/shared_library.hpp>
+
 #include <future>
 #include <map>
 #include <memory>
@@ -21,12 +25,9 @@
 #include <tuple>
 #include <utility>
 
-#include <rclcpp/client.hpp>
-#include <rclcpp/serialized_message.hpp>
-#include <rcpputils/shared_library.hpp>
-
 namespace cobridge
 {
+
 class GenericClient : public rclcpp::ClientBase
 {
 public:
@@ -51,7 +52,7 @@ public:
   }
 
   GenericClient(
-    rclcpp::node_interfaces::NodeBaseInterface *node_base,
+    rclcpp::node_interfaces::NodeBaseInterface * node_base,
     rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph,
     std::string service_name, std::string service_type,
     rcl_client_options_t & client_options);
@@ -61,6 +62,7 @@ public:
   GenericClient & operator=(const GenericClient &) = delete;
 
   ~GenericClient() override = default;
+
 
   std::shared_ptr<void> create_response() override;
 
@@ -79,11 +81,12 @@ private:
   std::mutex pending_requests_mutex_;
   std::shared_ptr<rcpputils::SharedLibrary> _type_support_lib;
   std::shared_ptr<rcpputils::SharedLibrary> _type_introspection_lib;
-  const rosidl_service_type_support_t *_service_type_support_handle;
-  const rosidl_message_type_support_t *_request_type_support_handle;
-  const rosidl_message_type_support_t *_response_type_support_handle;
-  const rosidl_service_type_support_t *_type_introspection_handle;
+  const rosidl_service_type_support_t * _service_type_support_handle;
+  const rosidl_message_type_support_t * _request_type_support_handle;
+  const rosidl_message_type_support_t * _response_type_support_handle;
+  const rosidl_service_type_support_t * _type_introspection_handle;
 };
+
 }  // namespace cobridge
 
 #endif  // GENERIC_CLIENT_HPP_

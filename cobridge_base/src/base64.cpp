@@ -19,17 +19,17 @@
 
 namespace cobridge_base
 {
+
 std::string base64_encode(const string_view & input)
 {
   constexpr const char ALPHABET[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   std::string result;
-
   // Every 3 bytes of data yields 4 bytes of output
   result.reserve((input.size() + (3 - 1 /* round up */)) / 3 * 4);
 
   // Unsigned values are required for bit-shifts below to work properly
-  const unsigned char *data = reinterpret_cast<const unsigned char *>(input.data());
+  const unsigned char * data = reinterpret_cast<const unsigned char *>(input.data());
 
   size_t i = 0;
   for (; i + 2 < input.size(); i += 3) {
@@ -67,12 +67,8 @@ std::vector<unsigned char> base64_decode(const std::string & input)
   std::size_t padding{};
 
   if (input.length()) {
-    if (input[input.length() - 1] == kPadCharacter) {
-      padding++;
-    }
-    if (input[input.length() - 2] == kPadCharacter) {
-      padding++;
-    }
+    if (input[input.length() - 1] == kPadCharacter) {padding++;}
+    if (input[input.length() - 2] == kPadCharacter) {padding++;}
   }
 
   std::vector<unsigned char> decoded;
@@ -100,11 +96,9 @@ std::vector<unsigned char> base64_decode(const std::string & input)
             decoded.push_back((temp >> 16) & 0x000000FF);
             decoded.push_back((temp >> 8) & 0x000000FF);
             return decoded;
-
           case 2:
             decoded.push_back((temp >> 10) & 0x000000FF);
             return decoded;
-
           default:
             throw std::runtime_error("Invalid padding in base64!");
         }

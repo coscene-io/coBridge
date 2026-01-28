@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <common.hpp>
+#include <param_utils.hpp>
+
 #include <limits>
 #include <string>
 #include <vector>
 
-#include <common.hpp>
-#include <param_utils.hpp>
-
 namespace cobridge
 {
-void declare_parameters(rclcpp::Node *node)
+
+void declare_parameters(rclcpp::Node * node)
 {
   auto port_description = rcl_interfaces::msg::ParameterDescriptor{};
-
   port_description.name = PARAM_PORT;
   port_description.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
   port_description.description = "The TCP port to bind the WebSocket server to";
@@ -190,11 +190,10 @@ void declare_parameters(rclcpp::Node *node)
 }
 
 std::vector<std::regex> parse_regex_strings(
-  rclcpp::Node *node,
+  rclcpp::Node * node,
   const std::vector<std::string> & strings)
 {
   std::vector<std::regex> regex_vector;
-
   regex_vector.reserve(strings.size());
 
   for (const auto & pattern : strings) {
@@ -211,4 +210,5 @@ std::vector<std::regex> parse_regex_strings(
 
   return regex_vector;
 }
+
 }  // namespace cobridge

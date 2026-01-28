@@ -15,11 +15,11 @@
 #ifndef PARAM_UTILS_HPP_
 #define PARAM_UTILS_HPP_
 
+#include <rclcpp/node.hpp>
+
 #include <regex>
 #include <string>
 #include <vector>
-
-#include <rclcpp/node.hpp>
 
 namespace cobridge
 {
@@ -46,10 +46,10 @@ constexpr int64_t DEFAULT_SEND_BUFFER_LIMIT = 10000000;
 constexpr int64_t DEFAULT_MIN_QOS_DEPTH = 1;
 constexpr int64_t DEFAULT_MAX_QOS_DEPTH = 25;
 
-void declare_parameters(rclcpp::Node *node);
+void declare_parameters(rclcpp::Node * node);
 
 std::vector<std::regex> parse_regex_strings(
-  rclcpp::Node *node,
+  rclcpp::Node * node,
   const std::vector<std::string> & strings);
 }  // namespace cobridge
 

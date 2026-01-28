@@ -29,7 +29,7 @@ public:
   using SharedPtr = std::shared_ptr<GenericPublisher>;
 
   GenericPublisher(
-    rclcpp::node_interfaces::NodeBaseInterface *node_base,
+    rclcpp::node_interfaces::NodeBaseInterface * node_base,
     const rosidl_message_type_support_t & type_support,
     const std::string & topic_name,
     const rclcpp::QoS & qos);
@@ -40,6 +40,7 @@ public:
   RCLCPP_PUBLIC
   void publish(const std::shared_ptr<rcl_serialized_message_t> & message);
 };
+
 }  // namespace cobridge
 #endif
 
