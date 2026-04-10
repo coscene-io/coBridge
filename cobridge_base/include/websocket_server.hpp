@@ -94,7 +94,7 @@ constexpr auto PRE_FETCH_ASSET = string_hash("preFetchAsset");
 
 namespace cobridge_base
 {
-using Json = nlohmann::ordered_json;
+using Json = nlohmann::json;
 using ConnHandle = websocketpp::connection_hdl;
 using OpCode = websocketpp::frame::opcode::value;
 

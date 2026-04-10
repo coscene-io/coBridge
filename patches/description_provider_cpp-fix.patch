@@ -1,8 +1,160 @@
 diff --git vendor/ros_babel_fish/0.9.3/ros_babel_fish/generation/description_provider.cpp vendor/ros_babel_fish/0.9.3/ros_babel_fish/generation/description_provider.cpp
-index 1f493bd..7c4c2f5 100644
+index 1f493bd..b65ad22 100644
 --- vendor/ros_babel_fish/0.9.3/ros_babel_fish/generation/description_provider.cpp
 +++ vendor/ros_babel_fish/0.9.3/ros_babel_fish/generation/description_provider.cpp
-@@ -428,46 +428,105 @@ DescriptionProvider::MessageSpec DescriptionProvider::createSpec( const std::str
+@@ -217,66 +217,76 @@ MessageTemplate::Ptr DescriptionProvider::createTemplate( const MessageSpec &spe
+   for ( auto &constant : spec.constants )
+   {
+     Message::Ptr value;
+-    if ( constant.type == "uint8" || constant.type == "char" )
++    try
+     {
+-      value = std::make_shared<ValueMessage<uint8_t>>( static_cast<uint8_t>(std::stoi( constant.val )));
+-    }
+-    else if ( constant.type == "bool" )
+-    {
+-      if ( constant.val == "True" )
++      if ( constant.type == "uint8" || constant.type == "char" )
+       {
+-        value = std::make_shared<ValueMessage<bool>>( true );
++        value = std::make_shared<ValueMessage<uint8_t>>( static_cast<uint8_t>(std::stoi( constant.val )));
+       }
+-      else if ( constant.val == "False" )
++      else if ( constant.type == "bool" )
+       {
+-        value = std::make_shared<ValueMessage<bool>>( false );
++        if ( constant.val == "True" )
++        {
++          value = std::make_shared<ValueMessage<bool>>( true );
++        }
++        else if ( constant.val == "False" )
++        {
++          value = std::make_shared<ValueMessage<bool>>( false );
++        }
++        else
++        {
++          value = std::make_shared<ValueMessage<bool>>( static_cast<bool>(std::stoi( constant.val )));
++        }
+       }
+-      else
++      else if ( constant.type == "int8" || constant.type == "byte" )
+       {
+-        value = std::make_shared<ValueMessage<bool>>( static_cast<bool>(std::stoi( constant.val )));
++        value = std::make_shared<ValueMessage<int8_t>>( static_cast<int8_t>(std::stoi( constant.val )));
+       }
++      else if ( constant.type == "uint16" )
++      {
++        value = std::make_shared<ValueMessage<uint16_t>>( static_cast<uint16_t>(std::stoi( constant.val )));
++      }
++      else if ( constant.type == "int16" )
++      {
++        value = std::make_shared<ValueMessage<int16_t>>( static_cast<int16_t>(std::stoi( constant.val )));
++      }
++      else if ( constant.type == "uint32" )
++      {
++        value = std::make_shared<ValueMessage<uint32_t>>( static_cast<uint32_t>(std::stoul( constant.val )));
++      }
++      else if ( constant.type == "int32" )
++      {
++        value = std::make_shared<ValueMessage<int32_t>>( static_cast<int32_t>(std::stol( constant.val )));
++      }
++      else if ( constant.type == "uint64" )
++      {
++        value = std::make_shared<ValueMessage<uint64_t>>( static_cast<uint64_t>(std::stoul( constant.val )));
++      }
++      else if ( constant.type == "int64" )
++      {
++        value = std::make_shared<ValueMessage<int64_t>>( static_cast<int64_t>(std::stol( constant.val )));
++      }
++      else if ( constant.type == "float32" )
++      {
++        value = std::make_shared<ValueMessage<float>>( static_cast<float>(std::stof( constant.val )));
++      }
++      else if ( constant.type == "float64" )
++      {
++        value = std::make_shared<ValueMessage<double>>( static_cast<double>(std::stod( constant.val )));
++      }
++      else if ( constant.type == "string" )
++      {
++        value = std::make_shared<ValueMessage<std::string>>( constant.val );
++      }
++      msg_template->constants.insert( { constant.name, value } );
+     }
+-    else if ( constant.type == "int8" || constant.type == "byte" )
+-    {
+-      value = std::make_shared<ValueMessage<int8_t>>( static_cast<int8_t>(std::stoi( constant.val )));
+-    }
+-    else if ( constant.type == "uint16" )
+-    {
+-      value = std::make_shared<ValueMessage<uint16_t>>( static_cast<uint16_t>(std::stoi( constant.val )));
+-    }
+-    else if ( constant.type == "int16" )
+-    {
+-      value = std::make_shared<ValueMessage<int16_t>>( static_cast<int16_t>(std::stoi( constant.val )));
+-    }
+-    else if ( constant.type == "uint32" )
+-    {
+-      value = std::make_shared<ValueMessage<uint32_t>>( static_cast<uint32_t>(std::stoul( constant.val )));
+-    }
+-    else if ( constant.type == "int32" )
+-    {
+-      value = std::make_shared<ValueMessage<int32_t>>( static_cast<int32_t>(std::stol( constant.val )));
+-    }
+-    else if ( constant.type == "uint64" )
+-    {
+-      value = std::make_shared<ValueMessage<uint64_t>>( static_cast<uint64_t>(std::stoul( constant.val )));
+-    }
+-    else if ( constant.type == "int64" )
+-    {
+-      value = std::make_shared<ValueMessage<int64_t>>( static_cast<int64_t>(std::stol( constant.val )));
+-    }
+-    else if ( constant.type == "float32" )
+-    {
+-      value = std::make_shared<ValueMessage<float>>( static_cast<float>(std::stof( constant.val )));
+-    }
+-    else if ( constant.type == "float64" )
+-    {
+-      value = std::make_shared<ValueMessage<double>>( static_cast<double>(std::stod( constant.val )));
+-    }
+-    else if ( constant.type == "string" )
++    catch ( const std::exception &e )
+     {
+-      value = std::make_shared<ValueMessage<std::string>>( constant.val );
++      ROS_WARN_NAMED( "RosBabelFish", "Failed to parse constant '%s' of type '%s' with value '%s': %s. Skipping this constant.",
++                      constant.name.c_str(), constant.type.c_str(), constant.val.c_str(), e.what());
++      // Continue processing other constants
++      continue;
+     }
+-    msg_template->constants.insert( { constant.name, value } );
+   }
+   msg_template->compound.names = spec.names;
+   for ( size_t i = 0; i < spec.types.size(); ++i )
+@@ -305,9 +315,21 @@ MessageTemplate::Ptr DescriptionProvider::createTemplate( const MessageSpec &spe
+     else // It's an array
+     {
+       std::string::size_type index_end_array = type.find( ']', index_array );
+-      ssize_t length = index_end_array - index_array <= 1
+-                       ? -1
+-                       : std::stol( type.substr( index_array + 1, index_end_array - index_array - 1 ));
++      ssize_t length = -1;
++      if ( index_end_array - index_array > 1 )
++      {
++        std::string length_str = type.substr( index_array + 1, index_end_array - index_array - 1 );
++        try
++        {
++          length = std::stol( length_str );
++        }
++        catch ( const std::exception &e )
++        {
++          ROS_WARN_NAMED( "RosBabelFish", "Failed to parse array length '%s' in type '%s': %s. Treating as dynamic array.",
++                          length_str.c_str(), type.c_str(), e.what());
++          length = -1;
++        }
++      }
+       MessageTemplate::Ptr array_template = std::make_shared<MessageTemplate>();
+       array_template->type = MessageTypes::Array;
+       array_template->array.length = length;
+@@ -428,46 +450,120 @@ DescriptionProvider::MessageSpec DescriptionProvider::createSpec( const std::str
    spec.package = package;
    spec.text = specification;
  
@@ -53,43 +205,17 @@ index 1f493bd..7c4c2f5 100644
 +      continue;
 +    }
 +
-+    // 检查是否是常量定义 (type name = value)
-+    std::string::size_type eq_pos = line.find('=');
-+    if ( eq_pos != std::string::npos ) {
-+      std::string left_part = line.substr(0, eq_pos);
-+      std::string value_part = line.substr(eq_pos + 1);
-+
-+      // 解析左边部分 (type name)
-+      std::string::size_type space_pos = left_part.find_first_of(" \t");
-+      if ( space_pos != std::string::npos ) {
-+        std::string constant_type = left_part.substr(0, space_pos);
-+        std::string name_part = left_part.substr(space_pos);
-+        std::string::size_type name_start = name_part.find_first_not_of(" \t");
-+        if ( name_start != std::string::npos ) {
-+          std::string::size_type name_end = name_part.find_first_of(" \t", name_start);
-+          std::string name = name_part.substr(name_start, name_end == std::string::npos ? std::string::npos : name_end - name_start);
-+
-+          // 处理值部分
-+          std::string val = value_part;
-+          std::string::size_type val_start = val.find_first_not_of(" \t");
-+          if ( val_start != std::string::npos ) {
-+            val = val.substr(val_start);
-+            // 如果不是字符串类型，移除注释
-+            if ( constant_type != "string" ) {
-+              std::string::size_type comment_pos = val.find('#');
-+              if ( comment_pos != std::string::npos ) {
-+                val = val.substr(0, comment_pos);
-+                std::string::size_type val_end = val.find_last_not_of(" \t");
-+                if ( val_end != std::string::npos ) {
-+                  val = val.substr(0, val_end + 1);
-+                }
-+              }
-+            }
-+
-+            spec.constants.push_back(
-+              MessageSpec::Constant{ constant_type, name, val } );
-+          }
-+        }
++    // 移除行尾注释以正确解析字段和常量定义
++    std::string line_without_comment = line;
++    std::string::size_type comment_pos = line.find('#');
++    if ( comment_pos != std::string::npos ) {
++      line_without_comment = line.substr(0, comment_pos);
++      // 去除行尾空白
++      std::string::size_type last_char = line_without_comment.find_last_not_of(" \t\r");
++      if ( last_char != std::string::npos ) {
++        line_without_comment = line_without_comment.substr(0, last_char + 1);
++      } else {
++        line_without_comment = "";
        }
 -      spec.constants.push_back(
 -        MessageSpec::Constant{ .type = constant_type, .name = name, .val = val } );
@@ -104,12 +230,53 @@ index 1f493bd..7c4c2f5 100644
 -        if ( std::find( spec.dependencies.begin(), spec.dependencies.end(), dep_type ) == spec.dependencies.end())
 -        {
 -          spec.dependencies.push_back( dep_type );
++
++    // 跳过空行（移除注释后可能为空）
++    if ( line_without_comment.empty() ) {
++      if ( end == std::string::npos ) break;
++      start = end + 1;
++      continue;
++    }
++
++    // 检查是否是常量定义 (type name = value)
++    std::string::size_type eq_pos = line_without_comment.find('=');
++    if ( eq_pos != std::string::npos ) {
++      std::string left_part = line_without_comment.substr(0, eq_pos);
++      std::string value_part = line_without_comment.substr(eq_pos + 1);
++
++      // 解析左边部分 (type name)
++      std::string::size_type space_pos = left_part.find_first_of(" \t");
++      if ( space_pos != std::string::npos ) {
++        std::string constant_type = left_part.substr(0, space_pos);
++        std::string name_part = left_part.substr(space_pos);
++        std::string::size_type name_start = name_part.find_first_not_of(" \t");
++        if ( name_start != std::string::npos ) {
++          std::string::size_type name_end = name_part.find_first_of(" \t", name_start);
++          std::string name = name_part.substr(name_start, name_end == std::string::npos ? std::string::npos : name_end - name_start);
++
++          // 处理值部分（注释已在前面移除）
++          std::string val = value_part;
++          std::string::size_type val_start = val.find_first_not_of(" \t");
++          if ( val_start != std::string::npos ) {
++            val = val.substr(val_start);
++            // 去除行尾空白
++            std::string::size_type val_end = val.find_last_not_of(" \t");
++            if ( val_end != std::string::npos ) {
++              val = val.substr(0, val_end + 1);
++            }
++
++            spec.constants.push_back(
++              MessageSpec::Constant{ constant_type, name, val } );
++          }
++        }
++      }
++    }
 +    else {
 +      // 检查是否是字段定义 (type name)
-+      std::string::size_type space_pos = line.find_first_of(" \t");
++      std::string::size_type space_pos = line_without_comment.find_first_of(" \t");
 +      if ( space_pos != std::string::npos ) {
-+        std::string type_part = line.substr(0, space_pos);
-+        std::string name_part = line.substr(space_pos);
++        std::string type_part = line_without_comment.substr(0, space_pos);
++        std::string name_part = line_without_comment.substr(space_pos);
 +        std::string::size_type name_start = name_part.find_first_not_of(" \t");
 +        if ( name_start != std::string::npos ) {
 +          std::string::size_type name_end = name_part.find_first_of(" \t", name_start);
